@@ -1,0 +1,42 @@
+h1 > code,
+h2 > code,
+h3 > code,
+h4 > code,
+h5 > code {
+    font-weight: bold;
+}
+
+.toctree-l5:before {
+    content: '-';
+    margin-right: 0.25em;
+}
+
+code {
+    font-size: 1em;
+}
+
+.property {
+    display: inline;
+}
+
+.property:after {
+    margin: 0 0.2em 0 0.2em;
+}
+
+.property + p {
+    display: inline;
+}
+
+.property + p + p,
+.property + p + h1,
+.property + p + h2,
+.property + p + h3,
+.property + p + h4,
+.property + p + h5 {
+    margin-top: 1em;
+}
+
+a > code {
+    color: #2d6987;
+}
+
