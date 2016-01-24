@@ -1,0 +1,42 @@
+logger:
+    filename: "console"
+    level: debug
+
+rpc:
+    enabled: true
+
+services:
+        king:
+            kind: master
+            command: ["sleep.exe","15"]
+            stopWaitInSeconds: 15
+            successExitCodes: [0,1]
+            logger:
+                filename: "console"
+                level: debug
+            access:
+                permission: readWrite
+                type: generateToFile
+                pemFile: "caretakerd.king.pem"
+
+        queen:
+            command: ["cmd.exe","/C","echo","%MOO%"]
+            cronExpression: "0,5,10,15,20,25,30,35,40,45,50,55 * * * * *"
+            environment:
+                MOO: "1"
+            stopWaitInSeconds: 5
+            startDelayInSeconds: 1
+            restartDelayInSeconds: 2
+            logger:
+                filename: "console"
+                level: debug
+
+        peasant:
+            kind: onDemand
+            command: ["sleep.exe","36"]
+            environment:
+                MOO: "36"
+            stopWaitInSeconds: 5
+            logger:
+                filename: "console"
+                level: debug
