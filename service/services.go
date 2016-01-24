@@ -1,8 +1,6 @@
 package service
 
 import (
-    "github.com/echocat/caretakerd/service/kind"
-    "github.com/echocat/caretakerd/service/config"
     usync "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/panics"
     "github.com/echocat/caretakerd/rpc/security"
@@ -10,7 +8,7 @@ import (
 
 type Services map[string]*Service
 
-func NewServices(confs config.Configs, syncGroup *usync.SyncGroup, sec *security.Security) (*Services, error) {
+func NewServices(confs Configs, syncGroup *usync.SyncGroup, sec *security.Security) (*Services, error) {
     err := confs.Validate()
     if err != nil {
         return nil, err
@@ -33,7 +31,7 @@ func (s Services) Get(name string) (*Service, bool) {
 
 func (s Services) GetMaster() *Service {
     for _, service := range s {
-        if service.config.Kind != kind.Master {
+        if service.config.Type != Master {
             return service
         }
     }
@@ -51,7 +49,7 @@ func (s Services) GetMasterOrFail() *Service {
 func (s Services) GetAllButMaster() Services {
     result := Services{}
     for name, service := range s {
-        if service.config.Kind != kind.Master {
+        if service.config.Type != Master {
             result[name] = service
         }
     }
@@ -61,7 +59,7 @@ func (s Services) GetAllButMaster() Services {
 func (s Services) GetAllAutoStartable() Services {
     result := Services{}
     for name, service := range s {
-        if service.config.Kind.IsAutoStartable() {
+        if service.config.Type.IsAutoStartable() {
             result[name] = service
         }
     }

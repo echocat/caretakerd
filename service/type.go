@@ -1,4 +1,4 @@
-package kind
+package service
 
 import (
     "strconv"
@@ -7,20 +7,20 @@ import (
     "encoding/json"
 )
 
-type Kind int
+type Type int
 const (
-    OnDemand Kind = 0
-    AutoStart Kind = 1
-    Master Kind = 2
+    OnDemand Type = 0
+    AutoStart Type = 1
+    Master Type = 2
 )
 
-var All []Kind = []Kind{
+var AllTypes []Type = []Type{
     OnDemand,
     AutoStart,
     Master,
 }
 
-func (i Kind) String() string {
+func (i Type) String() string {
     result, err := i.CheckedString()
     if err != nil {
         panic(err)
@@ -28,7 +28,7 @@ func (i Kind) String() string {
     return result
 }
 
-func (i Kind) CheckedString() (string, error) {
+func (i Type) CheckedString() (string, error) {
     switch i {
     case OnDemand:
         return "onDemand", nil
@@ -40,9 +40,9 @@ func (i Kind) CheckedString() (string, error) {
     return "", errors.New("Illegal kind: %d", i)
 }
 
-func (i *Kind) Set(value string) error {
+func (i *Type) Set(value string) error {
     if valueAsInt, err := strconv.Atoi(value); err == nil {
-        for _, candidate := range All {
+        for _, candidate := range AllTypes {
             if int(candidate) == valueAsInt {
                 (*i) = candidate
                 return nil
@@ -51,7 +51,7 @@ func (i *Kind) Set(value string) error {
         return errors.New("Illegal kind: " + value)
     } else {
         lowerValue := strings.ToLower(value)
-        for _, candidate := range All {
+        for _, candidate := range AllTypes {
             if strings.ToLower(candidate.String()) == lowerValue {
                 (*i) = candidate
                 return nil
@@ -61,11 +61,11 @@ func (i *Kind) Set(value string) error {
     }
 }
 
-func (i Kind) MarshalYAML() (interface{}, error) {
+func (i Type) MarshalYAML() (interface{}, error) {
     return i.CheckedString()
 }
 
-func (i *Kind) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (i *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
     var value string
     if err := unmarshal(&value); err != nil {
         return err
@@ -73,7 +73,7 @@ func (i *Kind) UnmarshalYAML(unmarshal func(interface{}) error) error {
     return i.Set(value)
 }
 
-func (i Kind) MarshalJSON() ([]byte, error) {
+func (i Type) MarshalJSON() ([]byte, error) {
     s, err := i.CheckedString()
     if err != nil {
         return []byte{}, err
@@ -81,7 +81,7 @@ func (i Kind) MarshalJSON() ([]byte, error) {
     return json.Marshal(s)
 }
 
-func (i *Kind) UnmarshalJSON(b []byte) error {
+func (i *Type) UnmarshalJSON(b []byte) error {
     var value string
     if err := json.Unmarshal(b, &value); err != nil {
         return err
@@ -89,7 +89,7 @@ func (i *Kind) UnmarshalJSON(b []byte) error {
     return i.Set(value)
 }
 
-func (i Kind) IsAutoStartable() bool {
+func (i Type) IsAutoStartable() bool {
     switch i {
     case Master:
         fallthrough
@@ -99,7 +99,7 @@ func (i Kind) IsAutoStartable() bool {
     return false
 }
 
-func (i Kind) Validate() error {
+func (i Type) Validate() error {
     _, err := i.CheckedString()
     return err
 }

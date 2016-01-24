@@ -7,7 +7,7 @@ rpc:
 
 services:
         king:
-            kind: master
+            type: master
             command: ["sleep.exe","15"]
             stopWaitInSeconds: 15
             successExitCodes: [0,1]
@@ -32,7 +32,7 @@ services:
                 level: debug
 
         peasant:
-            kind: onDemand
+            type: onDemand
             command: ["sleep.exe","36"]
             environment:
                 MOO: "36"

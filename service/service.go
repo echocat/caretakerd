@@ -3,7 +3,6 @@ package service
 import (
     "github.com/echocat/caretakerd/logger"
     "runtime"
-    "github.com/echocat/caretakerd/service/config"
     usync "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/rpc/security"
@@ -11,7 +10,7 @@ import (
 )
 
 type Service struct {
-    config        config.Config
+    config        Config
     logger        *logger.Logger
     name          string
     syncGroup     *usync.SyncGroup
@@ -22,7 +21,7 @@ func finalize(what *Service) {
     what.Close()
 }
 
-func NewService(conf config.Config, name string, syncGroup *usync.SyncGroup, sec *security.Security) (*Service, error) {
+func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *security.Security) (*Service, error) {
     err := conf.Validate()
     if err != nil {
         return nil, errors.New("Config of service '%v' is not valid.", name).CausedBy(err)
@@ -58,7 +57,7 @@ func (this Service) Name() string {
     return this.name
 }
 
-func (this Service) Config() config.Config {
+func (this Service) Config() Config {
     return this.config
 }
 

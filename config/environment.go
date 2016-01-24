@@ -4,7 +4,7 @@ import (
     "os"
     "strings"
     "github.com/echocat/caretakerd/panics"
-    serviceConfig "github.com/echocat/caretakerd/service/config"
+    "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/errors"
     . "github.com/echocat/caretakerd/values"
 )
@@ -27,7 +27,7 @@ var globalEnvKeyToHandler map[string]func(conf *Config, value string) error = ma
     "LOG_MAX_AGE_IN_DAYS": handleGlobalLogMaxAgeInDaysEnv,
 }
 
-var serviceEnvKeyToFunction map[string]func(conf *serviceConfig.Config, value string) error = map[string]func(*serviceConfig.Config, string) error{
+var serviceEnvKeyToFunction map[string]func(conf *service.Config, value string) error = map[string]func(*service.Config, string) error{
     // service.config
     "CMD": handleServiceCommandEnv,
     "COMMAND": handleServiceCommandEnv,
@@ -63,7 +63,7 @@ var serviceEnvKeyToFunction map[string]func(conf *serviceConfig.Config, value st
     "LOG_MAX_AGE_IN_DAYS": handleServiceLogMaxAgeInDaysEnv,
 }
 
-var serviceSubEnvKeyToFunction map[string]func(conf *serviceConfig.Config, key string, value string) error = map[string]func(*serviceConfig.Config, string, string) error{
+var serviceSubEnvKeyToFunction map[string]func(conf *service.Config, key string, value string) error = map[string]func(*service.Config, string, string) error{
     // service.config
     "ENV": handleEnvironmentEnv,
     "ENVIRONMENT": handleEnvironmentEnv,
@@ -150,72 +150,72 @@ func handleGlobalLogMaxAgeInDaysEnv(conf *Config, value string) error {
     return conf.Logger.MaxAgeInDays.Set(value)
 }
 
-func handleServiceCommandEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceCommandEnv(conf *service.Config, value string) error {
     conf.Command = append(conf.Command, parseCmd(value)...)
     return nil
 }
 
-func handleServiceKindEnv(conf *serviceConfig.Config, value string) error {
-    return conf.Kind.Set(value)
+func handleServiceKindEnv(conf *service.Config, value string) error {
+    return conf.Type.Set(value)
 }
 
-func handleServiceStartDelayInSecondsEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceStartDelayInSecondsEnv(conf *service.Config, value string) error {
     return conf.StartDelayInSeconds.Set(value)
 }
 
-func handleServiceRestartDelayInSecondsEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceRestartDelayInSecondsEnv(conf *service.Config, value string) error {
     return conf.RestartDelayInSeconds.Set(value)
 }
 
-func handleServiceSuccessExitCodesEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceSuccessExitCodesEnv(conf *service.Config, value string) error {
     return conf.SuccessExitCodes.Set(value)
 }
 
-func handleServiceStopWaitInSecondsEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceStopWaitInSecondsEnv(conf *service.Config, value string) error {
     return conf.StopWaitInSeconds.Set(value)
 }
 
-func handleServiceUserEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceUserEnv(conf *service.Config, value string) error {
     return conf.User.Set(value)
 }
 
-func handleServiceDirectoryEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceDirectoryEnv(conf *service.Config, value string) error {
     return conf.Directory.Set(value)
 }
 
-func handleServiceAutoRestartEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceAutoRestartEnv(conf *service.Config, value string) error {
     return conf.AutoRestart.Set(value)
 }
 
-func handleServiceLogLevelEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogLevelEnv(conf *service.Config, value string) error {
     return conf.Logger.Level.Set(value)
 }
 
-func handleServiceLogStdoutLevelEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogStdoutLevelEnv(conf *service.Config, value string) error {
     return conf.Logger.StdoutLevel.Set(value)
 }
 
-func handleServiceLogStderrLevelEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogStderrLevelEnv(conf *service.Config, value string) error {
     return conf.Logger.StderrLevel.Set(value)
 }
 
-func handleServiceLogFilenameEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogFilenameEnv(conf *service.Config, value string) error {
     return conf.Logger.Filename.Set(value)
 }
 
-func handleServiceLogMaxSizeInMbEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogMaxSizeInMbEnv(conf *service.Config, value string) error {
     return conf.Logger.MaxSizeInMb.Set(value)
 }
 
-func handleServiceLogMaxBackupsEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogMaxBackupsEnv(conf *service.Config, value string) error {
     return conf.Logger.MaxBackups.Set(value)
 }
 
-func handleServiceLogMaxAgeInDaysEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceLogMaxAgeInDaysEnv(conf *service.Config, value string) error {
     return conf.Logger.MaxAgeInDays.Set(value)
 }
 
-func handleServiceInheritEnvironmentEnv(conf *serviceConfig.Config, value string) error {
+func handleServiceInheritEnvironmentEnv(conf *service.Config, value string) error {
     return conf.InheritEnvironment.Set(value)
 }
 
@@ -228,7 +228,7 @@ func (i *Config) handleServiceEnv(full string, serviceName string, key string, v
     }
 }
 
-func handleEnvironmentEnv(conf *serviceConfig.Config, key string, value string) error {
+func handleEnvironmentEnv(conf *service.Config, key string, value string) error {
     return conf.Environment.Put(key, value)
 }
 

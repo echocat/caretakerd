@@ -1,8 +1,7 @@
-package config
+package service
 
 import (
     "strings"
-    "github.com/echocat/caretakerd/service/kind"
     "github.com/echocat/caretakerd/errors"
 )
 
@@ -19,7 +18,7 @@ func (this Configs) Validate() error {
 func (this Configs) ValidateMaster() error {
     masters := []string{}
     for name, service := range this {
-        if service.Kind == kind.Master {
+        if service.Type == Master {
             masters = append(masters, name)
         }
     }
@@ -46,7 +45,7 @@ func (this Config) Validate() error {
         err = this.validateCommand()
     }
     if err == nil {
-        err = this.Kind.Validate()
+        err = this.Type.Validate()
     }
     if err == nil {
         err = this.StartDelayInSeconds.Validate()

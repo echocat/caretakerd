@@ -13,7 +13,6 @@ import (
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/config"
     "github.com/echocat/caretakerd/service"
-    sconfig "github.com/echocat/caretakerd/service/config"
     "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/control"
@@ -226,11 +225,11 @@ func (this *Client) GetService(name string) (service.Information, error) {
     return target, nil
 }
 
-func (this *Client) GetServiceConfig(name string) (sconfig.Config, error) {
-    target := sconfig.Config{}
+func (this *Client) GetServiceConfig(name string) (service.Config, error) {
+    target := service.Config{}
     err := this.get("service/" + name + "/config", &target)
     if err != nil {
-        return sconfig.Config{}, err
+        return service.Config{}, err
     }
     return target, nil
 }

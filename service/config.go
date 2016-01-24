@@ -1,8 +1,7 @@
-package config
+package service
 
 import (
     loggerConfig "github.com/echocat/caretakerd/logger/config"
-    "github.com/echocat/caretakerd/service/kind"
     "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/service/restartType"
     "github.com/echocat/caretakerd/service/environment"
@@ -15,7 +14,7 @@ import (
 type Config struct {
     Logger                loggerConfig.Config `json:"logger" yaml:"logger,omitempty"`
     Command               []String `json:"command" yaml:"command,flow"`
-    Kind                  kind.Kind `json:"kind" yaml:"kind"`
+    Type                  Type `json:"type" yaml:"type"`
     CronExpression        cron.Expression `json:"cronExpression" yaml:"cronExpression"`
     StartDelayInSeconds   NonNegativeInteger `json:"startDelayInSeconds" yaml:"startDelayInSeconds"`
     RestartDelayInSeconds NonNegativeInteger `json:"restartDelayInSeconds" yaml:"restartDelayInSeconds"`
@@ -44,7 +43,7 @@ func (i Config) WithCommand(command ...String) Config {
 func (i *Config) init() {
     (*i).Logger = loggerConfig.NewLoggerConfig()
     (*i).Command = []String{}
-    (*i).Kind = kind.AutoStart
+    (*i).Type = AutoStart
     (*i).CronExpression = cron.NewCronExpression()
     (*i).StartDelayInSeconds = NonNegativeInteger(0)
     (*i).RestartDelayInSeconds = NonNegativeInteger(5)

@@ -1,7 +1,6 @@
-package config
+package service
 
 import (
-    "github.com/echocat/caretakerd/service/kind"
     "github.com/echocat/caretakerd/errors"
 )
 
@@ -13,7 +12,7 @@ func NewServiceConfigs() Configs {
 
 func (s *Configs) GetMasterName() (string, bool) {
     for name, service := range (*s) {
-        if service.Kind == kind.Master {
+        if service.Type == Master {
             return name, true
         }
     }

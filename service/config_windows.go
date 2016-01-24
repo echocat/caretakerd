@@ -1,11 +1,11 @@
-// +build linux,darwin
+// +build windows
 
-package config
+package service
 
 import (
     "github.com/echocat/caretakerd/service/signal"
 )
 
 func defaultStopSignal() signal.Signal {
-    return signal.TERM
+    return signal.KILL
 }

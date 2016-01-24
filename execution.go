@@ -1,14 +1,13 @@
 package caretakerd
 
 import (
-    "github.com/echocat/caretakerd/service"
-    . "github.com/echocat/caretakerd/service/exitCode"
     ssync "sync"
-    "github.com/echocat/caretakerd/service/kind"
+    "time"
+    . "github.com/echocat/caretakerd/service/exitCode"
+    . "github.com/echocat/caretakerd/values"
+    "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/logger/level"
     "github.com/echocat/caretakerd/service/signal"
-    . "github.com/echocat/caretakerd/values"
-    "time"
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
@@ -135,7 +134,7 @@ func (this *Execution) checkAfterExecutionStates(target *service.Execution, exit
 
 func (this *Execution) doAfterExecution(target *service.Execution, exitCode ExitCode, err error) {
     defer this.doUnregisterExecution(target)
-    if target.Service().Config().Kind == kind.Master {
+    if target.Service().Config().Type == service.Master {
         this.masterExitCode = &exitCode
         this.masterError = err
         others := this.allExecutionsButMaster()
@@ -247,8 +246,8 @@ func (this *Execution) allExecutionsButMaster() []*service.Execution {
     this.doRLock()
     defer this.doRUnlock()
     result := []*service.Execution{}
-    for service, candidate := range this.executions {
-        if service.Config().Kind != kind.Master {
+    for s, candidate := range this.executions {
+        if s.Config().Type != service.Master {
             result = append(result, candidate)
         }
     }
