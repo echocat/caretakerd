@@ -3,10 +3,8 @@ package caretakerd
 import (
     ssync "sync"
     "time"
-    . "github.com/echocat/caretakerd/service/exitCode"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
@@ -215,7 +213,7 @@ func (this *Execution) Kill(target *service.Service) error {
     return nil
 }
 
-func (this *Execution) Signal(target *service.Service, what signal.Signal) error {
+func (this *Execution) Signal(target *service.Service, what Signal) error {
     this.doRLock()
     execution, ok := this.executions[target]
     if ! ok {

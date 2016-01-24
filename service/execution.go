@@ -7,21 +7,19 @@ import (
     "os"
     "syscall"
     "time"
-    . "github.com/echocat/caretakerd/service/exitCode"
+    . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/rpc/security"
-    "github.com/echocat/caretakerd/service/status"
 )
 
 type Execution struct {
     service   *Service
     logger    *logger.Logger
     cmd       *exec.Cmd
-    status    status.Status
+    status    Status
     lock      *sync.Mutex
     condition *sync.Condition
     access    *access.Access
@@ -41,7 +39,7 @@ func (this *Service) NewExecution(sec *security.Security) (*Execution, error) {
         service: this,
         logger: this.logger,
         cmd: cmd,
-        status: status.Down,
+        status: Down,
         lock: lock,
         condition: condition,
         access: a,
@@ -120,10 +118,10 @@ func (this *Execution) Run() (ExitCode, error) {
     }
     this.logger.Log(logger.Debug, "Start service '%s' with command: %s", this.Name(), this.CommandLine())
     exitCode, err, lastState := this.runBare()
-    if lastState == status.Killed {
+    if lastState == Killed {
         err = StoppedOrKilledError{error: errors.New("Process was killed.")}
         this.logger.Log(logger.Debug, "Service '%s' ended after kill: %d", this.Name(), exitCode)
-    } else if lastState == status.Stopped {
+    } else if lastState == Stopped {
         err = StoppedOrKilledError{error: errors.New("Process was stopped.")}
         this.logger.Log(logger.Debug, "Service '%s' ended successful after stop: %d", this.Name(), exitCode)
     } else if err != nil {
@@ -145,7 +143,7 @@ type StoppedOrKilledError struct {
     error
 }
 
-func (this *Execution) runBare() (ExitCode, error, status.Status) {
+func (this *Execution) runBare() (ExitCode, error, Status) {
     cmd := (*this).cmd
     var waitStatus syscall.WaitStatus
     this.doSetRunningState()
@@ -166,25 +164,25 @@ func (this *Execution) runBare() (ExitCode, error, status.Status) {
 func (this *Execution) doSetRunningState() {
     this.doLock()
     defer this.doUnlock()
-    (*this).status = status.Running
+    (*this).status = Running
 }
 
 func (this *Execution) doSetDownState() {
-    this.setStateSyncedTo(status.Down)
+    this.setStateSyncedTo(Down)
 }
 
-func (this *Execution) setStateSyncedTo(s status.Status) bool {
+func (this *Execution) setStateSyncedTo(s Status) bool {
     this.doLock()
     defer this.doUnlock()
     return this.setStateTo(s)
 }
 
-func (this *Execution) setStateTo(ns status.Status) bool {
+func (this *Execution) setStateTo(ns Status) bool {
     cs := this.status
-    if cs != status.Down || (ns != status.Killed && ns != status.Stopped) {
+    if cs != Down || (ns != Killed && ns != Stopped) {
         (*this).status = ns
         this.condition.Send()
-        if cs == status.Down {
+        if cs == Down {
             this.access.Cleanup()
         }
         return true
@@ -201,12 +199,12 @@ func (this *Execution) Stop() {
     this.syncGroup.Interrupt()
     this.doLock()
     defer this.doUnlock()
-    if this.status != status.Down {
+    if this.status != Down {
         this.sendStop()
-        if this.status != status.Down {
+        if this.status != Down {
             this.logger.Log(logger.Debug, "Stopping '%s'...", this.Name())
             this.condition.Wait(time.Duration(this.service.config.StopWaitInSeconds) * time.Second)
-            if this.status != status.Down {
+            if this.status != Down {
                 this.logger.Log(logger.Warning, "Service '%s' does not respond after %d seconds. Going to kill it now...", this.Name(), this.service.config.StopWaitInSeconds)
                 this.sendKill()
             }
@@ -215,7 +213,7 @@ func (this *Execution) Stop() {
 }
 
 func (this *Execution) sendStop() {
-    if this.status != status.Killed && this.status != status.Stopped && this.setStateTo(status.Stopped) {
+    if this.status != Killed && this.status != Stopped && this.setStateTo(Stopped) {
         this.sendSignal((*this).service.config.StopSignal)
     }
 }
@@ -229,32 +227,32 @@ func (this *Execution) Kill() {
 }
 
 func (this *Execution) sendKill() {
-    if this.status != status.Killed && this.setStateTo(status.Killed) {
-        for ; this.status != status.Down; {
-            if err := this.sendSignal(signal.KILL); err != nil {
+    if this.status != Killed && this.setStateTo(Killed) {
+        for ; this.status != Down; {
+            if err := this.sendSignal(KILL); err != nil {
                 this.logger.LogProblem(err, logger.Warning, "Could not kill: %v", this.service.Name())
             }
-            if this.status != status.Down {
+            if this.status != Down {
                 (*this).condition.Wait(1 * time.Second)
             }
         }
     }
 }
 
-func (this *Execution) Signal(what signal.Signal) error {
+func (this *Execution) Signal(what Signal) error {
     this.doLock()
     defer this.doUnlock()
     this.logger.Log(logger.Debug, "Sending signal %v to '%s'...", what, this.Name())
     return this.sendSignal(what)
 }
 
-func (this *Execution) sendSignal(s signal.Signal) error {
+func (this *Execution) sendSignal(s Signal) error {
     if this.isKillSignal(s) {
-        if !this.setStateTo(status.Killed) {
+        if !this.setStateTo(Killed) {
             return errors.New("Service '%v' is not running.", this)
         }
     } else if this.isStopSignal(s) {
-        if !this.setStateTo(status.Stopped) {
+        if !this.setStateTo(Stopped) {
             return errors.New("Service '%v' is not running.", this)
         }
     }
@@ -262,21 +260,21 @@ func (this *Execution) sendSignal(s signal.Signal) error {
     process := cmd.Process
     ps := cmd.ProcessState
     if process == nil || ps != nil {
-        this.setStateTo(status.Down)
+        this.setStateTo(Down)
         return errors.New("Service '%v' is not running.", this)
     }
-    if s != signal.NOOP {
+    if s != NOOP {
         return sendSignalToService((*this).service, process, s)
     }
     return nil
 }
 
-func (this Execution) isStopSignal(s signal.Signal) bool {
+func (this Execution) isStopSignal(s Signal) bool {
     return s == this.service.config.StopSignal
 }
 
-func (this Execution) isKillSignal(s signal.Signal) bool {
-    return s == signal.KILL
+func (this Execution) isKillSignal(s Signal) bool {
+    return s == KILL
 }
 
 func (this *Execution) doLock() {
@@ -300,7 +298,7 @@ func (this *Execution) Pid() int {
     return 0
 }
 
-func (this *Execution) Status() status.Status {
+func (this *Execution) Status() Status {
     this.doLock()
     defer this.doUnlock()
     return this.status

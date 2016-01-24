@@ -2,12 +2,11 @@ package service
 
 import (
     . "github.com/echocat/caretakerd/values"
-    "github.com/echocat/caretakerd/service/status"
 )
 
 type Information struct {
     Config Config `json:"config"`
-    Status status.Status `json:"status"`
+    Status Status `json:"status"`
     Pid    Integer `json:"pid"`
 }
 
@@ -22,7 +21,7 @@ func NewInformationForExecution(e *Execution) Information {
 func NewInformationForService(s *Service) Information {
     return Information{
         Config: s.config,
-        Status: status.Down,
+        Status: Down,
         Pid: 0,
     }
 }

@@ -1,4 +1,4 @@
-package restartType
+package values
 
 import (
     "strings"
@@ -23,7 +23,7 @@ var Always RestartType = RestartType{
     onSuccess: true,
     onFailures: true,
 }
-var All []RestartType = []RestartType{
+var AllRestartTypes []RestartType = []RestartType{
     Never,
     OnFailures,
     Always,
@@ -51,7 +51,7 @@ func (i RestartType) CheckedString() (string, error) {
 
 func (i *RestartType) Set(value string) error {
     lowerValue := strings.ToLower(value)
-    for _, candidate := range All {
+    for _, candidate := range AllRestartTypes {
         if strings.ToLower(candidate.String()) == lowerValue {
             (*i) = candidate
             return nil

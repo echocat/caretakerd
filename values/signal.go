@@ -1,4 +1,4 @@
-package signal
+package values
 
 import (
     "strconv"
@@ -46,7 +46,7 @@ const (
     XFSZ = Signal(0x19)
 )
 
-var All []Signal = []Signal{
+var AllSignals []Signal = []Signal{
     NOOP,
     ABRT,
     ALRM,
@@ -161,7 +161,7 @@ func (i Signal) CheckedString() (string, error) {
 
 func (i *Signal) Set(value string) error {
     if valueAsInt, err := strconv.Atoi(value); err == nil {
-        for _, candidate := range All {
+        for _, candidate := range AllSignals {
             if int(candidate) == valueAsInt {
                 (*i) = candidate
                 return nil
@@ -170,7 +170,7 @@ func (i *Signal) Set(value string) error {
         return errors.New("Illegal signal: " + value)
     } else {
         lowerValue := strings.ToUpper(value)
-        for _, candidate := range All {
+        for _, candidate := range AllSignals {
             candidateAsString := strings.ToUpper(candidate.String())
             if candidateAsString == lowerValue || "sig" + candidateAsString == lowerValue {
                 (*i) = candidate

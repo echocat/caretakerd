@@ -3,9 +3,9 @@
 package service
 
 import (
-    "github.com/echocat/caretakerd/service/signal"
+    "github.com/echocat/caretakerd/values"
 )
 
-func defaultStopSignal() signal.Signal {
-    return signal.TERM
+func defaultStopSignal() values.Signal {
+    return values.TERM
 }

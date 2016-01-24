@@ -8,7 +8,6 @@ import (
     . "github.com/echocat/caretakerd/values"
     "github.com/codegangsta/cli"
     "github.com/echocat/caretakerd/stack"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/client"
 )
 
@@ -143,7 +142,7 @@ func ensureServiceNameAndSignalArgument(context *cli.Context) error {
     if (len(args) <= 1) || (len(strings.TrimSpace(args[1])) == 0) {
         return DirectError{error: "There is no signal provided."}
     }
-    var sig signal.Signal
+    var sig Signal
     err = sig.Set(args[1])
     if err != nil {
         return DirectError{error: err.Error()}
@@ -314,7 +313,7 @@ func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *cli
         Action: actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
             args := context.Args()
             name := args[0]
-            var sig signal.Signal
+            var sig Signal
             err := sig.Set(args[1])
             if err != nil {
                 return DirectError{error: err.Error()}

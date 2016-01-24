@@ -13,10 +13,7 @@ import (
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/config"
     "github.com/echocat/caretakerd/service"
-    "github.com/echocat/caretakerd/values"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/control"
-    "github.com/echocat/caretakerd/service/status"
 )
 
 type AccessDeniedError struct {
@@ -234,8 +231,8 @@ func (this *Client) GetServiceConfig(name string) (service.Config, error) {
     return target, nil
 }
 
-func (this *Client) GetServiceStatus(name string) (status.Status, error) {
-    var target status.Status
+func (this *Client) GetServiceStatus(name string) (service.Status, error) {
+    var target service.Status
     plainTarget, err := this.getPlain("service/" + name + "/status")
     if err != nil {
         return target, err
@@ -247,8 +244,8 @@ func (this *Client) GetServiceStatus(name string) (status.Status, error) {
     return target, nil
 }
 
-func (this *Client) GetServicePid(name string) (values.Integer, error) {
-    var target values.Integer
+func (this *Client) GetServicePid(name string) (Integer, error) {
+    var target Integer
     plainTarget, err := this.getPlain("service/" + name + "/pid")
     if err != nil {
         return target, err
@@ -288,7 +285,7 @@ func (this *Client) KillService(name string) (error) {
     return err
 }
 
-func (this *Client) SignalService(name string, s signal.Signal) (error) {
+func (this *Client) SignalService(name string, s Signal) (error) {
     payload := map[string]string{
         "signal": s.String(),
     }

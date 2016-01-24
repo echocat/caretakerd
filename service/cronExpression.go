@@ -1,4 +1,4 @@
-package cron
+package service
 
 import (
     "gopkg.in/robfig/cron.v2"
@@ -6,23 +6,23 @@ import (
     "time"
 )
 
-type Expression struct {
+type CronExpression struct {
     spec     string
     schedule cron.Schedule
 }
 
-func NewCronExpression() Expression {
-    return Expression{
+func NewCronExpression() CronExpression {
+    return CronExpression{
         spec: "",
         schedule: nil,
     }
 }
 
-func (this Expression) String() string {
+func (this CronExpression) String() string {
     return this.spec
 }
 
-func (this *Expression) Set(value string) error {
+func (this *CronExpression) Set(value string) error {
     if len(strings.TrimSpace(value)) > 0 {
         schedule, err := cron.Parse(value)
         if err != nil {
@@ -37,11 +37,11 @@ func (this *Expression) Set(value string) error {
     return nil
 }
 
-func (this Expression) MarshalYAML() (interface{}, error) {
+func (this CronExpression) MarshalYAML() (interface{}, error) {
     return this.String(), nil
 }
 
-func (this *Expression) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (this *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error) error {
     var value string
     if err := unmarshal(&value); err != nil {
         return err
@@ -49,11 +49,11 @@ func (this *Expression) UnmarshalYAML(unmarshal func(interface{}) error) error {
     return this.Set(value)
 }
 
-func (this Expression) IsEnabled() bool {
+func (this CronExpression) IsEnabled() bool {
     return this.schedule != nil
 }
 
-func (this Expression) Next(from time.Time) *time.Time {
+func (this CronExpression) Next(from time.Time) *time.Time {
     if this.IsEnabled() {
         result := this.schedule.Next(from)
         return &result

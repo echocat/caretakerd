@@ -7,6 +7,7 @@ import (
     "syscall"
     "os/exec"
     "strings"
+    "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/panics"
 )
 
@@ -23,7 +24,7 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
     }
 }
 
-func sendSignalToService(service *Service, process *os.Process, what signal.Signal) error {
+func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
     signal.RecordSendSignal(what)
     process.Signal(syscall.Signal(what))
 }

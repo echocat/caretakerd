@@ -4,18 +4,17 @@ import (
     "net/http"
     "github.com/emicklei/go-restful"
     "log"
-    "github.com/echocat/caretakerd/errors"
     "net"
     "strings"
-    "github.com/echocat/caretakerd/panics"
-    "github.com/echocat/caretakerd/service"
     "strconv"
-    "github.com/echocat/caretakerd/service/status"
     "crypto/tls"
     "crypto/x509"
+    . "github.com/echocat/caretakerd/values"
+    "github.com/echocat/caretakerd/errors"
+    "github.com/echocat/caretakerd/panics"
+    "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/logger"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/control"
 )
@@ -36,7 +35,7 @@ type Execution interface {
     Restart(*service.Service) error
     Stop(*service.Service) error
     Kill(*service.Service) error
-    Signal(*service.Service, signal.Signal) error
+    Signal(*service.Service, Signal) error
 }
 
 type ListenerStopped struct{}
@@ -285,7 +284,7 @@ func (this *Rpc) serviceStatus(request *restful.Request, response *restful.Respo
             if execution != nil {
                 response.Write([]byte(execution.Status().String()))
             } else {
-                response.Write([]byte(status.Down.String()))
+                response.Write([]byte(service.Down.String()))
             }
         })
     })
@@ -362,7 +361,7 @@ func (this *Rpc) serviceKill(request *restful.Request, response *restful.Respons
 }
 
 type SignalBody struct {
-    Signal signal.Signal `json:"signal"`
+    Signal Signal `json:"signal"`
 }
 
 func (this *Rpc) serviceSignal(request *restful.Request, response *restful.Response) {

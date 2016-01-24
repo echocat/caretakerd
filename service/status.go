@@ -1,4 +1,4 @@
-package status
+package service
 import (
     "github.com/echocat/caretakerd/panics"
     "github.com/echocat/caretakerd/errors"
@@ -15,7 +15,7 @@ const (
     Killed = Status(3)
 )
 
-var All []Status = []Status{
+var AllStatus []Status = []Status{
     Down,
     Running,
     Stopped,
@@ -38,7 +38,7 @@ func (this Status) String() string {
 
 func (this *Status) Set(value string) error {
     if valueAsInt, err := strconv.Atoi(value); err == nil {
-        for _, candidate := range All {
+        for _, candidate := range AllStatus {
             if int(candidate) == valueAsInt {
                 (*this) = candidate
                 return nil
@@ -47,7 +47,7 @@ func (this *Status) Set(value string) error {
         return errors.New("Illegal status: " + value)
     } else {
         lowerValue := strings.ToLower(value)
-        for _, candidate := range All {
+        for _, candidate := range AllStatus {
             if strings.ToLower(candidate.String()) == lowerValue {
                 (*this) = candidate
                 return nil

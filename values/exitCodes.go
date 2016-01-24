@@ -1,4 +1,4 @@
-package exitCode
+package values
 
 import (
     "strings"

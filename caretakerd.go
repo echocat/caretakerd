@@ -6,7 +6,6 @@ import (
     "os"
     "syscall"
     osignal "os/signal"
-    . "github.com/echocat/caretakerd/service/exitCode"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/logger"
@@ -15,7 +14,6 @@ import (
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/control"
-    "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/panics"
     "github.com/echocat/caretakerd/rpc"
 )
@@ -152,11 +150,11 @@ func (i *Caretakerd) terminationNotificationHandler() {
     defer panics.DefaultPanicHandler()
     for {
         plainSignal := <-i.signalChannel
-        s := signal.Signal(plainSignal.(syscall.Signal))
-        if s == signal.NOOP {
+        s := Signal(plainSignal.(syscall.Signal))
+        if s == NOOP {
             break
         }
-        if !signal.IsHandlingOfSignalIgnoreable(s) {
+        if !IsHandlingOfSignalIgnoreable(s) {
             i.Stop()
         }
     }
