@@ -15,14 +15,14 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/logger"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
     "github.com/echocat/caretakerd/control"
 )
 
 type Caretakerd interface {
     Control() *control.Control
     Services() *service.Services
-    Security() *security.Security
+    Security() *securityStore.SecurityStore
     Logger() *logger.Logger
     ConfigObject() interface{}
 }

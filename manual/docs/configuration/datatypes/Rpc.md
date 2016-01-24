@@ -19,9 +19,9 @@ If this is set to ``true`` caretakerd is accessible by RPC.
 This is the socket where the RPC connector of caretakerd is listen to. This property will be ignored if
 [``enabled``](#enabled) is set to ``false``.
 
-### ``security`` { #security .property }
-= ([``Security``](Security))
+### ``securityStore`` { #securityStore .property }
+= ([``SecurityStore``](SecurityStore))
 
 Controls how the RPC connector is secured.
 
-*See [``Security``](Security) for more details.*
+*See [``SecurityStore``](SecurityStore) for more details.*

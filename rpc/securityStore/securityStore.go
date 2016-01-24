@@ -1,4 +1,4 @@
-package security
+package securityStore
 
 import (
     "github.com/echocat/caretakerd/panics"
@@ -16,7 +16,7 @@ import (
     "io/ioutil"
 )
 
-type Security struct {
+type SecurityStore struct {
     enabled    bool
     config     Config
     pem        []byte
@@ -25,13 +25,13 @@ type Security struct {
     privateKey interface{}
 }
 
-func NewSecurity(enabled bool, conf Config) (*Security, error) {
+func NewSecurityStore(enabled bool, conf Config) (*SecurityStore, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err
     }
     if !enabled {
-        return &Security{
+        return &SecurityStore{
             enabled: false,
             config: conf,
         }, nil
@@ -112,7 +112,7 @@ func generatePem(conf Config) ([]byte, *x509.Certificate, interface{}, error) {
     return pemBytes, cert, privateKey, nil
 }
 
-func newFomFile(conf Config) (*Security, error) {
+func newFomFile(conf Config) (*SecurityStore, error) {
     pem, err := ioutil.ReadFile(conf.PemFile.String())
     if err != nil {
         return nil, errors.New("Could not read pem from '%v'.", conf.PemFile).CausedBy(err)
@@ -120,7 +120,7 @@ func newFomFile(conf Config) (*Security, error) {
     return newPemFromBytes(conf, pem)
 }
 
-func newFromEnvironment(conf Config) (*Security, error) {
+func newFromEnvironment(conf Config) (*SecurityStore, error) {
     pem := os.Getenv("CTD_PEM")
     if len(strings.TrimSpace(pem)) <= 0 {
         return nil, errors.New("There is an %v security confgiured but the CTD_PEM environment varaible is empty.", conf.Type)
@@ -128,7 +128,7 @@ func newFromEnvironment(conf Config) (*Security, error) {
     return newPemFromBytes(conf, []byte(pem))
 }
 
-func newPemFromBytes(conf Config, pem []byte) (*Security, error) {
+func newPemFromBytes(conf Config, pem []byte) (*SecurityStore, error) {
     ca, err := buildWholeCAsBy(conf, pem)
     if err != nil {
         return nil, errors.New("Could not build ca for security config.").CausedBy(err)
@@ -144,7 +144,7 @@ func newPemFromBytes(conf Config, pem []byte) (*Security, error) {
     if err != nil {
         return nil, err
     }
-    return &Security{
+    return &SecurityStore{
         enabled: true,
         config: conf,
         pem: pem,
@@ -154,7 +154,7 @@ func newPemFromBytes(conf Config, pem []byte) (*Security, error) {
     }, nil
 }
 
-func newGenerated(conf Config) (*Security, error) {
+func newGenerated(conf Config) (*SecurityStore, error) {
     pem, cert, privateKey, err := generatePem(conf)
     if err != nil {
         return nil, errors.New("Could not generate pem for security config.").CausedBy(err)
@@ -163,7 +163,7 @@ func newGenerated(conf Config) (*Security, error) {
     if err != nil {
         return nil, errors.New("Could not build CA bundle for security config.").CausedBy(err)
     }
-    return &Security{
+    return &SecurityStore{
         enabled: true,
         config: conf,
         pem: pem,
@@ -249,7 +249,7 @@ func newSerialNumber() *big.Int {
     return serialNumber
 }
 
-func (this Security) LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
+func (this SecurityStore) LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
     fileContent, err := ioutil.ReadFile(filename)
     if err != nil {
         return nil, errors.New("Could not read certificate from %v.", filename).CausedBy(err)
@@ -264,7 +264,7 @@ func (this Security) LoadCertificateFromFile(filename string) (*x509.Certificate
     return certificates[0], nil
 }
 
-func (this Security) generateClientCertificate(name string, publicKey interface{}, privateKey interface{}) ([]byte, error) {
+func (this SecurityStore) generateClientCertificate(name string, publicKey interface{}, privateKey interface{}) ([]byte, error) {
     notBefore := time.Now()
     notAfter := notBefore.Add(8760 * time.Hour)
 
@@ -289,7 +289,7 @@ func (this Security) generateClientCertificate(name string, publicKey interface{
     return derBytes, nil
 }
 
-func (this Security) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
+func (this SecurityStore) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
     if !this.enabled {
         return []byte{}, nil, errors.New("Security is not enabled.")
     }
@@ -315,27 +315,27 @@ func (this Security) GeneratePem(name string) ([]byte, *x509.Certificate, error)
     return pemBytes, cert, nil
 }
 
-func (this Security) Pem() []byte {
+func (this SecurityStore) Pem() []byte {
     return this.pem
 }
 
-func (this Security) Ca() []*x509.Certificate {
+func (this SecurityStore) Ca() []*x509.Certificate {
     return this.ca
 }
 
-func (this Security) Type() Type {
+func (this SecurityStore) Type() Type {
     return this.config.Type
 }
 
-func (this Security) Config() Config {
+func (this SecurityStore) Config() Config {
     return this.config
 }
 
-func (this Security) IsCA() bool {
+func (this SecurityStore) IsCA() bool {
     cert := this.cert
     return cert != nil && cert.IsCA
 }
 
-func (this Security) IsEnabled() bool {
+func (this SecurityStore) IsEnabled() bool {
     return this.enabled
 }

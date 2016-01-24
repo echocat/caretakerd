@@ -5,7 +5,7 @@ import (
     "time"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/errors"
@@ -13,7 +13,7 @@ import (
 
 type Executable interface {
     Services() *service.Services
-    Security() *security.Security
+    Security() *securityStore.SecurityStore
     Logger() *logger.Logger
 }
 

@@ -12,7 +12,7 @@ import (
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/access"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
 )
 
 type Execution struct {
@@ -26,7 +26,7 @@ type Execution struct {
     syncGroup *sync.SyncGroup
 }
 
-func (this *Service) NewExecution(sec *security.Security) (*Execution, error) {
+func (this *Service) NewExecution(sec *securityStore.SecurityStore) (*Execution, error) {
     a, err := access.NewAccess(this.config.Access, this.name, sec)
     if err != nil {
         return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)

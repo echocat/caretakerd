@@ -1,4 +1,4 @@
-package security
+package securityStore
 
 import (
     . "github.com/echocat/caretakerd/values"

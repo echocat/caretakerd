@@ -4,7 +4,7 @@ import (
     "github.com/echocat/caretakerd/errors"
     "os"
     "os/user"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
     "crypto/x509"
     "reflect"
 )
@@ -18,7 +18,7 @@ type Access struct {
     temporaryFilename *string
 }
 
-func NewAccess(conf Config, name string, sec *security.Security) (*Access, error) {
+func NewAccess(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err
@@ -47,7 +47,7 @@ func newNoneInstance(name string) (*Access, error) {
     }, nil
 }
 
-func newTrustedInstance(conf Config, name string, sec *security.Security) (*Access, error) {
+func newTrustedInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
     if len(sec.Ca()) == 0 {
         return nil, errors.New("If there is valid caFile configured %v access could not work.", Trusted)
     }
@@ -67,7 +67,7 @@ func newTrustedInstance(conf Config, name string, sec *security.Security) (*Acce
     }, nil
 }
 
-func checkForIsCa(name string, sec *security.Security) error {
+func checkForIsCa(name string, sec *securityStore.SecurityStore) error {
     if !sec.IsCA() {
         return errors.New("It is not possible to generate a new certificate for service '%v' with a caretakerd certificate that is not a CA. " +
         "Use trusted access for service '%v', configure caretakerd to generate its own certificate or provide a CA enabled certificate for caretakerd.", name, name)
@@ -75,7 +75,7 @@ func checkForIsCa(name string, sec *security.Security) error {
     return nil
 }
 
-func newGenerateToEnvironmentInstance(conf Config, name string, sec *security.Security) (*Access, error) {
+func newGenerateToEnvironmentInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
     if err := checkForIsCa(name, sec); err != nil {
         return nil, err
     }
@@ -92,7 +92,7 @@ func newGenerateToEnvironmentInstance(conf Config, name string, sec *security.Se
     }, nil
 }
 
-func newGenerateToFileInstance(conf Config, name string, sec *security.Security) (*Access, error) {
+func newGenerateToFileInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
     if err := checkForIsCa(name, sec); err != nil {
         return nil, err
     }

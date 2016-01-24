@@ -10,7 +10,7 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/logger"
     usync "github.com/echocat/caretakerd/sync"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/control"
     "github.com/echocat/caretakerd/panics"
@@ -27,7 +27,7 @@ type Caretakerd struct {
     execution     *Execution
     signalChannel chan os.Signal
     open          bool
-    security      *security.Security
+    security      *securityStore.SecurityStore
 }
 
 func finalize(what *Caretakerd) {
@@ -43,7 +43,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
     if err != nil {
         return nil, errors.New("Could not create logger for caretakerd.").CausedBy(err)
     }
-    sec, err := security.NewSecurity(bool(conf.Rpc.Enabled), conf.Rpc.Security)
+    sec, err := securityStore.NewSecurityStore(bool(conf.Rpc.Enabled), conf.Rpc.SecurityStore)
     if err != nil {
         return nil, err
     }
@@ -95,7 +95,7 @@ func (this *Caretakerd) Services() *service.Services {
     return this.services
 }
 
-func (this *Caretakerd) Security() *security.Security {
+func (this *Caretakerd) Security() *securityStore.SecurityStore {
     return this.security
 }
 

@@ -2,7 +2,7 @@ package control
 
 import (
     "github.com/echocat/caretakerd/access"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
     "github.com/echocat/caretakerd/errors"
 )
 
@@ -11,7 +11,7 @@ type Control struct {
     access *access.Access
 }
 
-func NewControl(conf Config, sec *security.Security) (*Control, error) {
+func NewControl(conf Config, sec *securityStore.SecurityStore) (*Control, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err

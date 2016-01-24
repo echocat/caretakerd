@@ -3,19 +3,19 @@ package rpc
 import (
     . "github.com/echocat/caretakerd/values"
     . "github.com/echocat/caretakerd/defaults"
-    "github.com/echocat/caretakerd/rpc/security"
+    "github.com/echocat/caretakerd/rpc/securityStore"
 )
 
-var defaults = map[string]interface{} {
+var defaults = map[string]interface{}{
     "Enabled": Boolean(false),
     "Listen": ListenAddress(),
-    "Security": security.NewConfig(),
+    "SecurityStore": securityStore.NewConfig(),
 }
 
 type Config struct {
-    Enabled  Boolean `json:"enabled" yaml:"enabled"`
-    Listen   SocketAddress `json:"listen" yaml:"listen"`
-    Security security.Config `json:"security" yaml:"security"`
+    Enabled       Boolean `json:"enabled" yaml:"enabled"`
+    Listen        SocketAddress `json:"listen" yaml:"listen"`
+    SecurityStore securityStore.Config `json:"securityStore" yaml:"securityStore"`
 }
 
 func NewConfig() Config {
@@ -39,7 +39,7 @@ func (this Config) Validate() error {
         err = this.Listen.Validate()
     }
     if err == nil {
-        err = this.Security.Validate()
+        err = this.SecurityStore.Validate()
     }
     return err
 }
