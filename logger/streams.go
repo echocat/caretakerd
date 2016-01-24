@@ -2,16 +2,15 @@ package logger
 
 import (
     "strings"
-    "github.com/echocat/caretakerd/logger/level"
     "io"
 )
 
 type Receiver struct {
     logger *Logger
-    level  level.Level
+    level  Level
 }
 
-func (i *Logger) ReceiverFor(l level.Level) (*Receiver) {
+func (i *Logger) ReceiverFor(l Level) (*Receiver) {
     return &Receiver{
         logger: i,
         level: l,

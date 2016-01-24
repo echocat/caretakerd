@@ -13,7 +13,6 @@ import (
     "github.com/echocat/caretakerd/service/status"
     "crypto/tls"
     "crypto/x509"
-    "github.com/echocat/caretakerd/logger/level"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/service/signal"
@@ -134,9 +133,9 @@ func (this *Rpc) Run() {
 
     server := &http.Server{
         Handler: container,
-        ErrorLog: log.New(this.logger.ReceiverFor(level.Debug), "", 0),
+        ErrorLog: log.New(this.logger.ReceiverFor(logger.Debug), "", 0),
     }
-    this.logger.Log(level.Debug, "Rpc will bind to %v...", this.conf.Listen)
+    this.logger.Log(logger.Debug, "Rpc will bind to %v...", this.conf.Listen)
     listener, err := net.Listen(this.conf.Listen.AsScheme(), this.conf.Listen.AsAddress())
     if err != nil {
         log.Fatal(err)

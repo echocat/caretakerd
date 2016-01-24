@@ -1,7 +1,6 @@
 package logger
 
 import (
-    . "github.com/echocat/caretakerd/logger/level"
     "github.com/echocat/caretakerd/panics"
     "gopkg.in/natefinch/lumberjack.v2"
     "strings"
@@ -9,12 +8,11 @@ import (
     "sync"
     "time"
     "runtime"
-    "github.com/echocat/caretakerd/logger/config"
     usync "github.com/echocat/caretakerd/sync"
 )
 
 type Logger struct {
-    config            config.Config
+    config            Config
     name              string
     lock              *sync.Mutex
     open              bool
@@ -24,7 +22,7 @@ type Logger struct {
     writeSynchronizer *Writer
 }
 
-func NewLogger(conf config.Config, name string, syncGroup *usync.SyncGroup) (*Logger, error) {
+func NewLogger(conf Config, name string, syncGroup *usync.SyncGroup) (*Logger, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err

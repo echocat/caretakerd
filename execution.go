@@ -6,7 +6,6 @@ import (
     . "github.com/echocat/caretakerd/service/exitCode"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service"
-    "github.com/echocat/caretakerd/logger/level"
     "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/logger"
@@ -46,7 +45,7 @@ func (this *Execution) Run() (ExitCode, error) {
     for _, service := range this.executable.Services().GetAllAutoStartable() {
         err := this.Start(service)
         if err != nil {
-            this.executable.Logger().LogProblem(err, level.Error, "Could not start execution of service '%v'.", service)
+            this.executable.Logger().LogProblem(err, logger.Error, "Could not start execution of service '%v'.", service)
         }
     }
     this.wg.Wait()
@@ -92,7 +91,7 @@ func (this *Execution) drive(target *service.Execution) {
         if doRun {
             newTarget, err := this.recreateExecution(target)
             if err != nil {
-                this.executable.Logger().LogProblem(err, level.Error, "Could not retrigger execution of '%v'.", target)
+                this.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
             } else {
                 target = newTarget
             }
@@ -139,7 +138,7 @@ func (this *Execution) doAfterExecution(target *service.Execution, exitCode Exit
         this.masterError = err
         others := this.allExecutionsButMaster()
         if len(others) > 0 {
-            this.executable.Logger().Log(level.Debug, "Master '%s' is down. Stopping all left services...", target.Name())
+            this.executable.Logger().Log(logger.Debug, "Master '%s' is down. Stopping all left services...", target.Name())
             for _, other := range others {
                 go this.Stop(other.Service())
             }
@@ -157,7 +156,7 @@ func (this *Execution) delayedStartIfNeeded(s *service.Service, currentRun int) 
 
 func (this *Execution) delayedStartIfNeededFor(s *service.Service, delayInSeconds NonNegativeInteger, messagePattern string) bool {
     if s.Config().StartDelayInSeconds > 0 {
-        s.Logger().Log(level.Debug, messagePattern, delayInSeconds)
+        s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
         return this.syncGroup.Sleep(time.Duration(delayInSeconds) * time.Second) == nil
     } else {
         return true

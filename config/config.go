@@ -1,7 +1,7 @@
 package config
 
 import (
-    loggerConfig "github.com/echocat/caretakerd/logger/config"
+    "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/rpc"
     "github.com/echocat/caretakerd/control"
@@ -10,7 +10,7 @@ import (
 type Config struct {
     Rpc      rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
     Control  control.Config `json:"control" yaml:"control,omitempty"`
-    Logger   loggerConfig.Config `json:"logger" yaml:"logger,omitempty"`
+    Logger   logger.Config `json:"logger" yaml:"logger,omitempty"`
     Services service.Configs `json:"services" yaml:"services,omitempty"`
 }
 
@@ -41,7 +41,7 @@ func (i Config) ValidateMaster() error {
 func (i *Config) init() {
     (*i).Rpc = rpc.NewConfig()
     (*i).Control = control.NewConfig()
-    (*i).Logger = loggerConfig.NewLoggerConfig()
+    (*i).Logger = logger.NewLoggerConfig()
     (*i).Services = service.NewServiceConfigs()
 }
 

@@ -2,12 +2,11 @@ package logger
 
 import (
     "time"
-    . "github.com/echocat/caretakerd/logger/level"
+    "fmt"
+    "strconv"
     "github.com/echocat/caretakerd/stack"
     "github.com/echocat/caretakerd/errors"
-    "fmt"
     "github.com/eknkc/dateformat"
-    "strconv"
 )
 
 func (i *Logger) EntryFor(framesToSkip int, problem interface{}, priority Level, time time.Time, message string) Entry {

@@ -4,12 +4,12 @@ package service
 
 import (
     "os/exec"
-    "github.com/echocat/caretakerd/panics"
     "os"
     "syscall"
+    "github.com/echocat/caretakerd/panics"
     "github.com/echocat/caretakerd/service/signal"
     "github.com/echocat/caretakerd/errors"
-    "github.com/echocat/caretakerd/logger/level"
+    "github.com/echocat/caretakerd/logger"
 )
 
 func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
@@ -26,7 +26,7 @@ func sendSignalToService(service *Service, process *os.Process, what signal.Sign
         sendSpecialSignal(process, syscall.CTRL_C_EVENT)
     } else {
         sSignal := syscall.Signal(what)
-        service.Logger().Log(level.Debug, "Send %v to %v with PID %d", sSignal, service, process.Pid)
+        service.Logger().Log(logger.Debug, "Send %v to %v with PID %d", sSignal, service, process.Pid)
         if err := process.Signal(sSignal); err != nil {
             ignore := false
             if se, ok := err.(syscall.Errno); ok {

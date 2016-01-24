@@ -5,7 +5,7 @@ import (
     "github.com/codegangsta/cli"
     "github.com/echocat/caretakerd"
     "github.com/echocat/caretakerd/config"
-    "github.com/echocat/caretakerd/logger/level"
+    "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/stack"
@@ -35,9 +35,9 @@ func runDaemon(conf config.Config, args []string) {
         os.Exit(1)
     }
 
-    instance.Logger().Log(level.Debug, caretakerd.DAEMON_NAME  + " successful loaded. Starting now services...")
+    instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME  + " successful loaded. Starting now services...")
     exitCode, _ := instance.Run()
-    instance.Logger().Log(level.Debug, caretakerd.DAEMON_NAME  + " done.")
+    instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME  + " done.")
 
     instance.Close()
 

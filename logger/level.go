@@ -1,4 +1,4 @@
-package level
+package logger
 
 import (
     "strconv"
@@ -16,7 +16,7 @@ const (
     Fatal Level = 600
 )
 
-var All []Level = []Level{
+var AllLevels []Level = []Level{
     Debug,
     Info,
     Warning,
@@ -58,7 +58,7 @@ func (i Level) DisplayForLogging() string {
 
 func (i *Level) Set(value string) error {
     if valueAsInt, err := strconv.Atoi(value); err == nil {
-        for _, candidate := range All {
+        for _, candidate := range AllLevels {
             if int(candidate) == valueAsInt {
                 (*i) = candidate
                 return nil
@@ -75,7 +75,7 @@ func (i *Level) Set(value string) error {
             *i = Error
             return nil
         }
-        for _, candidate := range All {
+        for _, candidate := range AllLevels {
             if candidate.String() == lowerValue {
                 (*i) = candidate
                 return nil

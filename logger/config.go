@@ -1,7 +1,6 @@
-package config
+package logger
 
 import (
-    . "github.com/echocat/caretakerd/logger/level"
     . "github.com/echocat/caretakerd/values"
 )
 
