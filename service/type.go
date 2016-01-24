@@ -37,7 +37,7 @@ func (i Type) CheckedString() (string, error) {
     case Master:
         return "master", nil
     }
-    return "", errors.New("Illegal kind: %d", i)
+    return "", errors.New("Illegal type: %d", i)
 }
 
 func (i *Type) Set(value string) error {
@@ -48,7 +48,7 @@ func (i *Type) Set(value string) error {
                 return nil
             }
         }
-        return errors.New("Illegal kind: " + value)
+        return errors.New("Illegal type: " + value)
     } else {
         lowerValue := strings.ToLower(value)
         for _, candidate := range AllTypes {
@@ -57,7 +57,7 @@ func (i *Type) Set(value string) error {
                 return nil
             }
         }
-        return errors.New("Illegal kind: " + value)
+        return errors.New("Illegal type: " + value)
     }
 }
 

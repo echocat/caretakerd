@@ -31,7 +31,7 @@ var serviceEnvKeyToFunction map[string]func(conf *service.Config, value string) 
     // service.config
     "CMD": handleServiceCommandEnv,
     "COMMAND": handleServiceCommandEnv,
-    "KIND": handleServiceKindEnv,
+    "TYPE": handleServiceTypeEnv,
     "START_DELAY": handleServiceStartDelayInSecondsEnv,
     "START_DELAY_IN_SECONDS": handleServiceStartDelayInSecondsEnv,
     "RESTART_DELAY": handleServiceRestartDelayInSecondsEnv,
@@ -155,7 +155,7 @@ func handleServiceCommandEnv(conf *service.Config, value string) error {
     return nil
 }
 
-func handleServiceKindEnv(conf *service.Config, value string) error {
+func handleServiceTypeEnv(conf *service.Config, value string) error {
     return conf.Type.Set(value)
 }
 

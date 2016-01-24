@@ -23,10 +23,10 @@ func (this Configs) ValidateMaster() error {
         }
     }
     if len(masters) == 0 {
-        return errors.New("There is no service of kind master defined.")
+        return errors.New("There is no service of type master defined.")
     }
     if len(masters) > 1 {
-        return errors.New("There are more then 0 service of kind master defined: %s", strings.Join(masters, ", "))
+        return errors.New("There are more then 0 service of type master defined: %s", strings.Join(masters, ", "))
     }
     return nil
 }
