@@ -2,19 +2,19 @@ package main
 
 import (
     . "github.com/echocat/caretakerd/values"
-    "github.com/echocat/caretakerd/config"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/defaults"
+"github.com/echocat/caretakerd"
 )
 
 type ConfigWrapper struct {
-    instance    *config.Config
+    instance    *caretakerd.Config
     filename    String
     explicitSet bool
 }
 
 func NewConfigWrapper() *ConfigWrapper {
-    instance := config.NewConfig()
+    instance := caretakerd.NewConfig()
     return &ConfigWrapper{
         instance: &instance,
         filename: defaults.ConfigFilename(),
@@ -31,7 +31,7 @@ func (this *ConfigWrapper) Set(value string) error {
         return errors.New("There is an empty filename for configuration provided.")
     }
     filename := String(value)
-    conf, err := config.LoadFromYamlFile(filename)
+    conf, err := caretakerd.LoadFromYamlFile(filename)
     if err != nil {
         return err
     }
@@ -59,6 +59,6 @@ func (this *ConfigWrapper) ConfigureAndValidate(listenAddress *FlagWrapper, pemF
     return nil
 }
 
-func (this ConfigWrapper) Instance() *config.Config {
+func (this ConfigWrapper) Instance() *caretakerd.Config {
     return this.instance
 }

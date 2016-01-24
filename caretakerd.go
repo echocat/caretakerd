@@ -10,7 +10,6 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/logger"
     usync "github.com/echocat/caretakerd/sync"
-    "github.com/echocat/caretakerd/config"
     "github.com/echocat/caretakerd/rpc/security"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/control"
@@ -19,7 +18,7 @@ import (
 )
 
 type Caretakerd struct {
-    config        config.Config
+    config        Config
     logger        *logger.Logger
     control       *control.Control
     services      *service.Services
@@ -35,7 +34,7 @@ func finalize(what *Caretakerd) {
     what.Close()
 }
 
-func NewCaretakerd(conf config.Config, syncGroup *usync.SyncGroup) (*Caretakerd, error) {
+func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err

@@ -4,14 +4,13 @@ import (
     "os"
     "github.com/codegangsta/cli"
     "github.com/echocat/caretakerd"
-    "github.com/echocat/caretakerd/config"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/stack"
 )
 
-func attachArgsToMasterIfPossible(args []string, to *config.Config) {
+func attachArgsToMasterIfPossible(args []string, to *caretakerd.Config) {
     if len(args) > 0 {
         if masterName, ok := to.Services.GetMasterName(); ok {
             master := to.Services[masterName]
@@ -28,7 +27,7 @@ func ensureDaemonConfig(context *cli.Context) error {
     return ensureConfig(true, conf)
 }
 
-func runDaemon(conf config.Config, args []string) {
+func runDaemon(conf caretakerd.Config, args []string) {
     instance, err := caretakerd.NewCaretakerd(conf, sync.NewSyncGroup())
     if err != nil {
         stack.Print(err, os.Stderr, 0)

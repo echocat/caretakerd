@@ -10,7 +10,6 @@ import (
     "github.com/echocat/caretakerd/panics"
     "github.com/echocat/caretakerd/defaults"
     "github.com/echocat/caretakerd/errors"
-    "github.com/echocat/caretakerd/config"
 )
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BASE_NAME + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
@@ -150,7 +149,7 @@ func ensureConfig(daemonChecks bool, target *ConfigWrapper) error {
     newConf := NewConfigWrapper()
     err := newConf.Set(defaults.ConfigFilename().String())
     if err != nil {
-        if _, ok := err.(config.ConfigDoesNotExistError); ok {
+        if _, ok := err.(caretakerd.ConfigDoesNotExistError); ok {
             if daemonChecks {
                 return errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", defaults.ConfigFilename())
             } else {

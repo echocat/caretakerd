@@ -11,7 +11,7 @@ import (
     "strings"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/errors"
-    "github.com/echocat/caretakerd/config"
+    "github.com/echocat/caretakerd"
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/control"
 )
@@ -39,10 +39,10 @@ func (this ServiceNotFoundError) Error() string {
 }
 
 type ClientFactory struct {
-    config *config.Config
+    config *caretakerd.Config
 }
 
-func NewClientFactory(config *config.Config) *ClientFactory {
+func NewClientFactory(config *caretakerd.Config) *ClientFactory {
     return &ClientFactory{
         config: config,
     }
@@ -57,7 +57,7 @@ type Client struct {
     session *napping.Session
 }
 
-func NewClient(config *config.Config) (*Client, error) {
+func NewClient(config *caretakerd.Config) (*Client, error) {
     session, err := sessionFor(config)
     if err != nil {
         return nil, err
@@ -68,7 +68,7 @@ func NewClient(config *config.Config) (*Client, error) {
     }, nil
 }
 
-func sessionFor(config *config.Config) (*napping.Session, error) {
+func sessionFor(config *caretakerd.Config) (*napping.Session, error) {
     httpClient, err := httpClientFor(config)
     if err != nil {
         return nil, err
@@ -78,7 +78,7 @@ func sessionFor(config *config.Config) (*napping.Session, error) {
     }, nil
 }
 
-func httpClientFor(config *config.Config) (*http.Client, error) {
+func httpClientFor(config *caretakerd.Config) (*http.Client, error) {
     transport, err := transportFor(config)
     if err != nil {
         return nil, err
@@ -88,7 +88,7 @@ func httpClientFor(config *config.Config) (*http.Client, error) {
     }, nil
 }
 
-func transportFor(config *config.Config) (*http.Transport, error) {
+func transportFor(config *caretakerd.Config) (*http.Transport, error) {
     tlsConfig, err := tlsConfigFor(config)
     if err != nil {
         return nil, err
@@ -101,7 +101,7 @@ func transportFor(config *config.Config) (*http.Transport, error) {
     }, nil
 }
 
-func tlsConfigFor(config *config.Config) (*tls.Config, error) {
+func tlsConfigFor(config *caretakerd.Config) (*tls.Config, error) {
     certificates, err := parseCertificatesInFile(config.Control.Access.PemFile)
     if err != nil {
         return nil, err
@@ -147,7 +147,7 @@ func certPoolFor(certificates []tls.Certificate) (*x509.CertPool, error) {
     return result, nil
 }
 
-func dialTlsWithOwnChecks(config *config.Config, tlsConfig *tls.Config) (net.Conn, error) {
+func dialTlsWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net.Conn, error) {
     var err error
     var tlsConn *tls.Conn
 
@@ -186,11 +186,11 @@ func dialTlsWithOwnChecks(config *config.Config, tlsConfig *tls.Config) (net.Con
     return tlsConn, err
 }
 
-func (this *Client) GetConfig() (config.Config, error) {
-    target := config.Config{}
+func (this *Client) GetConfig() (caretakerd.Config, error) {
+    target := caretakerd.Config{}
     err := this.get("config", &target)
     if err != nil {
-        return config.Config{}, err
+        return caretakerd.Config{}, err
     }
     return target, nil
 }
