@@ -5,7 +5,7 @@ import (
     "runtime"
     usync "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/access"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "github.com/echocat/caretakerd/errors"
 )
 
@@ -21,7 +21,7 @@ func finalize(what *Service) {
     what.Close()
 }
 
-func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *securityStore.SecurityStore) (*Service, error) {
+func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *keyStore.KeyStore) (*Service, error) {
     err := conf.Validate()
     if err != nil {
         return nil, errors.New("Config of service '%v' is not valid.", name).CausedBy(err)

@@ -26,7 +26,7 @@ type Config struct {
     Pattern      String  `json:"pattern" yaml:"pattern"`
 }
 
-func NewLoggerConfig() Config {
+func NewConfig() Config {
     result := Config{}
     result.init()
     return result

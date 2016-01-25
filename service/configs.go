@@ -6,7 +6,7 @@ import (
 
 type Configs map[string]Config
 
-func NewServiceConfigs() Configs {
+func NewConfigs() Configs {
     return Configs{}
 }
 

@@ -5,9 +5,11 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/rpc"
     "github.com/echocat/caretakerd/control"
+    "github.com/echocat/caretakerd/keyStore"
 )
 
 type Config struct {
+    KeyStore keyStore.Config `json:"keyStore" yaml:"keyStore,omitempty"`
     Rpc      rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
     Control  control.Config `json:"control" yaml:"control,omitempty"`
     Logger   logger.Config `json:"logger" yaml:"logger,omitempty"`
@@ -21,7 +23,10 @@ func NewConfig() Config {
 }
 
 func (i Config) Validate() error {
-    err := i.Rpc.Validate()
+    err := i.KeyStore.Validate()
+    if err == nil {
+        err = i.Rpc.Validate()
+    }
     if err == nil {
         err = i.Control.Validate()
     }
@@ -39,10 +44,11 @@ func (i Config) ValidateMaster() error {
 }
 
 func (i *Config) init() {
+    (*i).KeyStore = keyStore.NewConfig()
     (*i).Rpc = rpc.NewConfig()
     (*i).Control = control.NewConfig()
-    (*i).Logger = logger.NewLoggerConfig()
-    (*i).Services = service.NewServiceConfigs()
+    (*i).Logger = logger.NewConfig()
+    (*i).Services = service.NewConfigs()
 }
 
 func (i *Config) BeforeUnmarshalYAML() error {

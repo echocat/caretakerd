@@ -1,4 +1,4 @@
-package securityStore
+package keyStore
 
 import (
     "strconv"
@@ -37,7 +37,7 @@ func (i Type) CheckedString() (string, error) {
     case Generated:
         return "generated", nil
     }
-    return "", errors.New("Illegal security type: %d", i)
+    return "", errors.New("Illegal keyStore type: %d", i)
 }
 
 func (i *Type) Set(value string) error {
@@ -48,7 +48,7 @@ func (i *Type) Set(value string) error {
                 return nil
             }
         }
-        return errors.New("Illegal security type: " + value)
+        return errors.New("Illegal keyStore type: " + value)
     } else {
         lowerValue := strings.ToLower(value)
         for _, candidate := range AllTypes {
@@ -57,7 +57,7 @@ func (i *Type) Set(value string) error {
                 return nil
             }
         }
-        return errors.New("Illegal security type: " + value)
+        return errors.New("Illegal keyStore type: " + value)
     }
 }
 

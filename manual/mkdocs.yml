@@ -20,8 +20,8 @@ pages:
         - "LoggerLevel": "configuration/datatypes/LoggerLevel.md"
         - "Logger": "configuration/datatypes/Logger.md"
         - "Rpc": "configuration/datatypes/Rpc.md"
-        - "Security": "configuration/datatypes/SecurityStore.md"
-        - "SecurityType": "configuration/datatypes/SecurityStoreType.md"
+        - "KeyStore": "configuration/datatypes/KeyStore.md"
+        - "KeyStoreType": "configuration/datatypes/KeyStoreType.md"
 
         - "Boolean": "configuration/datatypes/Boolean.md"
         - "Integer": "configuration/datatypes/Integer.md"

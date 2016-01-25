@@ -4,7 +4,7 @@ import (
     "github.com/echocat/caretakerd/errors"
     "os"
     "os/user"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "crypto/x509"
     "reflect"
 )
@@ -18,23 +18,23 @@ type Access struct {
     temporaryFilename *string
 }
 
-func NewAccess(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
+func NewAccess(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err
     }
-    if !sec.IsEnabled() {
+    if !ks.IsEnabled() {
         return newNoneInstance(name)
     }
     switch conf.Type {
     case None:
         return newNoneInstance(name)
     case Trusted:
-        return newTrustedInstance(conf, name, sec)
+        return newTrustedInstance(conf, name, ks)
     case GenerateToEnvironment:
-        return newGenerateToEnvironmentInstance(conf, name, sec)
+        return newGenerateToEnvironmentInstance(conf, name, ks)
     case GenerateToFile:
-        return newGenerateToFileInstance(conf, name, sec)
+        return newGenerateToFileInstance(conf, name, ks)
     }
     return nil, errors.New("Unknown access type %v.", conf.Type)
 }
@@ -47,14 +47,14 @@ func newNoneInstance(name string) (*Access, error) {
     }, nil
 }
 
-func newTrustedInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
-    if len(sec.Ca()) == 0 {
+func newTrustedInstance(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
+    if len(ks.Ca()) == 0 {
         return nil, errors.New("If there is valid caFile configured %v access could not work.", Trusted)
     }
     var cert *x509.Certificate
     if !conf.PemFile.IsTrimmedEmpty() {
         var err error
-        cert, err = sec.LoadCertificateFromFile(conf.PemFile.String())
+        cert, err = ks.LoadCertificateFromFile(conf.PemFile.String())
         if err != nil {
             return nil, errors.New("Could not load certificate from pemFile %v of service %v.", conf.PemFile, name)
         }
@@ -67,7 +67,7 @@ func newTrustedInstance(conf Config, name string, sec *securityStore.SecuritySto
     }, nil
 }
 
-func checkForIsCa(name string, sec *securityStore.SecurityStore) error {
+func checkForIsCa(name string, sec *keyStore.KeyStore) error {
     if !sec.IsCA() {
         return errors.New("It is not possible to generate a new certificate for service '%v' with a caretakerd certificate that is not a CA. " +
         "Use trusted access for service '%v', configure caretakerd to generate its own certificate or provide a CA enabled certificate for caretakerd.", name, name)
@@ -75,11 +75,11 @@ func checkForIsCa(name string, sec *securityStore.SecurityStore) error {
     return nil
 }
 
-func newGenerateToEnvironmentInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
-    if err := checkForIsCa(name, sec); err != nil {
+func newGenerateToEnvironmentInstance(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
+    if err := checkForIsCa(name, ks); err != nil {
         return nil, err
     }
-    pem, cert, err := sec.GeneratePem(name)
+    pem, cert, err := ks.GeneratePem(name)
     if err != nil {
         return nil, errors.New("Could not generate pem for '%v'.", name).CausedBy(err)
     }
@@ -92,11 +92,11 @@ func newGenerateToEnvironmentInstance(conf Config, name string, sec *securitySto
     }, nil
 }
 
-func newGenerateToFileInstance(conf Config, name string, sec *securityStore.SecurityStore) (*Access, error) {
-    if err := checkForIsCa(name, sec); err != nil {
+func newGenerateToFileInstance(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
+    if err := checkForIsCa(name, ks); err != nil {
         return nil, err
     }
-    pem, cert, err := sec.GeneratePem(name)
+    pem, cert, err := ks.GeneratePem(name)
     if err != nil {
         return nil, errors.New("Could not generate pem for '%v'.", name).CausedBy(err)
     }

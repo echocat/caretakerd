@@ -2,7 +2,7 @@ package control
 
 import (
     "github.com/echocat/caretakerd/access"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "github.com/echocat/caretakerd/errors"
 )
 
@@ -11,12 +11,12 @@ type Control struct {
     access *access.Access
 }
 
-func NewControl(conf Config, sec *securityStore.SecurityStore) (*Control, error) {
+func NewControl(conf Config, ks *keyStore.KeyStore) (*Control, error) {
     err := conf.Validate()
     if err != nil {
         return nil, err
     }
-    a, err := access.NewAccess(conf.Access, "caretakerctl", sec)
+    a, err := access.NewAccess(conf.Access, "caretakerctl", ks)
     if err != nil {
         return nil, errors.New("Could not create caretakerctl interface.").CausedBy(err)
     }

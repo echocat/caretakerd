@@ -5,7 +5,8 @@
 ```yaml
 # Run the service king and queen at startup.
 # queen will run every 5th second until king is finished.
-# king will run for 120 seconds. If king is finished the whole careteakerd will go down.
+# king will run for 120 seconds. If king is finished the whole careteakerd will
+# go down.
 
 services:
     king:
@@ -23,7 +24,8 @@ services:
 ```yaml
 # Run the service king at startup and enable rpc.
 # peasant will only be started of "caretakerctl start peasant" is called.
-# king will run for 120 seconds. If king is finished the whole careteakerd will go down.
+# king will run for 120 seconds. If king is finished the whole careteakerd
+# will go down.
 
 rpc:
     enabled: true

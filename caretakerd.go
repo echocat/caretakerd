@@ -10,7 +10,7 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/logger"
     usync "github.com/echocat/caretakerd/sync"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "github.com/echocat/caretakerd/errors"
     "github.com/echocat/caretakerd/control"
     "github.com/echocat/caretakerd/panics"
@@ -27,7 +27,7 @@ type Caretakerd struct {
     execution     *Execution
     signalChannel chan os.Signal
     open          bool
-    security      *securityStore.SecurityStore
+    keyStore      *keyStore.KeyStore
 }
 
 func finalize(what *Caretakerd) {
@@ -43,15 +43,15 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
     if err != nil {
         return nil, errors.New("Could not create logger for caretakerd.").CausedBy(err)
     }
-    sec, err := securityStore.NewSecurityStore(bool(conf.Rpc.Enabled), conf.Rpc.SecurityStore)
+    ks, err := keyStore.NewKeyStore(bool(conf.Rpc.Enabled), conf.KeyStore)
     if err != nil {
         return nil, err
     }
-    ctl, err := control.NewControl(conf.Control, sec)
+    ctl, err := control.NewControl(conf.Control, ks)
     if err != nil {
         return nil, err
     }
-    services, err := service.NewServices(conf.Services, syncGroup.NewSyncGroup(), sec)
+    services, err := service.NewServices(conf.Services, syncGroup.NewSyncGroup(), ks)
     if err != nil {
         return nil, err
     }
@@ -60,7 +60,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
         config: conf,
         logger: log,
         control: ctl,
-        security: sec,
+        keyStore: ks,
         services: services,
         lock: new(sync.Mutex),
         syncGroup: syncGroup,
@@ -95,8 +95,8 @@ func (this *Caretakerd) Services() *service.Services {
     return this.services
 }
 
-func (this *Caretakerd) Security() *securityStore.SecurityStore {
-    return this.security
+func (this *Caretakerd) KeyStore() *keyStore.KeyStore {
+    return this.keyStore
 }
 
 func (this *Caretakerd) ConfigObject() interface{} {

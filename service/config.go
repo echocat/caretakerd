@@ -24,7 +24,7 @@ type Config struct {
     Access                access.Config `json:"access" yaml:"access,omitempty"`
 }
 
-func NewServiceConfig() Config {
+func NewConfig() Config {
     result := Config{}
     result.init()
     return result
@@ -36,7 +36,7 @@ func (i Config) WithCommand(command ...String) Config {
 }
 
 func (i *Config) init() {
-    (*i).Logger = logger.NewLoggerConfig()
+    (*i).Logger = logger.NewConfig()
     (*i).Command = []String{}
     (*i).Type = AutoStart
     (*i).CronExpression = NewCronExpression()

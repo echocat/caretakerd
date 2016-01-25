@@ -3,12 +3,12 @@ package service
 import (
     usync "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/panics"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
 )
 
 type Services map[string]*Service
 
-func NewServices(confs Configs, syncGroup *usync.SyncGroup, sec *securityStore.SecurityStore) (*Services, error) {
+func NewServices(confs Configs, syncGroup *usync.SyncGroup, sec *keyStore.KeyStore) (*Services, error) {
     err := confs.Validate()
     if err != nil {
         return nil, err

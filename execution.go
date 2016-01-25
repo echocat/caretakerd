@@ -5,7 +5,7 @@ import (
     "time"
     . "github.com/echocat/caretakerd/values"
     "github.com/echocat/caretakerd/service"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "github.com/echocat/caretakerd/logger"
     "github.com/echocat/caretakerd/sync"
     "github.com/echocat/caretakerd/errors"
@@ -13,7 +13,7 @@ import (
 
 type Executable interface {
     Services() *service.Services
-    Security() *securityStore.SecurityStore
+    KeyStore() *keyStore.KeyStore
     Logger() *logger.Logger
 }
 
@@ -101,7 +101,7 @@ func (this *Execution) recreateExecution(target *service.Execution) (*service.Ex
     this.doWLock()
     defer this.doWUnlock()
     s := target.Service()
-    newTarget, err := s.NewExecution(this.executable.Security())
+    newTarget, err := s.NewExecution(this.executable.KeyStore())
     if err != nil {
         delete(this.executions, s)
         delete(this.restartRequests, s)
@@ -228,7 +228,7 @@ func (this *Execution) Signal(target *service.Service, what Signal) error {
 func (this *Execution) createAndRegisterNotExistingExecutionFor(target *service.Service) (*service.Execution, error) {
     this.doWLock()
     defer this.doWUnlock()
-    result, err := target.NewExecution(this.executable.Security())
+    result, err := target.NewExecution(this.executable.KeyStore())
     if err != nil {
         return nil, err
     }

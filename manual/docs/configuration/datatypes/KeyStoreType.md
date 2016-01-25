@@ -1,9 +1,9 @@
-# ``SecurityType`` { .property }
+# ``KeyStoreType`` { .property }
 Enum
 
 ## Description
 
-Defines how the security is ensured.
+Type of the keyStore.
 
 ## Values
 

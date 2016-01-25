@@ -15,14 +15,14 @@ import (
     "github.com/echocat/caretakerd/service"
     "github.com/echocat/caretakerd/access"
     "github.com/echocat/caretakerd/logger"
-    "github.com/echocat/caretakerd/rpc/securityStore"
+    "github.com/echocat/caretakerd/keyStore"
     "github.com/echocat/caretakerd/control"
 )
 
 type Caretakerd interface {
     Control() *control.Control
     Services() *service.Services
-    Security() *securityStore.SecurityStore
+    KeyStore() *keyStore.KeyStore
     Logger() *logger.Logger
     ConfigObject() interface{}
 }
@@ -156,7 +156,7 @@ func (this *Rpc) Run() {
 
 func (this *Rpc) secure(in net.Listener) net.Listener {
     out := in
-    sec := this.caretakerd.Security()
+    sec := this.caretakerd.KeyStore()
     keyPair, err := tls.X509KeyPair(sec.Pem(), sec.Pem())
     if err != nil {
         panics.New("Could not load pem of caretakerd.").CausedBy(err).Throw()
