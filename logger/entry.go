@@ -36,7 +36,7 @@ type Entry struct {
     Problem  interface{}
 }
 
-func (e Entry) Format(pattern string, framesToSkip int) (string, error) {
+func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
     result := []byte{}
     flag := byte(0)
     flagStarted := false
@@ -185,7 +185,7 @@ func (e Entry) formatProblemIfNeeded(arguments string, framesToSkip int) (string
         if len(pattern) <= 0 {
             pattern = "%n%m"
         }
-        return subEntry.Format(pattern, framesToSkip + 1)
+        return subEntry.Format(Pattern(pattern), framesToSkip + 1)
     }
     return "", nil
 }

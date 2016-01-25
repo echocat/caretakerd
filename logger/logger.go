@@ -71,9 +71,9 @@ func (i *Logger) LogCustom(framesToSkip int, problem interface{}, level Level, p
         now := time.Now()
         message := FormatMessage(pattern, args...)
         entry := i.EntryFor(framesToSkip + 1, problem, level, now, message)
-        toLog, err := entry.Format(i.config.Pattern.String(), framesToSkip + 1)
+        toLog, err := entry.Format(i.config.Pattern, framesToSkip + 1)
         if err != nil {
-            panics.New("Could not format log entry with given pattern '%s'. Got: %v", i.config.Pattern, err)
+            panics.New("Could not format log entry with given pattern '%v'. Got: %v", i.config.Pattern, err)
         }
         i.write(level, []byte(toLog))
     }

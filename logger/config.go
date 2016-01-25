@@ -12,7 +12,7 @@ var defaults = map[string]interface{} {
     "MaxSizeInMb": NonNegativeInteger(500),
     "MaxBackups": NonNegativeInteger(5),
     "MaxAgeInDays": NonNegativeInteger(1),
-    "Pattern": String("%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"),
+    "Pattern": Pattern("%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"),
 }
 
 type Config struct {
@@ -23,7 +23,7 @@ type Config struct {
     MaxSizeInMb  NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
     MaxBackups   NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
     MaxAgeInDays NonNegativeInteger `json:"maxAgeInDays" yaml:"maxAgeInDays"`
-    Pattern      String  `json:"pattern" yaml:"pattern"`
+    Pattern      Pattern `json:"pattern" yaml:"pattern"`
 }
 
 func NewConfig() Config {
