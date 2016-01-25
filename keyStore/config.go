@@ -14,10 +14,42 @@ var defaults = map[string]interface{} {
     "CaFile": String(""),
 }
 
+// @id KeyStore
+// @type struct
+//
+// ## Description
+//
+// Defines the keyStore of caretakerd.
 type Config struct {
+    // @id      type
+    // @default generated
+    //
+    // Defines the type of this keyStore.
     Type    Type `json:"type" yaml:"type"`
+
+    // @id      pemFile
+    // @default ""
+    //
+    // Defines the pemFile which contains the key and certificate to use.
+    // This have to be of type PEM and have to contain the certificate and private key.
+    // Currently the private key is only supported of type RSA.
+    //
+    // This property is only evaluated and required if {@ref #type} is set to {@ref KeyStoreType#fromFile}.
     PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
+
+    // @id      hints
+    // @default "algorithm:`rsa` bits:`1024`"
+    //
+    // Defines some hints for this store in format ``[<key:`value`>...]``.
+    // Possible hints are:
+    // * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
+    // * ``bits``: Number of bits to create a new key with.
     Hints   String `json:"hints,omitempty" yaml:"hints"`
+
+    // @id      caFile
+    // @default ""
+    //
+    // File where trusted certificates are stored in. This have to be in PEM format.
     CaFile  String `json:"caFile,omitempty" yaml:"caFile"`
 }
 

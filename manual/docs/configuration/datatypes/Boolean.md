@@ -1,4 +1,4 @@
 # ``Boolean`` { .property }
-Primitive
+Simple value
 
 This represents a value that could only be ``true`` or ``false``.

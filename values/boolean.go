@@ -4,6 +4,10 @@ import (
     "strings"
 )
 
+// @id Boolean
+// @type simple
+//
+// This represents a value that could only be ``true`` or ``false``.
 type Boolean bool
 
 func (this Boolean) String() string {

@@ -2,6 +2,10 @@ package values
 
 import "strings"
 
+// @id String
+// @type simple
+//
+// This represents a slice of characters.
 type String string
 
 func (this String) String() string {

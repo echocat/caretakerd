@@ -5,6 +5,10 @@ import (
     "github.com/echocat/caretakerd/errors"
 )
 
+// @id NonNegativeInteger
+// @type simple
+//
+// Same like {@ref Integer} but could not be negative.
 type NonNegativeInteger int
 
 func (i NonNegativeInteger) String() string {

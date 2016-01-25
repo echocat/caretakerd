@@ -7,17 +7,38 @@ import (
     "encoding/json"
 )
 
+// @id Type
+// @type enum
+//
+// ## Description
+//
+// Represents the type of the keyStore.
 type Type int
+
 const (
-    FromFile Type = 0
-    FromEnvironment Type = 1
-    Generated Type = 2
+    // @id generated
+    //
+    // Indicates that caretakerd have to generate its own keyStore on startup.
+    // This is the best solution in most cases.
+    Generated Type = 0
+
+    // @id fromFile
+    //
+    // Load keyStore from a provided PEM file.
+    // If this type is selected this file have to be provided.
+    FromFile Type = 1
+
+    // @id fromEnvironment
+    //
+    // Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
+    // If this type is selected this variable have to be provided.
+    FromEnvironment Type = 2
 )
 
 var AllTypes []Type = []Type{
+    Generated,
     FromFile,
     FromEnvironment,
-    Generated,
 }
 
 func (i Type) String() string {
@@ -30,12 +51,12 @@ func (i Type) String() string {
 
 func (i Type) CheckedString() (string, error) {
     switch i {
+    case Generated:
+        return "generated", nil
     case FromFile:
         return "fromFile", nil
     case FromEnvironment:
         return "fromEnvironment", nil
-    case Generated:
-        return "generated", nil
     }
     return "", errors.New("Illegal keyStore type: %d", i)
 }
@@ -97,7 +118,7 @@ func (i Type) IsGenerating() bool {
     return i == Generated
 }
 
-func (i Type) IsConsumingCaFile () bool {
+func (i Type) IsConsumingCaFile() bool {
     return i == FromFile || i == FromEnvironment
 }
 

@@ -1,5 +1,5 @@
 # ``SocketAddress`` { .property }
-Primitive
+Simple value
 
 ## Description
 

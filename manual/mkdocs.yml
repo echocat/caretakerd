@@ -17,8 +17,9 @@ pages:
     - "Examples": "configuration/examples.md"
     - "Data Types":
         - "Caretakerd": "configuration/datatypes/Caretakerd.md"
-        - "LoggerLevel": "configuration/datatypes/LoggerLevel.md"
         - "Logger": "configuration/datatypes/Logger.md"
+        - "LoggerLevel": "configuration/datatypes/LoggerLevel.md"
+        - "LoggerPattern": "configuration/datatypes/LoggerPattern.md"
         - "Rpc": "configuration/datatypes/Rpc.md"
         - "KeyStore": "configuration/datatypes/KeyStore.md"
         - "KeyStoreType": "configuration/datatypes/KeyStoreType.md"

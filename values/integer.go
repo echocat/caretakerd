@@ -5,6 +5,10 @@ import (
     "github.com/echocat/caretakerd/errors"
 )
 
+// @id Integer
+// @type simple
+//
+// This represents a natural number. It could be negative and positive.
 type Integer int
 
 func (this Integer) String() string {

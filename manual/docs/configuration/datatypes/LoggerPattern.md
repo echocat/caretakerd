@@ -1,9 +1,9 @@
-# ``LoggerLevel`` { .property }
-Enum
+# ``LoggerPattern`` { .property }
+Simple value
 
 ## Description
 
-Represents a level for logging with a [``Logger``](Logger).
+Describes how to print the log message.
 
 ## Values
 

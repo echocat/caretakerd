@@ -1,4 +1,4 @@
 # ``String`` { .property }
-Primitive
+Simple value
 
 This represents a slice of characters.

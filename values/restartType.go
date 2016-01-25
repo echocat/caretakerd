@@ -6,19 +6,34 @@ import (
     "encoding/json"
 )
 
+// @id RestartType
+// @type enum
+//
+// ## Description
+//
+// This tells caretakerd what to do if a process ends.
 type RestartType struct {
     onSuccess  bool
     onFailures bool
 }
 
+// @id never
+//
+// Never restart the process.
 var Never RestartType = RestartType{
     onSuccess: false,
     onFailures: false,
 }
+// @id onFailures
+//
+// Only restart the process on failures.
 var OnFailures RestartType = RestartType{
     onSuccess: false,
     onFailures: true,
 }
+// @id always
+//
+// Always restart the process. This means on success and on failures.
 var Always RestartType = RestartType{
     onSuccess: true,
     onFailures: true,
