@@ -11,48 +11,48 @@ import (
 // This represents a natural number. It could be negative and positive.
 type Integer int
 
-func (this Integer) String() string {
-	s, err := this.ChekcedString()
+func (instance Integer) String() string {
+	s, err := instance.ChekcedString()
 	if err != nil {
 		panic(err)
 	}
 	return s
 }
 
-func (this Integer) ChekcedString() (string, error) {
-	return strconv.Itoa(int(this)), nil
+func (instance Integer) ChekcedString() (string, error) {
+	return strconv.Itoa(int(instance)), nil
 }
 
-func (this *Integer) Set(value string) error {
+func (instance *Integer) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
 		return errors.New("Illegal integer value: " + value)
 	}
-	return this.SetFromInt(valueAsInt)
+	return instance.SetFromInt(valueAsInt)
 }
 
-func (this *Integer) SetFromInt(value int) error {
-	(*this) = Integer(value)
+func (instance *Integer) SetFromInt(value int) error {
+	(*instance) = Integer(value)
 	return nil
 }
 
-func (this Integer) MarshalYAML() (interface{}, error) {
-	return int(this), nil
+func (instance Integer) MarshalYAML() (interface{}, error) {
+	return int(instance), nil
 }
 
-func (this *Integer) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *Integer) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value int
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.SetFromInt(value)
+	return instance.SetFromInt(value)
 }
 
-func (this Integer) Int() int {
-	return int(this)
+func (instance Integer) Int() int {
+	return int(instance)
 }
 
-func (this Integer) Validate() error {
-	_, err := this.ChekcedString()
+func (instance Integer) Validate() error {
+	_, err := instance.ChekcedString()
 	return err
 }

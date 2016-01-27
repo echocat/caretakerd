@@ -4,6 +4,7 @@ import (
 	"sync"
 	"io"
 	"os"
+	. "github.com/echocat/caretakerd/values"
 	"github.com/echocat/caretakerd/errors"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -39,12 +40,12 @@ func NewWriteFor(filename String, writer *lumberjack.Logger) *Writer {
 	return result
 }
 
-func (this *Writer) Write(what []byte, stderr bool) (int, error) {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-	writer := this.writer
+func (instance *Writer) Write(what []byte, stderr bool) (int, error) {
+	instance.lock.Lock()
+	defer instance.lock.Unlock()
+	writer := instance.writer
 	if writer != nil {
-		return this.writeIgnoringProblems(what, writer)
+		return instance.writeIgnoringProblems(what, writer)
 	} else if stderr {
 		return os.Stderr.Write(what)
 	} else {
@@ -52,7 +53,7 @@ func (this *Writer) Write(what []byte, stderr bool) (int, error) {
 	}
 }
 
-func (this *Writer) writeIgnoringProblems(what []byte, to io.Writer) (int, error) {
+func (instance *Writer) writeIgnoringProblems(what []byte, to io.Writer) (int, error) {
 	var n int
 	var err error
 	defer func() {
@@ -65,14 +66,14 @@ func (this *Writer) writeIgnoringProblems(what []byte, to io.Writer) (int, error
 	return n, err
 }
 
-func (this *Writer) Close() {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-	this.ownerCount -= 1
+func (instance *Writer) Close() {
+	instance.lock.Lock()
+	defer instance.lock.Unlock()
+	instance.ownerCount -= 1
 
-	if this.ownerCount == 0 {
+	if instance.ownerCount == 0 {
 		writeSynchronizerLock.Lock()
-		delete(filenameToWriteSynchronizer, this.filename)
+		delete(filenameToWriteSynchronizer, instance.filename)
 		writeSynchronizerLock.Unlock()
 	}
 }

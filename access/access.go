@@ -133,44 +133,44 @@ func generateFileForPem(conf Config, pem []byte) (string, error) {
 	return conf.PemFile.String(), nil
 }
 
-func (this Access) Pem() []byte {
-	return this.pem
+func (instance Access) Pem() []byte {
+	return instance.pem
 }
 
-func (this Access) Type() Type {
-	return this.t
+func (instance Access) Type() Type {
+	return instance.t
 }
 
-func (this Access) Cleanup() {
-	if this.temporaryFilename != nil {
-		os.Remove(*this.temporaryFilename)
+func (instance Access) Cleanup() {
+	if instance.temporaryFilename != nil {
+		os.Remove(*instance.temporaryFilename)
 	}
 }
 
-func (this Access) HasReadPermission() bool {
-	permission := this.permission
+func (instance Access) HasReadPermission() bool {
+	permission := instance.permission
 	return permission == ReadOnly || permission == ReadWrite
 }
 
-func (this Access) HasWritePermission() bool {
-	permission := this.permission
+func (instance Access) HasWritePermission() bool {
+	permission := instance.permission
 	return permission == ReadWrite
 }
 
-func (this *Access) IsCertValid(cert *x509.Certificate) bool {
-	thisCert := this.cert
-	if this.t == None {
+func (instance *Access) IsCertValid(cert *x509.Certificate) bool {
+	instanceCert := instance.cert
+	if instance.t == None {
 		return false
-	} else if cert == nil && thisCert == nil {
+	} else if cert == nil && instanceCert == nil {
 		return false
-	} else if cert != nil && thisCert != nil {
+	} else if cert != nil && instanceCert != nil {
 		thatPublicKey := cert.PublicKey
-		thisPublicKey := thisCert.PublicKey
-		result := reflect.DeepEqual(thisPublicKey, thatPublicKey)
+		instancePublicKey := instanceCert.PublicKey
+		result := reflect.DeepEqual(instancePublicKey, thatPublicKey)
 		return result
-	} else if this.Type() == Trusted {
+	} else if instance.Type() == Trusted {
 		thatName := cert.Subject.CommonName
-		result := this.name == thatName
+		result := instance.name == thatName
 		return result
 	} else {
 		return false

@@ -6,6 +6,7 @@ import (
 	"os"
 	"syscall"
 	osignal "os/signal"
+	. "github.com/echocat/caretakerd/values"
 	"github.com/echocat/caretakerd/service"
 	"github.com/echocat/caretakerd/logger"
 	usync "github.com/echocat/caretakerd/sync"
@@ -69,55 +70,55 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	return &result, nil
 }
 
-func (this Caretakerd) IsOpen() bool {
-	return this.open
+func (instance Caretakerd) IsOpen() bool {
+	return instance.open
 }
 
-func (this *Caretakerd) Close() {
+func (instance *Caretakerd) Close() {
 	defer func() {
-		this.open = false
+		instance.open = false
 	}()
-	this.Stop()
-	this.services.Close()
-	this.logger.Close()
+	instance.Stop()
+	instance.services.Close()
+	instance.logger.Close()
 }
 
-func (this Caretakerd) Logger() *logger.Logger {
-	return this.logger
+func (instance Caretakerd) Logger() *logger.Logger {
+	return instance.logger
 }
 
-func (this *Caretakerd) Control() *control.Control {
-	return this.control
+func (instance *Caretakerd) Control() *control.Control {
+	return instance.control
 }
 
-func (this *Caretakerd) Services() *service.Services {
-	return this.services
+func (instance *Caretakerd) Services() *service.Services {
+	return instance.services
 }
 
-func (this *Caretakerd) KeyStore() *keyStore.KeyStore {
-	return this.keyStore
+func (instance *Caretakerd) KeyStore() *keyStore.KeyStore {
+	return instance.keyStore
 }
 
-func (this *Caretakerd) ConfigObject() interface{} {
-	return this.config
+func (instance *Caretakerd) ConfigObject() interface{} {
+	return instance.config
 }
 
-func (this *Caretakerd) Run() (ExitCode, error) {
+func (instance *Caretakerd) Run() (ExitCode, error) {
 	var r *rpc.Rpc
 	defer func() {
-		this.uninstallTerminationNotificationHandler()
+		instance.uninstallTerminationNotificationHandler()
 		if r != nil {
 			r.Stop()
 		}
 	}()
 
-	execution := NewExecution(this, this.syncGroup.NewSyncGroup())
-	if this.config.Rpc.Enabled == Boolean(true) {
-		r = rpc.NewRpc(this.config.Rpc, execution, this, this.logger)
+	execution := NewExecution(instance, instance.syncGroup.NewSyncGroup())
+	if instance.config.Rpc.Enabled == Boolean(true) {
+		r = rpc.NewRpc(instance.config.Rpc, execution, instance, instance.logger)
 		r.Start()
 	}
-	this.installTerminationNotificationHandler()
-	this.execution = execution
+	instance.installTerminationNotificationHandler()
+	instance.execution = execution
 	return execution.Run()
 }
 

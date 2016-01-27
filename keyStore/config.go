@@ -24,7 +24,7 @@ type Config struct {
 	// @id      type
 	// @default generated
 	//
-	// Defines the type of this keyStore.
+	// Defines the type of instance keyStore.
 	Type    Type `json:"type" yaml:"type"`
 
 	// @id      pemFile
@@ -40,7 +40,7 @@ type Config struct {
 	// @id      hints
 	// @default "algorithm:`rsa` bits:`1024`"
 	//
-	// Defines some hints for this store in format ``[<key:`value`>...]``.
+	// Defines some hints for instance store in format ``[<key:`value`>...]``.
 	// Possible hints are:
 	// * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
 	// * ``bits``: Number of bits to create a new key with.
@@ -59,16 +59,16 @@ func NewConfig() Config {
 	return result
 }
 
-func (this Config) Validate() error {
-	err := this.Type.Validate()
+func (instance Config) Validate() error {
+	err := instance.Type.Validate()
 	if err == nil {
-		err = this.validateRequireStringOrNotValue(this.PemFile, "pemFile", this.Type.IsTakingFilename)
+		err = instance.validateRequireStringOrNotValue(instance.PemFile, "pemFile", instance.Type.IsTakingFilename)
 	}
 	if err == nil {
-		err = this.validateStringOnlyAllowedValue(this.CaFile, "caFile", this.Type.IsConsumingCaFile)
+		err = instance.validateStringOnlyAllowedValue(instance.CaFile, "caFile", instance.Type.IsConsumingCaFile)
 	}
 	if err == nil {
-		algorithm := this.GetKeyArgument("algorithm")
+		algorithm := instance.GetKeyArgument("algorithm")
 		if len(algorithm) > 0 && strings.ToLower(algorithm) != "rsa" {
 			err = errors.New("Unsupported algorithm: %s", algorithm)
 		}
@@ -76,28 +76,28 @@ func (this Config) Validate() error {
 	return err
 }
 
-func (this Config) validateRequireStringOrNotValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateRequireStringOrNotValue(value String, fieldName string, isAllowedMethod func() bool) error {
 	if isAllowedMethod() {
 		if value.IsEmpty() {
-			return errors.New("There is no %s set for type %v.", fieldName, this.Type)
+			return errors.New("There is no %s set for type %v.", fieldName, instance.Type)
 		}
 	} else {
 		if !value.IsEmpty() {
-			return errors.New("There is no %s allowed for type %v.", fieldName, this.Type)
+			return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 		}
 	}
 	return nil
 }
 
-func (this Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
 	if ! isAllowedMethod() && !value.IsEmpty() {
-		return errors.New("There is no %s allowed for type %v.", fieldName, this.Type)
+		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }
 
-func (this Config) GetKeyArgument(key string) string {
-	arguments := this.Hints
+func (instance Config) GetKeyArgument(key string) string {
+	arguments := instance.Hints
 	for arguments != "" {
 		i := 0
 		for i < len(arguments) && arguments[i] == ' ' {

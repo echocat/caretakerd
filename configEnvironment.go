@@ -13,7 +13,7 @@ const (
 	envPrefix = "CTD."
 )
 
-var globalEnvKeyToHandler map[string]func(conf *Config, value string) error = map[string]func(*Config, string) error{
+var globalEnvKeyToHandler = map[string]func(*Config, string) error{
 	// logger.config
 	"LOG_LEVEL": handleGlobalLogLevelEnv,
 	"LOG_STDOUT_LEVEL": handleGlobalLogStdoutLevelEnv,
@@ -27,7 +27,7 @@ var globalEnvKeyToHandler map[string]func(conf *Config, value string) error = ma
 	"LOG_MAX_AGE_IN_DAYS": handleGlobalLogMaxAgeInDaysEnv,
 }
 
-var serviceEnvKeyToFunction map[string]func(conf *service.Config, value string) error = map[string]func(*service.Config, string) error{
+var serviceEnvKeyToFunction = map[string]func(*service.Config, string) error{
 	// service.config
 	"CMD": handleServiceCommandEnv,
 	"COMMAND": handleServiceCommandEnv,
@@ -63,7 +63,7 @@ var serviceEnvKeyToFunction map[string]func(conf *service.Config, value string) 
 	"LOG_MAX_AGE_IN_DAYS": handleServiceLogMaxAgeInDaysEnv,
 }
 
-var serviceSubEnvKeyToFunction map[string]func(conf *service.Config, key string, value string) error = map[string]func(*service.Config, string, string) error{
+var serviceSubEnvKeyToFunction = map[string]func(*service.Config, string, string) error{
 	// service.config
 	"ENV": handleEnvironmentEnv,
 	"ENVIRONMENT": handleEnvironmentEnv,

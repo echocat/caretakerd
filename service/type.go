@@ -15,7 +15,7 @@ const (
 	Master Type = 2
 )
 
-var AllTypes []Type = []Type{
+var AllTypes = []Type{
 	OnDemand,
 	AutoStart,
 	Master,

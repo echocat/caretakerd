@@ -21,19 +21,19 @@ func NewConfig() Config {
 	return result
 }
 
-func (this *Config) init() {
-	SetDefaultsTo(defaults, this)
+func (instance *Config) init() {
+	SetDefaultsTo(defaults, instance)
 }
 
-func (this *Config) BeforeUnmarshalYAML() error {
-	this.init()
+func (instance *Config) BeforeUnmarshalYAML() error {
+	instance.init()
 	return nil
 }
 
-func (this Config) Validate() error {
-	err := this.Enabled.Validate()
+func (instance Config) Validate() error {
+	err := instance.Enabled.Validate()
 	if err == nil {
-		err = this.Listen.Validate()
+		err = instance.Listen.Validate()
 	}
 	return err
 }

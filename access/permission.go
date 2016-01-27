@@ -16,14 +16,14 @@ const (
 	ReadWrite Permission = 2
 )
 
-var AllPermissions []Permission = []Permission{
+var AllPermissions = []Permission{
 	Forbidden,
 	ReadOnly,
 	ReadWrite,
 }
 
-func (this Permission) String() string {
-	switch this {
+func (instance Permission) String() string {
+	switch instance {
 	case Forbidden:
 		return "forbidden"
 	case ReadOnly:
@@ -31,11 +31,11 @@ func (this Permission) String() string {
 	case ReadWrite:
 		return "readWrite"
 	}
-	panic(panics.New("Illegal permission: %d", this))
+	panic(panics.New("Illegal permission: %d", instance))
 }
 
-func (this Permission) CheckedString() (string, error) {
-	switch this {
+func (instance Permission) CheckedString() (string, error) {
+	switch instance {
 	case Forbidden:
 		return "forbidden", nil
 	case ReadOnly:
@@ -43,14 +43,14 @@ func (this Permission) CheckedString() (string, error) {
 	case ReadWrite:
 		return "readWrite", nil
 	}
-	return "", errors.New("Illegal permission: %d", this)
+	return "", errors.New("Illegal permission: %d", instance)
 }
 
-func (this *Permission) Set(value string) error {
+func (instance *Permission) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllPermissions {
 			if int(candidate) == valueAsInt {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -59,7 +59,7 @@ func (this *Permission) Set(value string) error {
 		lowerValue := strings.ToLower(value)
 		for _, candidate := range AllPermissions {
 			if strings.ToLower(candidate.String()) == lowerValue {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -67,36 +67,36 @@ func (this *Permission) Set(value string) error {
 	}
 }
 
-func (this Permission) MarshalYAML() (interface{}, error) {
-	return this.CheckedString()
+func (instance Permission) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
-func (this *Permission) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *Permission) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this Permission) MarshalJSON() ([]byte, error) {
-	s, err := this.CheckedString()
+func (instance Permission) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (this *Permission) UnmarshalJSON(b []byte) error {
+func (instance *Permission) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this Permission) Validate() error {
-	_, err := this.CheckedString()
+func (instance Permission) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }
 

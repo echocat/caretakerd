@@ -14,7 +14,7 @@ const (
 	Unix Protocol = 1
 )
 
-var AllProtocols []Protocol = []Protocol{
+var AllProtocols = []Protocol{
 	Tcp,
 	Unix,
 }

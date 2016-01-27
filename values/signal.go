@@ -84,7 +84,7 @@ const (
 	XFSZ = Signal(0x19)
 )
 
-var AllSignals []Signal = []Signal{
+var AllSignals = []Signal{
 	NOOP,
 	ABRT,
 	ALRM,

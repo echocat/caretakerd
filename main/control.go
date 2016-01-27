@@ -15,8 +15,8 @@ type DirectError struct {
 	error string
 }
 
-func (this DirectError) Error() string {
-	return this.error
+func (instance DirectError) Error() string {
+	return instance.error
 }
 
 func actionWrapper(clientFactory *client.ClientFactory, command func(context *cli.Context, client *client.Client) error) func(context *cli.Context) {

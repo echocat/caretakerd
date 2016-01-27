@@ -8,44 +8,44 @@ import "strings"
 // This represents a slice of characters.
 type String string
 
-func (this String) String() string {
-	s, err := this.CheckedString()
+func (instance String) String() string {
+	s, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return s
 }
 
-func (this String) CheckedString() (string, error) {
-	return string(this), nil
+func (instance String) CheckedString() (string, error) {
+	return string(instance), nil
 }
 
-func (this *String) Set(value string) error {
-	(*this) = String(value)
+func (instance *String) Set(value string) error {
+	(*instance) = String(value)
 	return nil
 }
 
-func (this String) MarshalYAML() (interface{}, error) {
-	return string(this), nil
+func (instance String) MarshalYAML() (interface{}, error) {
+	return string(instance), nil
 }
 
-func (this *String) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *String) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this String) Validate() error {
-	_, err := this.CheckedString()
+func (instance String) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }
 
-func (this String) IsEmpty() bool {
-	return len(this) <= 0
+func (instance String) IsEmpty() bool {
+	return len(instance) <= 0
 }
 
-func (this String) IsTrimmedEmpty() bool {
-	return len(strings.TrimSpace(this.String())) <= 0
+func (instance String) IsTrimmedEmpty() bool {
+	return len(strings.TrimSpace(instance.String())) <= 0
 }

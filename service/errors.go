@@ -4,15 +4,15 @@ type ServiceDownError struct {
 	Name string
 }
 
-func (this ServiceDownError) Error() string {
-	return "Service '" + this.Name + "' is down."
+func (instance ServiceDownError) Error() string {
+	return "Service '" + instance.Name + "' is down."
 }
 
 type ServiceAlreadyRunningError struct {
 	Name string
 }
 
-func (this ServiceAlreadyRunningError) Error() string {
-	return "Service '" + this.Name + "' already running."
+func (instance ServiceAlreadyRunningError) Error() string {
+	return "Service '" + instance.Name + "' already running."
 }
 

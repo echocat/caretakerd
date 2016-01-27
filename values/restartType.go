@@ -38,7 +38,7 @@ var Always RestartType = RestartType{
 	onSuccess: true,
 	onFailures: true,
 }
-var AllRestartTypes []RestartType = []RestartType{
+var AllRestartTypes = []RestartType{
 	Never,
 	OnFailures,
 	Always,

@@ -23,17 +23,17 @@ const (
 
 // @id info
 //
-// This is the regular level. Every normal message will be logged with this level.
+// This is the regular level. Every normal message will be logged with instance level.
 	Info Level = 300
 
 // @id warning
 //
-// If a problem appears but the program is still able to continue its work, this level is used.
+// If a problem appears but the program is still able to continue its work, instance level is used.
 	Warning Level = 400
 
 // @id error
 //
-// If a problem appears and the program is not longer able to continue its work, this level is used.
+// If a problem appears and the program is not longer able to continue its work, instance level is used.
 	Error Level = 500
 
 // @id fatal
@@ -42,7 +42,7 @@ const (
 	Fatal Level = 600
 )
 
-var AllLevels []Level = []Level{
+var AllLevels = []Level{
 	Debug,
 	Info,
 	Warning,

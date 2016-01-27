@@ -249,7 +249,7 @@ func newSerialNumber() *big.Int {
 	return serialNumber
 }
 
-func (this KeyStore) LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
+func (instance KeyStore) LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
 	fileContent, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.New("Could not read certificate from %v.", filename).CausedBy(err)
@@ -264,13 +264,13 @@ func (this KeyStore) LoadCertificateFromFile(filename string) (*x509.Certificate
 	return certificates[0], nil
 }
 
-func (this KeyStore) generateClientCertificate(name string, publicKey interface{}, privateKey interface{}) ([]byte, error) {
+func (instance KeyStore) generateClientCertificate(name string, publicKey interface{}, privateKey interface{}) ([]byte, error) {
 	notBefore := time.Now()
 	notAfter := notBefore.Add(8760 * time.Hour)
 
 	template := x509.Certificate{
 		SerialNumber: newSerialNumber(),
-		Issuer: this.cert.Subject,
+		Issuer: instance.cert.Subject,
 		Subject: pkix.Name{
 			CommonName: name,
 		},
@@ -282,22 +282,22 @@ func (this KeyStore) generateClientCertificate(name string, publicKey interface{
 		BasicConstraintsValid: false,
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, this.cert, publicKey, this.privateKey)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, instance.cert, publicKey, instance.privateKey)
 	if err != nil {
 		return []byte{}, errors.New("Failed to create certificate for '%v'.", name).CausedBy(err)
 	}
 	return derBytes, nil
 }
 
-func (this KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
-	if !this.enabled {
+func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
+	if !instance.enabled {
 		return []byte{}, nil, errors.New("KeyStore is not enabled.")
 	}
-	privateKey, privateKeyBytes, publicKey, err := generatePrivateKey(this.Config())
+	privateKey, privateKeyBytes, publicKey, err := generatePrivateKey(instance.Config())
 	if err != nil {
 		return []byte{}, nil, errors.New("Could not generate pem for '%v'.", name).CausedBy(err)
 	}
-	certificateDerBytes, err := this.generateClientCertificate(name, publicKey, privateKey)
+	certificateDerBytes, err := instance.generateClientCertificate(name, publicKey, privateKey)
 	if err != nil {
 		return []byte{}, nil, err
 	}
@@ -309,33 +309,33 @@ func (this KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, error)
 
 	pemBytes := []byte{}
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certificateDerBytes})...)
-	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: this.cert.Raw})...)
+	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: instance.cert.Raw})...)
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})...)
 
 	return pemBytes, cert, nil
 }
 
-func (this KeyStore) Pem() []byte {
-	return this.pem
+func (instance KeyStore) Pem() []byte {
+	return instance.pem
 }
 
-func (this KeyStore) Ca() []*x509.Certificate {
-	return this.ca
+func (instance KeyStore) Ca() []*x509.Certificate {
+	return instance.ca
 }
 
-func (this KeyStore) Type() Type {
-	return this.config.Type
+func (instance KeyStore) Type() Type {
+	return instance.config.Type
 }
 
-func (this KeyStore) Config() Config {
-	return this.config
+func (instance KeyStore) Config() Config {
+	return instance.config
 }
 
-func (this KeyStore) IsCA() bool {
-	cert := this.cert
+func (instance KeyStore) IsCA() bool {
+	cert := instance.cert
 	return cert != nil && cert.IsCA
 }
 
-func (this KeyStore) IsEnabled() bool {
-	return this.enabled
+func (instance KeyStore) IsEnabled() bool {
+	return instance.enabled
 }

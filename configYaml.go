@@ -13,8 +13,8 @@ type ConfigDoesNotExistError struct {
 	fileName string
 }
 
-func (this ConfigDoesNotExistError) Error() string {
-	return fmt.Sprintf("Config '%v' does not exist.", this.fileName)
+func (instance ConfigDoesNotExistError) Error() string {
+	return fmt.Sprintf("Config '%v' does not exist.", instance.fileName)
 }
 
 func LoadFromYamlFile(fileName String) (Config, error) {

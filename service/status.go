@@ -17,15 +17,15 @@ const (
 	Killed = Status(3)
 )
 
-var AllStatus []Status = []Status{
+var AllStatus = []Status{
 	Down,
 	Running,
 	Stopped,
 	Killed,
 }
 
-func (this Status) String() string {
-	switch this {
+func (instance Status) String() string {
+	switch instance {
 	case Down:
 		return "down"
 	case Running:
@@ -35,14 +35,14 @@ func (this Status) String() string {
 	case Killed:
 		return "killed"
 	}
-	panic(panics.New("Illegal status: %d", this))
+	panic(panics.New("Illegal status: %d", instance))
 }
 
-func (this *Status) Set(value string) error {
+func (instance *Status) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllStatus {
 			if int(candidate) == valueAsInt {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -51,7 +51,7 @@ func (this *Status) Set(value string) error {
 		lowerValue := strings.ToLower(value)
 		for _, candidate := range AllStatus {
 			if strings.ToLower(candidate.String()) == lowerValue {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -59,24 +59,24 @@ func (this *Status) Set(value string) error {
 	}
 }
 
-func (this Status) MarshalJSON() ([]byte, error) {
-	return json.Marshal(this.String())
+func (instance Status) MarshalJSON() ([]byte, error) {
+	return json.Marshal(instance.String())
 }
 
-func (this *Status) UnmarshalJSON(b []byte) error {
+func (instance *Status) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this Status) Validate() {
-	this.String()
+func (instance Status) Validate() {
+	instance.String()
 }
 
-func (this Status) IsGoDownRequest() bool {
-	switch this {
+func (instance Status) IsGoDownRequest() bool {
+	switch instance {
 	case Stopped: fallthrough
 	case Killed:
 		return true

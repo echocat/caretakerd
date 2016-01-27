@@ -5,9 +5,9 @@ import (
 	"github.com/echocat/caretakerd/errors"
 )
 
-func (this Configs) Validate() error {
-	for name, service := range this {
-		err := this.validateService(service, name)
+func (instance Configs) Validate() error {
+	for name, service := range instance {
+		err := instance.validateService(service, name)
 		if err != nil {
 			return err
 		}
@@ -15,9 +15,9 @@ func (this Configs) Validate() error {
 	return nil
 }
 
-func (this Configs) ValidateMaster() error {
+func (instance Configs) ValidateMaster() error {
 	masters := []string{}
-	for name, service := range this {
+	for name, service := range instance {
 		if service.Type == Master {
 			masters = append(masters, name)
 		}
@@ -31,7 +31,7 @@ func (this Configs) ValidateMaster() error {
 	return nil
 }
 
-func (this Configs) validateService(service Config, name string) error {
+func (instance Configs) validateService(service Config, name string) error {
 	err := service.Validate()
 	if err != nil {
 		return errors.New("Config of '%v' service is not valid.", name).CausedBy(err)
@@ -39,28 +39,28 @@ func (this Configs) validateService(service Config, name string) error {
 	return nil
 }
 
-func (this Config) Validate() error {
-	err := this.Logger.Validate()
+func (instance Config) Validate() error {
+	err := instance.Logger.Validate()
 	if err == nil {
-		err = this.validateCommand()
+		err = instance.validateCommand()
 	}
 	if err == nil {
-		err = this.Type.Validate()
+		err = instance.Type.Validate()
 	}
 	if err == nil {
-		err = this.StartDelayInSeconds.Validate()
+		err = instance.StartDelayInSeconds.Validate()
 	}
 	if err == nil {
-		err = this.RestartDelayInSeconds.Validate()
+		err = instance.RestartDelayInSeconds.Validate()
 	}
 	if err == nil {
-		err = this.StopSignal.Validate()
+		err = instance.StopSignal.Validate()
 	}
 	if err == nil {
-		err = this.StopWaitInSeconds.Validate()
+		err = instance.StopWaitInSeconds.Validate()
 	}
 	if err == nil {
-		err = this.AutoRestart.Validate()
+		err = instance.AutoRestart.Validate()
 	}
 	return err
 }

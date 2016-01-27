@@ -43,41 +43,41 @@ func NewGenerateToFileConfig(permission Permission, pemFile String) Config {
 	}
 }
 
-func (this Config) Validate() error {
-	err := this.Type.Validate()
+func (instance Config) Validate() error {
+	err := instance.Type.Validate()
 	if err == nil {
-		err = this.Permission.Validate()
+		err = instance.Permission.Validate()
 	}
 	if err == nil {
-		err = this.validateRequireStringValue(this.PemFile, "pemFile", this.Type.IsTakingFilename)
+		err = instance.validateRequireStringValue(instance.PemFile, "pemFile", instance.Type.IsTakingFilename)
 	}
 	if err == nil {
-		err = this.validateStringOnlyAllowedValue(this.PemFileUser, "pemFileUser", this.Type.IsTakingFileUser)
+		err = instance.validateStringOnlyAllowedValue(instance.PemFileUser, "pemFileUser", instance.Type.IsTakingFileUser)
 	}
 	// TODO!    i.validateUint32OnlyAllowedValue(uint32(i.PemFilePermission), "pemFilePermission", i.Auth.IsTakingPermission)
 	// TODO!    i.validateStringOnlyAllowedValue(i.KeyArguments, "keyArguments", i.Auth.IsGeneratingCertificate)
 	return err
 }
 
-func (this Config) validateRequireStringValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateRequireStringValue(value String, fieldName string, isAllowedMethod func() bool) error {
 	if isAllowedMethod() {
 		if value.IsEmpty() {
-			return errors.New("There is no %s set for type %v.", fieldName, this.Type)
+			return errors.New("There is no %s set for type %v.", fieldName, instance.Type)
 		}
 	}
 	return nil
 }
 
-func (this Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
 	if ! isAllowedMethod() && !value.IsEmpty() {
-		return errors.New("There is no %s allowed for type %v.", fieldName, this.Type)
+		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }
 
-func (this Config) validateUint32OnlyAllowedValue(value uint32, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateUint32OnlyAllowedValue(value uint32, fieldName string, isAllowedMethod func() bool) error {
 	if ! isAllowedMethod() && value != 0 {
-		return errors.New("There is no %s allowed for type %v.", fieldName, this.Type)
+		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }

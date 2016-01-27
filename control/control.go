@@ -26,10 +26,10 @@ func NewControl(conf Config, ks *keyStore.KeyStore) (*Control, error) {
 	}, nil
 }
 
-func (this *Control) Access() *access.Access {
-	return this.access
+func (instance *Control) Access() *access.Access {
+	return instance.access
 }
 
-func (this *Control) ConfigObject() interface{} {
-	return this.config
+func (instance *Control) ConfigObject() interface{} {
+	return instance.config
 }

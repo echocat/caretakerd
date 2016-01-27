@@ -45,26 +45,26 @@ func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *keySt
 	return result, nil
 }
 
-func (this *Service) Close() {
-	this.logger.Close()
+func (instance *Service) Close() {
+	instance.logger.Close()
 }
 
-func (this Service) String() string {
-	return this.Name()
+func (instance Service) String() string {
+	return instance.Name()
 }
 
-func (this Service) Name() string {
-	return this.name
+func (instance Service) Name() string {
+	return instance.name
 }
 
-func (this Service) Config() Config {
-	return this.config
+func (instance Service) Config() Config {
+	return instance.config
 }
 
-func (this Service) Logger() *logger.Logger {
-	return this.logger
+func (instance Service) Logger() *logger.Logger {
+	return instance.logger
 }
 
-func (this *Service) Access() *access.Access {
-	return this.access
+func (instance *Service) Access() *access.Access {
+	return instance.access
 }

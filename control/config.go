@@ -15,15 +15,15 @@ func NewConfig() Config {
 	return result
 }
 
-func (this *Config) init() {
-	(*this).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilename())
+func (instance *Config) init() {
+	(*instance).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilename())
 }
 
-func (this *Config) BeforeUnmarshalYAML() error {
-	this.init()
+func (instance *Config) BeforeUnmarshalYAML() error {
+	instance.init()
 	return nil
 }
 
-func (this Config) Validate() error {
-	return this.Access.Validate()
+func (instance Config) Validate() error {
+	return instance.Access.Validate()
 }

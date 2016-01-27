@@ -12,13 +12,13 @@ var filePermissionOctPattern = regexp.MustCompile("^(\\d?)(\\d)(\\d)(\\d)$")
 
 type FilePermission os.FileMode
 
-func (this FilePermission) String() string {
-	return fmt.Sprintf("%04o", this)
+func (instance FilePermission) String() string {
+	return fmt.Sprintf("%04o", instance)
 }
 
-func (this *FilePermission) Set(value string) error {
+func (instance *FilePermission) Set(value string) error {
 	if filePermissionOctPattern.MatchString(value) {
-		_, err := fmt.Sscanf(value, "%o", this)
+		_, err := fmt.Sscanf(value, "%o", instance)
 		if err != nil {
 			return err
 		}
@@ -28,44 +28,44 @@ func (this *FilePermission) Set(value string) error {
 	return nil
 }
 
-func (this FilePermission) MarshalYAML() (interface{}, error) {
-	return this.String(), nil
+func (instance FilePermission) MarshalYAML() (interface{}, error) {
+	return instance.String(), nil
 }
 
-func (this *FilePermission) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *FilePermission) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this FilePermission) MarshalJSON() ([]byte, error) {
-	return json.Marshal(this.String())
+func (instance FilePermission) MarshalJSON() ([]byte, error) {
+	return json.Marshal(instance.String())
 }
 
-func (this *FilePermission) UnmarshalJSON(b []byte) error {
+func (instance *FilePermission) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this FilePermission) Validate() {
-	this.String()
+func (instance FilePermission) Validate() {
+	instance.String()
 }
 
-func (this FilePermission) ThisOrDefault() FilePermission {
-	if uint32(this) == 0 {
+func (instance FilePermission) ThisOrDefault() FilePermission {
+	if uint32(instance) == 0 {
 		return DefaultFilePermission()
 	} else {
-		return this
+		return instance
 	}
 }
 
-func (this FilePermission) AsFileMode() os.FileMode {
-	return os.FileMode(this)
+func (instance FilePermission) AsFileMode() os.FileMode {
+	return os.FileMode(instance)
 }
 
 func DefaultFilePermission() FilePermission {

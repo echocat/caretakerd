@@ -49,7 +49,7 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 		if len(flagFormat) > 0 {
 			if flagArgumentsStarted {
 				if c == '{' {
-					return "", NewFormatError(positiion, "Unexpedted character %c at this position within flag argument %c.", c, flag)
+					return "", NewFormatError(positiion, "Unexpedted character %c at instance position within flag argument %c.", c, flag)
 				} else if c == '}' {
 					flagPlainContent, err := e.contentOf(positiion, flag, string(flagArguments), framesToSkip + 1)
 					if err != nil {
@@ -68,7 +68,7 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 				}
 			} else if c == '%' {
 				if flagStarted {
-					return "", NewFormatError(positiion, "Unexpedted character %c at this position within flag %c.", c, flag)
+					return "", NewFormatError(positiion, "Unexpedted character %c at instance position within flag %c.", c, flag)
 				} else {
 					flagFormat = []byte{}
 					result = append(result, c)
@@ -95,7 +95,7 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 					flagStarted = false
 				}
 			} else {
-				return "", NewFormatError(positiion, "Unexpedted character %c at this position within flag %c.", c, flag)
+				return "", NewFormatError(positiion, "Unexpedted character %c at instance position within flag %c.", c, flag)
 			}
 		} else if c == '%' {
 			flagStart = positiion

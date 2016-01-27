@@ -20,21 +20,21 @@ type AccessDeniedError struct {
 	url string
 }
 
-func (this AccessDeniedError) Error() string {
-	return "Access to " + this.url + " is denied."
+func (instance AccessDeniedError) Error() string {
+	return "Access to " + instance.url + " is denied."
 }
 
 type ConflictError struct {
 	error string
 }
 
-func (this ConflictError) Error() string {
-	return this.error
+func (instance ConflictError) Error() string {
+	return instance.error
 }
 
 type ServiceNotFoundError struct{}
 
-func (this ServiceNotFoundError) Error() string {
+func (instance ServiceNotFoundError) Error() string {
 	return "Service not found."
 }
 
@@ -48,8 +48,8 @@ func NewClientFactory(config *caretakerd.Config) *ClientFactory {
 	}
 }
 
-func (this *ClientFactory) NewClient() (*Client, error) {
-	return NewClient(this.config)
+func (instance *ClientFactory) NewClient() (*Client, error) {
+	return NewClient(instance.config)
 }
 
 type Client struct {
@@ -186,54 +186,54 @@ func dialTlsWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net
 	return tlsConn, err
 }
 
-func (this *Client) GetConfig() (caretakerd.Config, error) {
+func (instance *Client) GetConfig() (caretakerd.Config, error) {
 	target := caretakerd.Config{}
-	err := this.get("config", &target)
+	err := instance.get("config", &target)
 	if err != nil {
 		return caretakerd.Config{}, err
 	}
 	return target, nil
 }
 
-func (this *Client) GetControlConfig() (control.Config, error) {
+func (instance *Client) GetControlConfig() (control.Config, error) {
 	target := control.Config{}
-	err := this.get("control/config", &target)
+	err := instance.get("control/config", &target)
 	if err != nil {
 		return control.Config{}, err
 	}
 	return target, nil
 }
 
-func (this *Client) GetServices() (map[string]service.Information, error) {
+func (instance *Client) GetServices() (map[string]service.Information, error) {
 	target := map[string]service.Information{}
-	err := this.get("services", &target)
+	err := instance.get("services", &target)
 	if err != nil {
 		return map[string]service.Information{}, err
 	}
 	return target, nil
 }
 
-func (this *Client) GetService(name string) (service.Information, error) {
+func (instance *Client) GetService(name string) (service.Information, error) {
 	target := service.Information{}
-	err := this.get("service/" + name, &target)
+	err := instance.get("service/" + name, &target)
 	if err != nil {
 		return service.Information{}, err
 	}
 	return target, nil
 }
 
-func (this *Client) GetServiceConfig(name string) (service.Config, error) {
+func (instance *Client) GetServiceConfig(name string) (service.Config, error) {
 	target := service.Config{}
-	err := this.get("service/" + name + "/config", &target)
+	err := instance.get("service/" + name + "/config", &target)
 	if err != nil {
 		return service.Config{}, err
 	}
 	return target, nil
 }
 
-func (this *Client) GetServiceStatus(name string) (service.Status, error) {
+func (instance *Client) GetServiceStatus(name string) (service.Status, error) {
 	var target service.Status
-	plainTarget, err := this.getPlain("service/" + name + "/status")
+	plainTarget, err := instance.getPlain("service/" + name + "/status")
 	if err != nil {
 		return target, err
 	}
@@ -244,9 +244,9 @@ func (this *Client) GetServiceStatus(name string) (service.Status, error) {
 	return target, nil
 }
 
-func (this *Client) GetServicePid(name string) (Integer, error) {
+func (instance *Client) GetServicePid(name string) (Integer, error) {
 	var target Integer
-	plainTarget, err := this.getPlain("service/" + name + "/pid")
+	plainTarget, err := instance.getPlain("service/" + name + "/pid")
 	if err != nil {
 		return target, err
 	}
@@ -257,57 +257,57 @@ func (this *Client) GetServicePid(name string) (Integer, error) {
 	return target, nil
 }
 
-func (this *Client) StartService(name string) (error) {
-	err := this.post("service/" + name + "/start", nil)
+func (instance *Client) StartService(name string) (error) {
+	err := instance.post("service/" + name + "/start", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is already running."}
 	}
 	return err
 }
 
-func (this *Client) RestartService(name string) (error) {
-	return this.post("service/" + name + "/restart", nil)
+func (instance *Client) RestartService(name string) (error) {
+	return instance.post("service/" + name + "/restart", nil)
 }
 
-func (this *Client) StopService(name string) (error) {
-	err := this.post("service/" + name + "/stop", nil)
+func (instance *Client) StopService(name string) (error) {
+	err := instance.post("service/" + name + "/stop", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
 	return err
 }
 
-func (this *Client) KillService(name string) (error) {
-	err := this.post("service/" + name + "/kill", nil)
+func (instance *Client) KillService(name string) (error) {
+	err := instance.post("service/" + name + "/kill", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
 	return err
 }
 
-func (this *Client) SignalService(name string, s Signal) (error) {
+func (instance *Client) SignalService(name string, s Signal) (error) {
 	payload := map[string]string{
 		"signal": s.String(),
 	}
-	err := this.post("service/" + name + "/signal", &payload)
+	err := instance.post("service/" + name + "/signal", &payload)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
 	return err
 }
 
-func (this *Client) get(path string, target interface{}) error {
-	resp, err := this.session.Get("https://caretakerd/" + path, nil, target, nil)
+func (instance *Client) get(path string, target interface{}) error {
+	resp, err := instance.session.Get("https://caretakerd/" + path, nil, target, nil)
 	if err != nil {
 		return err
 	}
 	if resp.Status() != 200 {
-		return errors.New("Unexpected response from remote %v: %d - %s", this.address, resp.Status(), resp.RawText())
+		return errors.New("Unexpected response from remote %v: %d - %s", instance.address, resp.Status(), resp.RawText())
 	}
 	return nil
 }
 
-func (this *Client) transformError(path string, resp *napping.Response, err error) error {
+func (instance *Client) transformError(path string, resp *napping.Response, err error) error {
 	if err != nil {
 		return err
 	}
@@ -324,21 +324,21 @@ func (this *Client) transformError(path string, resp *napping.Response, err erro
 		}
 	}
 	if resp.Status() != http.StatusOK {
-		return errors.New("Unexpected response from '%v': %d - %s", this.address, resp.Status(), resp.RawText())
+		return errors.New("Unexpected response from '%v': %d - %s", instance.address, resp.Status(), resp.RawText())
 	}
 	return nil
 }
 
-func (this *Client) getPlain(path string) (string, error) {
-	resp, err := this.session.Get("https://caretakerd/" + path, nil, nil, nil)
-	targetErr := this.transformError(path, resp, err)
+func (instance *Client) getPlain(path string) (string, error) {
+	resp, err := instance.session.Get("https://caretakerd/" + path, nil, nil, nil)
+	targetErr := instance.transformError(path, resp, err)
 	if targetErr != nil {
 		return "", targetErr
 	}
 	return resp.RawText(), nil
 }
 
-func (this *Client) post(path string, payload interface{}) error {
-	resp, err := this.session.Post("https://caretakerd/" + path, payload, nil, nil)
-	return this.transformError(path, resp, err)
+func (instance *Client) post(path string, payload interface{}) error {
+	resp, err := instance.session.Post("https://caretakerd/" + path, payload, nil, nil)
+	return instance.transformError(path, resp, err)
 }

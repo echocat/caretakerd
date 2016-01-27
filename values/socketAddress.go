@@ -33,20 +33,20 @@ type SocketAddress struct {
 	Port     int
 }
 
-func (this SocketAddress) AsScheme() string {
-	return this.Protocol.String()
+func (instance SocketAddress) AsScheme() string {
+	return instance.Protocol.String()
 }
 
-func (this SocketAddress) AsAddress() string {
-	s, err := this.checkedStringWithoutProtocol()
+func (instance SocketAddress) AsAddress() string {
+	s, err := instance.checkedStringWithoutProtocol()
 	if err != nil {
 		panic(err)
 	}
 	return s
 }
 
-func (this SocketAddress) String() string {
-	s, err := this.CheckedString()
+func (instance SocketAddress) String() string {
+	s, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
@@ -62,37 +62,37 @@ func validateHost(host string) error {
 	return err
 }
 
-func (this SocketAddress) CheckedString() (string, error) {
-	s, err := this.checkedStringWithoutProtocol()
+func (instance SocketAddress) CheckedString() (string, error) {
+	s, err := instance.checkedStringWithoutProtocol()
 	if err != nil {
 		return "", err
 	}
-	return this.Protocol.String() + "://" + s, nil
+	return instance.Protocol.String() + "://" + s, nil
 }
 
-func (this SocketAddress) checkedStringWithoutProtocol() (string, error) {
-	switch this.Protocol {
+func (instance SocketAddress) checkedStringWithoutProtocol() (string, error) {
+	switch instance.Protocol {
 	case Tcp:
-		if !isValidPort(this.Port) {
-			return "", errors.New("Illegal port for protocol %v: %d", this.Protocol, this.Port)
+		if !isValidPort(instance.Port) {
+			return "", errors.New("Illegal port for protocol %v: %d", instance.Protocol, instance.Port)
 		}
-		if err := validateHost(this.Target); err != nil {
-			return "", errors.New("Illegal host for protocol %v: %s", this.Protocol, this.Target)
+		if err := validateHost(instance.Target); err != nil {
+			return "", errors.New("Illegal host for protocol %v: %s", instance.Protocol, instance.Target)
 		}
-		return fmt.Sprintf("%s:%d", this.Target, this.Port), nil
+		return fmt.Sprintf("%s:%d", instance.Target, instance.Port), nil
 	case Unix:
-		if this.Port != 0 {
-			return "", errors.New("For protocol %v is no port allowed.", this.Protocol)
+		if instance.Port != 0 {
+			return "", errors.New("For protocol %v is no port allowed.", instance.Protocol)
 		}
-		if len(strings.TrimSpace(this.Target)) == 0 {
-			return "", errors.New("For protocol %v is no target file defined.", this.Protocol)
+		if len(strings.TrimSpace(instance.Target)) == 0 {
+			return "", errors.New("For protocol %v is no target file defined.", instance.Protocol)
 		}
-		return fmt.Sprintf("%s", this.Target), nil
+		return fmt.Sprintf("%s", instance.Target), nil
 	}
-	return "", errors.New("Unknown protocol: %v", this.Protocol)
+	return "", errors.New("Unknown protocol: %v", instance.Protocol)
 }
 
-func (this *SocketAddress) Set(value string) error {
+func (instance *SocketAddress) Set(value string) error {
 	match := uriPattern.FindStringSubmatch(value)
 	if match != nil && len(match) == 3 {
 		var protocol Protocol
@@ -102,9 +102,9 @@ func (this *SocketAddress) Set(value string) error {
 		}
 		switch protocol {
 		case Tcp:
-			return this.SetTcp(match[2])
+			return instance.SetTcp(match[2])
 		case Unix:
-			return this.SetUnix(match[2])
+			return instance.SetUnix(match[2])
 		}
 		return errors.New("Unknown protocol %v in address '%v'.", protocol, value)
 	} else {
@@ -112,7 +112,7 @@ func (this *SocketAddress) Set(value string) error {
 	}
 }
 
-func (this *SocketAddress) SetTcp(value string) error {
+func (instance *SocketAddress) SetTcp(value string) error {
 	lastDoubleDot := strings.LastIndex(value, ":")
 	if lastDoubleDot <= 0 || lastDoubleDot + 2 >= len(value) {
 		return errors.New("No port specified for address '%v'.", value)
@@ -126,32 +126,32 @@ func (this *SocketAddress) SetTcp(value string) error {
 	if err := validateHost(host); err != nil {
 		return errors.New("'%v' of specified address '%v' is not a valid host.", host, value)
 	}
-	(*this).Protocol = Tcp
-	(*this).Target = host
-	(*this).Port = port
+	(*instance).Protocol = Tcp
+	(*instance).Target = host
+	(*instance).Port = port
 	return nil
 }
 
-func (this *SocketAddress) SetUnix(value string) error {
-	(*this).Protocol = Unix
-	(*this).Target = value
-	(*this).Port = 0
+func (instance *SocketAddress) SetUnix(value string) error {
+	(*instance).Protocol = Unix
+	(*instance).Target = value
+	(*instance).Port = 0
 	return nil
 }
 
-func (this SocketAddress) MarshalYAML() (interface{}, error) {
-	return this.String(), nil
+func (instance SocketAddress) MarshalYAML() (interface{}, error) {
+	return instance.String(), nil
 }
 
-func (this *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this SocketAddress) Validate() error {
-	_, err := this.CheckedString()
+func (instance SocketAddress) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }

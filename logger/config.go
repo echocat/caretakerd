@@ -31,13 +31,13 @@ type Config struct {
 	// @id      stdoutLevel
 	// @default info
 	//
-	// If the service prints something to ``stdout`` this will logged with this level.
+	// If the service prints something to ``stdout`` instance will logged with instance level.
 	StdoutLevel  Level `json:"stdoutLevel" yaml:"stdoutLevel"`
 
 	// @id      stderrLevel
 	// @default error
 	//
-	// If the service prints something to ``stderr`` this will logged with this level.
+	// If the service prints something to ``stderr`` instance will logged with instance level.
 	StderrLevel  Level `json:"stderrLevel" yaml:"stderrLevel"`
 
 	// @id      filename
@@ -45,7 +45,7 @@ type Config struct {
 	//
 	// Target file of the logger. The file will be created if not exist - but not the parent directory.
 	//
-	// If this value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
+	// If instance value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
 	// above or equal to {@ref Level#warn}.
 	Filename     String `json:"filename" yaml:"filename"`
 
@@ -89,19 +89,19 @@ func NewConfig() Config {
 	return result
 }
 
-func (this Config) Validate() error {
-	err := this.StdoutLevel.Validate()
+func (instance Config) Validate() error {
+	err := instance.StdoutLevel.Validate()
 	if err == nil {
-		err = this.StderrLevel.Validate()
+		err = instance.StderrLevel.Validate()
 	}
 	return err
 }
 
-func (this *Config) init() {
-	SetDefaultsTo(defaults, this)
+func (instance *Config) init() {
+	SetDefaultsTo(defaults, instance)
 }
 
-func (this *Config) BeforeUnmarshalYAML() error {
-	this.init()
+func (instance *Config) BeforeUnmarshalYAML() error {
+	instance.init()
 	return nil
 }

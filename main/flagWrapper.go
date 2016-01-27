@@ -17,30 +17,30 @@ func NewFlagWrapper(initialValue cli.Generic) *FlagWrapper {
 	}
 }
 
-func (this FlagWrapper) String() string {
-	return this.value.String()
+func (instance FlagWrapper) String() string {
+	return instance.value.String()
 }
 
-func (this *FlagWrapper) Set(value string) error {
-	err := this.value.Set(value)
+func (instance *FlagWrapper) Set(value string) error {
+	err := instance.value.Set(value)
 	if err != nil {
 		return err
 	}
-	this.explicitSet = true
+	instance.explicitSet = true
 	return nil
 }
 
-func (this FlagWrapper) IsExplicitSet() bool {
-	return this.explicitSet
+func (instance FlagWrapper) IsExplicitSet() bool {
+	return instance.explicitSet
 }
 
-func (this FlagWrapper) Value() cli.Generic {
-	return this.value
+func (instance FlagWrapper) Value() cli.Generic {
+	return instance.value
 }
 
-func (this FlagWrapper) AssignIfExplicitSet(to interface{}) {
-	if this.explicitSet {
-		v := reflect.ValueOf(this.value)
+func (instance FlagWrapper) AssignIfExplicitSet(to interface{}) {
+	if instance.explicitSet {
+		v := reflect.ValueOf(instance.value)
 		reflect.ValueOf(to).Elem().Set(v.Elem())
 	}
 }

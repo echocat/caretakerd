@@ -16,13 +16,13 @@ type SyncGroup struct {
 
 type TimeoutError struct{}
 
-func (this TimeoutError) Error() string {
+func (instance TimeoutError) Error() string {
 	return "Timeout."
 }
 
 type InterruptedError struct{}
 
-func (this InterruptedError) Error() string {
+func (instance InterruptedError) Error() string {
 	return "Interrupted."
 }
 

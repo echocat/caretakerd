@@ -25,17 +25,17 @@ const (
 // @id fromFile
 //
 // Load keyStore from a provided PEM file.
-// If this type is selected this file have to be provided.
+// If instance type is selected instance file have to be provided.
 	FromFile Type = 1
 
 // @id fromEnvironment
 //
 // Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
-// If this type is selected this variable have to be provided.
+// If instance type is selected instance variable have to be provided.
 	FromEnvironment Type = 2
 )
 
-var AllTypes []Type = []Type{
+var AllTypes = []Type{
 	Generated,
 	FromFile,
 	FromEnvironment,

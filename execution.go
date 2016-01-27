@@ -39,25 +39,25 @@ func NewExecution(executable Executable, syncGroup *sync.SyncGroup) *Execution {
 	}
 }
 
-func (this *Execution) Run() (ExitCode, error) {
-	for _, service := range this.executable.Services().GetAllAutoStartable() {
-		err := this.Start(service)
+func (instance *Execution) Run() (ExitCode, error) {
+	for _, service := range instance.executable.Services().GetAllAutoStartable() {
+		err := instance.Start(service)
 		if err != nil {
-			this.executable.Logger().LogProblem(err, logger.Error, "Could not start execution of service '%v'.", service)
+			instance.executable.Logger().LogProblem(err, logger.Error, "Could not start execution of service '%v'.", service)
 		}
 	}
-	this.wg.Wait()
-	return *this.masterExitCode, this.masterError
+	instance.wg.Wait()
+	return *instance.masterExitCode, instance.masterError
 }
 
-func (this *Execution) GetCountOfActiveExecutions() int {
-	this.doRLock()
-	defer this.doRUnlock()
-	return len(this.executions)
+func (instance *Execution) GetCountOfActiveExecutions() int {
+	instance.doRLock()
+	defer instance.doRUnlock()
+	return len(instance.executions)
 }
 
-func (this *Execution) Start(target *service.Service) error {
-	execution, err := this.createAndRegisterNotExistingExecutionFor(target)
+func (instance *Execution) Start(target *service.Service) error {
+	execution, err := instance.createAndRegisterNotExistingExecutionFor(target)
 	if err != nil {
 		if sare, ok := err.(service.ServiceAlreadyRunningError); ok {
 			return sare
@@ -65,31 +65,31 @@ func (this *Execution) Start(target *service.Service) error {
 			return errors.New("Could not start service '%v'.", target).CausedBy(err)
 		}
 	}
-	this.wg.Add(1)
-	go this.drive(execution)
+	instance.wg.Add(1)
+	go instance.drive(execution)
 	return nil
 }
 
-func (this *Execution) drive(target *service.Execution) {
+func (instance *Execution) drive(target *service.Execution) {
 	var exitCode ExitCode
 	var err error
-	defer this.doAfterExecution(target, exitCode, err)
+	defer instance.doAfterExecution(target, exitCode, err)
 	respectDelay := true
 	doRun := true
 	for run := 1; doRun && target != nil; run++ {
 		if respectDelay {
-			if ! this.delayedStartIfNeeded(target.Service(), run) {
+			if ! instance.delayedStartIfNeeded(target.Service(), run) {
 				break
 			}
 		} else {
 			run = 1
 		}
 		exitCode, err = target.Run()
-		doRun, respectDelay = this.checkAfterExecutionStates(target, exitCode, err)
+		doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
 		if doRun {
-			newTarget, err := this.recreateExecution(target)
+			newTarget, err := instance.recreateExecution(target)
 			if err != nil {
-				this.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
+				instance.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
 			} else {
 				target = newTarget
 			}
@@ -97,31 +97,31 @@ func (this *Execution) drive(target *service.Execution) {
 	}
 }
 
-func (this *Execution) recreateExecution(target *service.Execution) (*service.Execution, error) {
-	this.doWLock()
-	defer this.doWUnlock()
+func (instance *Execution) recreateExecution(target *service.Execution) (*service.Execution, error) {
+	instance.doWLock()
+	defer instance.doWUnlock()
 	s := target.Service()
-	newTarget, err := s.NewExecution(this.executable.KeyStore())
+	newTarget, err := s.NewExecution(instance.executable.KeyStore())
 	if err != nil {
-		delete(this.executions, s)
-		delete(this.restartRequests, s)
+		delete(instance.executions, s)
+		delete(instance.restartRequests, s)
 	} else {
-		this.executions[s] = newTarget
-		this.restartRequests[s] = false
+		instance.executions[s] = newTarget
+		instance.restartRequests[s] = false
 	}
 	return newTarget, err
 }
 
-func (this *Execution) checkAfterExecutionStates(target *service.Execution, exitCode ExitCode, err error) (doRestart bool, respectDelay bool) {
+func (instance *Execution) checkAfterExecutionStates(target *service.Execution, exitCode ExitCode, err error) (doRestart bool, respectDelay bool) {
 	if _, ok := err.(service.StoppedOrKilledError); ok {
 		doRestart = false
 	} else if _, ok := err.(service.UnrecoverableError); ok {
-		doRestart = target.Service().Config().CronExpression.IsEnabled() && this.masterExitCode == nil
-	} else if this.checkRestartRequestedAndClean(target.Service()) {
+		doRestart = target.Service().Config().CronExpression.IsEnabled() && instance.masterExitCode == nil
+	} else if instance.checkRestartRequestedAndClean(target.Service()) {
 		doRestart = true
 		respectDelay = false
 	} else if target.Service().Config().SuccessExitCodes.Contains(exitCode) {
-		doRestart = target.Service().Config().CronExpression.IsEnabled() && this.masterExitCode == nil
+		doRestart = target.Service().Config().CronExpression.IsEnabled() && instance.masterExitCode == nil
 	} else {
 		doRestart = true
 		respectDelay = true
@@ -129,121 +129,121 @@ func (this *Execution) checkAfterExecutionStates(target *service.Execution, exit
 	return doRestart, respectDelay
 }
 
-func (this *Execution) doAfterExecution(target *service.Execution, exitCode ExitCode, err error) {
-	defer this.doUnregisterExecution(target)
+func (instance *Execution) doAfterExecution(target *service.Execution, exitCode ExitCode, err error) {
+	defer instance.doUnregisterExecution(target)
 	if target.Service().Config().Type == service.Master {
-		this.masterExitCode = &exitCode
-		this.masterError = err
-		others := this.allExecutionsButMaster()
+		instance.masterExitCode = &exitCode
+		instance.masterError = err
+		others := instance.allExecutionsButMaster()
 		if len(others) > 0 {
-			this.executable.Logger().Log(logger.Debug, "Master '%s' is down. Stopping all left services...", target.Name())
+			instance.executable.Logger().Log(logger.Debug, "Master '%s' is down. Stopping all left services...", target.Name())
 			for _, other := range others {
-				go this.Stop(other.Service())
+				go instance.Stop(other.Service())
 			}
 		}
 	}
 }
 
-func (this *Execution) delayedStartIfNeeded(s *service.Service, currentRun int) bool {
+func (instance *Execution) delayedStartIfNeeded(s *service.Service, currentRun int) bool {
 	if currentRun == 1 {
-		return this.delayedStartIfNeededFor(s, s.Config().StartDelayInSeconds, "Wait %d seconds before start...")
+		return instance.delayedStartIfNeededFor(s, s.Config().StartDelayInSeconds, "Wait %d seconds before start...")
 	} else {
-		return this.delayedStartIfNeededFor(s, s.Config().RestartDelayInSeconds, "Wait %d seconds before restart...")
+		return instance.delayedStartIfNeededFor(s, s.Config().RestartDelayInSeconds, "Wait %d seconds before restart...")
 	}
 }
 
-func (this *Execution) delayedStartIfNeededFor(s *service.Service, delayInSeconds NonNegativeInteger, messagePattern string) bool {
+func (instance *Execution) delayedStartIfNeededFor(s *service.Service, delayInSeconds NonNegativeInteger, messagePattern string) bool {
 	if s.Config().StartDelayInSeconds > 0 {
 		s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
-		return this.syncGroup.Sleep(time.Duration(delayInSeconds) * time.Second) == nil
+		return instance.syncGroup.Sleep(time.Duration(delayInSeconds) * time.Second) == nil
 	} else {
 		return true
 	}
 }
 
-func (this *Execution) checkRestartRequestedAndClean(target *service.Service) bool {
-	this.doWLock()
-	defer this.doWUnlock()
-	result := this.restartRequests[target]
-	delete(this.restartRequests, target)
+func (instance *Execution) checkRestartRequestedAndClean(target *service.Service) bool {
+	instance.doWLock()
+	defer instance.doWUnlock()
+	result := instance.restartRequests[target]
+	delete(instance.restartRequests, target)
 	return result
 }
 
-func (this *Execution) StopAll() {
-	for _, execution := range this.allExecutions() {
-		this.Stop(execution.Service())
+func (instance *Execution) StopAll() {
+	for _, execution := range instance.allExecutions() {
+		instance.Stop(execution.Service())
 	}
-	this.wg.Wait()
+	instance.wg.Wait()
 }
 
-func (this *Execution) Restart(target *service.Service) error {
-	this.doRLock()
-	execution, ok := this.executions[target]
+func (instance *Execution) Restart(target *service.Service) error {
+	instance.doRLock()
+	execution, ok := instance.executions[target]
 	if ! ok {
-		this.doRUnlock()
-		return this.Start(target)
+		instance.doRUnlock()
+		return instance.Start(target)
 	}
-	this.restartRequests[target] = true
-	this.doRUnlock()
+	instance.restartRequests[target] = true
+	instance.doRUnlock()
 	execution.Stop()
 	return nil
 }
 
-func (this *Execution) Stop(target *service.Service) error {
-	this.doRLock()
-	execution, ok := this.executions[target]
+func (instance *Execution) Stop(target *service.Service) error {
+	instance.doRLock()
+	execution, ok := instance.executions[target]
 	if ! ok {
-		this.doRUnlock()
+		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
-	this.doRUnlock()
+	instance.doRUnlock()
 	execution.Stop()
 	return nil
 }
 
-func (this *Execution) Kill(target *service.Service) error {
-	this.doRLock()
-	execution, ok := this.executions[target]
+func (instance *Execution) Kill(target *service.Service) error {
+	instance.doRLock()
+	execution, ok := instance.executions[target]
 	if ! ok {
-		this.doRUnlock()
+		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
-	this.doRUnlock()
+	instance.doRUnlock()
 	execution.Kill()
 	return nil
 }
 
-func (this *Execution) Signal(target *service.Service, what Signal) error {
-	this.doRLock()
-	execution, ok := this.executions[target]
+func (instance *Execution) Signal(target *service.Service, what Signal) error {
+	instance.doRLock()
+	execution, ok := instance.executions[target]
 	if ! ok {
-		this.doRUnlock()
+		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
-	this.doRUnlock()
+	instance.doRUnlock()
 	execution.Signal(what)
 	return nil
 }
 
-func (this *Execution) createAndRegisterNotExistingExecutionFor(target *service.Service) (*service.Execution, error) {
-	this.doWLock()
-	defer this.doWUnlock()
-	result, err := target.NewExecution(this.executable.KeyStore())
+func (instance *Execution) createAndRegisterNotExistingExecutionFor(target *service.Service) (*service.Execution, error) {
+	instance.doWLock()
+	defer instance.doWUnlock()
+	result, err := target.NewExecution(instance.executable.KeyStore())
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := this.executions[target]; ok {
+	if _, ok := instance.executions[target]; ok {
 		return nil, service.ServiceAlreadyRunningError{Name: target.Name()}
 	}
-	this.executions[target] = result
+	instance.executions[target] = result
 	return result, nil
 }
 
-func (this *Execution) allExecutionsButMaster() []*service.Execution {
-	this.doRLock()
-	defer this.doRUnlock()
+func (instance *Execution) allExecutionsButMaster() []*service.Execution {
+	instance.doRLock()
+	defer instance.doRUnlock()
 	result := []*service.Execution{}
-	for s, candidate := range this.executions {
+	for s, candidate := range instance.executions {
 		if s.Config().Type != service.Master {
 			result = append(result, candidate)
 		}
@@ -251,55 +251,55 @@ func (this *Execution) allExecutionsButMaster() []*service.Execution {
 	return result
 }
 
-func (this *Execution) allExecutions() []*service.Execution {
-	this.doRLock()
-	defer this.doRUnlock()
+func (instance *Execution) allExecutions() []*service.Execution {
+	instance.doRLock()
+	defer instance.doRUnlock()
 	result := []*service.Execution{}
-	for _, candidate := range this.executions {
+	for _, candidate := range instance.executions {
 		result = append(result, candidate)
 	}
 	return result
 }
 
-func (this *Execution) doUnregisterExecution(target *service.Execution) {
-	this.doWLock()
-	defer this.doWUnlock()
-	delete(this.executions, target.Service())
-	delete(this.restartRequests, target.Service())
-	this.wg.Done()
+func (instance *Execution) doUnregisterExecution(target *service.Execution) {
+	instance.doWLock()
+	defer instance.doWUnlock()
+	delete(instance.executions, target.Service())
+	delete(instance.restartRequests, target.Service())
+	instance.wg.Done()
 }
 
-func (this *Execution) doWLock() {
-	this.lock.Lock()
+func (instance *Execution) doWLock() {
+	instance.lock.Lock()
 }
 
-func (this *Execution) doWUnlock() {
-	this.lock.Unlock()
+func (instance *Execution) doWUnlock() {
+	instance.lock.Unlock()
 }
 
-func (this *Execution) doRLock() {
-	this.lock.RLock()
+func (instance *Execution) doRLock() {
+	instance.lock.RLock()
 }
 
-func (this *Execution) doRUnlock() {
-	this.lock.RUnlock()
+func (instance *Execution) doRUnlock() {
+	instance.lock.RUnlock()
 }
 
-func (this *Execution) GetFor(s *service.Service) (*service.Execution, bool) {
-	result, ok := this.executions[s]
+func (instance *Execution) GetFor(s *service.Service) (*service.Execution, bool) {
+	result, ok := instance.executions[s]
 	return result, ok
 }
 
-func (this *Execution) Information() map[string]service.Information {
+func (instance *Execution) Information() map[string]service.Information {
 	result := map[string]service.Information{}
-	for _, service := range (*this.executable.Services()) {
-		result[service.Name()] = this.InformationFor(service)
+	for _, service := range (*instance.executable.Services()) {
+		result[service.Name()] = instance.InformationFor(service)
 	}
 	return result
 }
 
-func (this *Execution) InformationFor(s *service.Service) service.Information {
-	if result, ok := this.GetFor(s); ok {
+func (instance *Execution) InformationFor(s *service.Service) service.Information {
+	if result, ok := instance.GetFor(s); ok {
 		return service.NewInformationForExecution(result)
 	} else {
 		return service.NewInformationForService(s)

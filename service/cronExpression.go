@@ -18,44 +18,44 @@ func NewCronExpression() CronExpression {
 	}
 }
 
-func (this CronExpression) String() string {
-	return this.spec
+func (instance CronExpression) String() string {
+	return instance.spec
 }
 
-func (this *CronExpression) Set(value string) error {
+func (instance *CronExpression) Set(value string) error {
 	if len(strings.TrimSpace(value)) > 0 {
 		schedule, err := cron.Parse(value)
 		if err != nil {
 			return err
 		}
-		this.schedule = schedule
-		this.spec = value
+		instance.schedule = schedule
+		instance.spec = value
 	} else {
-		this.schedule = nil
-		this.spec = ""
+		instance.schedule = nil
+		instance.spec = ""
 	}
 	return nil
 }
 
-func (this CronExpression) MarshalYAML() (interface{}, error) {
-	return this.String(), nil
+func (instance CronExpression) MarshalYAML() (interface{}, error) {
+	return instance.String(), nil
 }
 
-func (this *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this CronExpression) IsEnabled() bool {
-	return this.schedule != nil
+func (instance CronExpression) IsEnabled() bool {
+	return instance.schedule != nil
 }
 
-func (this CronExpression) Next(from time.Time) *time.Time {
-	if this.IsEnabled() {
-		result := this.schedule.Next(from)
+func (instance CronExpression) Next(from time.Time) *time.Time {
+	if instance.IsEnabled() {
+		result := instance.schedule.Next(from)
 		return &result
 	}
 	return nil

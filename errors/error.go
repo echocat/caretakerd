@@ -26,27 +26,27 @@ func New(message string, a ...interface{}) Error {
 	return result
 }
 
-func (this Error) String() string {
-	return reflect.TypeOf(this).Name() + ": " + this.Message()
+func (instance Error) String() string {
+	return reflect.TypeOf(instance).Name() + ": " + instance.Message()
 }
 
-func (this Error) Error() string {
-	return stack.ErrorMessageFor(this)
+func (instance Error) Error() string {
+	return stack.ErrorMessageFor(instance)
 }
 
-func (this Error) Message() string {
-	return this.message
+func (instance Error) Message() string {
+	return instance.message
 }
 
-func (this Error) Cause() interface{} {
-	return this.cause
+func (instance Error) Cause() interface{} {
+	return instance.cause
 }
 
-func (this Error) Stack() stack.Stack {
-	return this.stack
+func (instance Error) Stack() stack.Stack {
+	return instance.stack
 }
 
-func (this Error) CausedBy(what interface{}) Error {
-	this.cause = what
-	return this
+func (instance Error) CausedBy(what interface{}) Error {
+	instance.cause = what
+	return instance
 }

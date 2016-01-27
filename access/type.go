@@ -16,23 +16,23 @@ const (
 	GenerateToFile Type = 3
 )
 
-var AllTypes []Type = []Type{
+var AllTypes = []Type{
 	None,
 	Trusted,
 	GenerateToEnvironment,
 	GenerateToFile,
 }
 
-func (this Type) String() string {
-	s, err := this.CheckedString()
+func (instance Type) String() string {
+	s, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return s
 }
 
-func (this Type) CheckedString() (string, error) {
-	switch this {
+func (instance Type) CheckedString() (string, error) {
+	switch instance {
 	case None:
 		return "none", nil
 	case Trusted:
@@ -42,14 +42,14 @@ func (this Type) CheckedString() (string, error) {
 	case GenerateToFile:
 		return "generateToFile", nil
 	}
-	return "", errors.New("Illegal access type: %d", this)
+	return "", errors.New("Illegal access type: %d", instance)
 }
 
-func (this *Type) Set(value string) error {
+func (instance *Type) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllTypes {
 			if int(candidate) == valueAsInt {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -58,7 +58,7 @@ func (this *Type) Set(value string) error {
 		lowerValue := strings.ToLower(value)
 		for _, candidate := range AllTypes {
 			if strings.ToLower(candidate.String()) == lowerValue {
-				(*this) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -66,56 +66,56 @@ func (this *Type) Set(value string) error {
 	}
 }
 
-func (this Type) MarshalYAML() (interface{}, error) {
-	return this.CheckedString()
+func (instance Type) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
-func (this *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this Type) MarshalJSON() ([]byte, error) {
-	s, err := this.CheckedString()
+func (instance Type) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (this *Type) UnmarshalJSON(b []byte) error {
+func (instance *Type) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return this.Set(value)
+	return instance.Set(value)
 }
 
-func (this Type) IsTakingFilename() bool {
-	return this == GenerateToFile
+func (instance Type) IsTakingFilename() bool {
+	return instance == GenerateToFile
 }
 
-func (this Type) IsTakingFilePermission() bool {
-	return this == GenerateToFile
+func (instance Type) IsTakingFilePermission() bool {
+	return instance == GenerateToFile
 }
 
-func (this Type) IsTakingFileUser() bool {
-	return this == GenerateToFile
+func (instance Type) IsTakingFileUser() bool {
+	return instance == GenerateToFile
 }
 
-func (this Type) IsTakingGroup() bool {
-	return this == GenerateToFile
+func (instance Type) IsTakingGroup() bool {
+	return instance == GenerateToFile
 }
 
-func (this Type) IsGenerating() bool {
-	return this == GenerateToFile || this == GenerateToEnvironment
+func (instance Type) IsGenerating() bool {
+	return instance == GenerateToFile || instance == GenerateToEnvironment
 }
 
-func (this Type) Validate() error {
-	_, err := this.CheckedString()
+func (instance Type) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }
 
