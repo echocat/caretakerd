@@ -22,7 +22,7 @@ func New(message string, a ...interface{}) Panic {
 	}
 	result := Panic{
 		message: targetMessage,
-		stack: stack.CaptureStack(1),
+		stack:   stack.CaptureStack(1),
 	}
 	return result
 }
@@ -39,7 +39,7 @@ func (i Panic) Message() string {
 	return i.message
 }
 
-func (i Panic) Cause() (interface{}) {
+func (i Panic) Cause() interface{} {
 	return i.cause
 }
 
@@ -65,7 +65,7 @@ func DefaultPanicHandler() {
 
 func HandlePanicOfPresent(framesToSkip int) {
 	if r := recover(); r != nil {
-		stack.Print(r, os.Stderr, 4 + framesToSkip)
+		stack.Print(r, os.Stderr, 4+framesToSkip)
 		os.Exit(2)
 	}
 }

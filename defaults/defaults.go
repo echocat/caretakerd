@@ -7,8 +7,7 @@ import (
 func ListenAddress() values.SocketAddress {
 	return values.SocketAddress{
 		Protocol: values.Tcp,
-		Target: "localhost",
-		Port: 57955,
+		Target:   "localhost",
+		Port:     57955,
 	}
 }
-

@@ -1,19 +1,19 @@
 package client
 
 import (
-	"gopkg.in/jmcvetta/napping.v3"
-	"net/http"
 	"crypto/tls"
 	"crypto/x509"
-	"net"
-	"time"
-	"io/ioutil"
-	"strings"
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd"
-	"github.com/echocat/caretakerd/service"
 	"github.com/echocat/caretakerd/control"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/service"
+	. "github.com/echocat/caretakerd/values"
+	"gopkg.in/jmcvetta/napping.v3"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"strings"
+	"time"
 )
 
 type AccessDeniedError struct {
@@ -111,9 +111,9 @@ func tlsConfigFor(config *caretakerd.Config) (*tls.Config, error) {
 		return nil, err
 	}
 	return &tls.Config{
-		Certificates: certificates,
+		Certificates:       certificates,
 		InsecureSkipVerify: true,
-		RootCAs: certificatePool,
+		RootCAs:            certificatePool,
 	}, nil
 }
 
@@ -215,7 +215,7 @@ func (instance *Client) GetServices() (map[string]service.Information, error) {
 
 func (instance *Client) GetService(name string) (service.Information, error) {
 	target := service.Information{}
-	err := instance.get("service/" + name, &target)
+	err := instance.get("service/"+name, &target)
 	if err != nil {
 		return service.Information{}, err
 	}
@@ -224,7 +224,7 @@ func (instance *Client) GetService(name string) (service.Information, error) {
 
 func (instance *Client) GetServiceConfig(name string) (service.Config, error) {
 	target := service.Config{}
-	err := instance.get("service/" + name + "/config", &target)
+	err := instance.get("service/"+name+"/config", &target)
 	if err != nil {
 		return service.Config{}, err
 	}
@@ -257,39 +257,39 @@ func (instance *Client) GetServicePid(name string) (Integer, error) {
 	return target, nil
 }
 
-func (instance *Client) StartService(name string) (error) {
-	err := instance.post("service/" + name + "/start", nil)
+func (instance *Client) StartService(name string) error {
+	err := instance.post("service/"+name+"/start", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is already running."}
 	}
 	return err
 }
 
-func (instance *Client) RestartService(name string) (error) {
-	return instance.post("service/" + name + "/restart", nil)
+func (instance *Client) RestartService(name string) error {
+	return instance.post("service/"+name+"/restart", nil)
 }
 
-func (instance *Client) StopService(name string) (error) {
-	err := instance.post("service/" + name + "/stop", nil)
+func (instance *Client) StopService(name string) error {
+	err := instance.post("service/"+name+"/stop", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
 	return err
 }
 
-func (instance *Client) KillService(name string) (error) {
-	err := instance.post("service/" + name + "/kill", nil)
+func (instance *Client) KillService(name string) error {
+	err := instance.post("service/"+name+"/kill", nil)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
 	return err
 }
 
-func (instance *Client) SignalService(name string, s Signal) (error) {
+func (instance *Client) SignalService(name string, s Signal) error {
 	payload := map[string]string{
 		"signal": s.String(),
 	}
-	err := instance.post("service/" + name + "/signal", &payload)
+	err := instance.post("service/"+name+"/signal", &payload)
 	if _, ok := err.(ConflictError); ok {
 		return ConflictError{error: "Service '" + name + "' is down."}
 	}
@@ -297,7 +297,7 @@ func (instance *Client) SignalService(name string, s Signal) (error) {
 }
 
 func (instance *Client) get(path string, target interface{}) error {
-	resp, err := instance.session.Get("https://caretakerd/" + path, nil, target, nil)
+	resp, err := instance.session.Get("https://caretakerd/"+path, nil, target, nil)
 	if err != nil {
 		return err
 	}
@@ -330,7 +330,7 @@ func (instance *Client) transformError(path string, resp *napping.Response, err 
 }
 
 func (instance *Client) getPlain(path string) (string, error) {
-	resp, err := instance.session.Get("https://caretakerd/" + path, nil, nil, nil)
+	resp, err := instance.session.Get("https://caretakerd/"+path, nil, nil, nil)
 	targetErr := instance.transformError(path, resp, err)
 	if targetErr != nil {
 		return "", targetErr
@@ -339,6 +339,6 @@ func (instance *Client) getPlain(path string) (string, error) {
 }
 
 func (instance *Client) post(path string, payload interface{}) error {
-	resp, err := instance.session.Post("https://caretakerd/" + path, payload, nil, nil)
+	resp, err := instance.session.Post("https://caretakerd/"+path, payload, nil, nil)
 	return instance.transformError(path, resp, err)
 }

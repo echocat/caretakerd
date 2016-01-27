@@ -1,13 +1,13 @@
 package main
 
 import (
-	"os"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/logger"
-	"github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/sync"
 	"github.com/echocat/caretakerd/stack"
+	"github.com/echocat/caretakerd/sync"
+	"github.com/echocat/caretakerd/values"
+	"os"
 )
 
 func attachArgsToMasterIfPossible(args []string, to *caretakerd.Config) {
@@ -34,9 +34,9 @@ func runDaemon(conf caretakerd.Config, args []string) {
 		os.Exit(1)
 	}
 
-	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME + " successful loaded. Starting now services...")
+	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME+" successful loaded. Starting now services...")
 	exitCode, _ := instance.Run()
-	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME + " done.")
+	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME+" done.")
 
 	instance.Close()
 
@@ -53,11 +53,11 @@ func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
 	}
 
 	app.Commands = append(app.Commands, cli.Command{
-		Name: name,
+		Name:            name,
 		SkipFlagParsing: true,
-		ArgsUsage: "[<args pass to master service>...]",
-		Usage: "Run " + caretakerd.DAEMON_NAME + " in forground.",
-		Before: ensureDaemonConfig,
+		ArgsUsage:       "[<args pass to master service>...]",
+		Usage:           "Run " + caretakerd.DAEMON_NAME + " in forground.",
+		Before:          ensureDaemonConfig,
 		Action: func(context *cli.Context) {
 			runDaemon(*conf.instance, context.Args())
 		},

@@ -1,16 +1,16 @@
 package values
 
 import (
+	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
-	"encoding/json"
 )
 
 type Protocol int
 
 const (
-	Tcp Protocol = 0
+	Tcp  Protocol = 0
 	Unix Protocol = 1
 )
 
@@ -90,4 +90,3 @@ func (i Protocol) Validate() error {
 	_, err := i.CheckedString()
 	return err
 }
-

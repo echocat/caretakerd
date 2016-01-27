@@ -1,10 +1,10 @@
 package logger
 
 import (
-	"strconv"
-	"strings"
 	"encoding/json"
 	"github.com/echocat/caretakerd/errors"
+	"strconv"
+	"strings"
 )
 
 // @id Level
@@ -16,29 +16,29 @@ import (
 type Level int
 
 const (
-// @id debug
-//
-// Used for debugging proposes. This level is only required you something goes wrong and you need more information.
+	// @id debug
+	//
+	// Used for debugging proposes. This level is only required you something goes wrong and you need more information.
 	Debug Level = 200
 
-// @id info
-//
-// This is the regular level. Every normal message will be logged with instance level.
+	// @id info
+	//
+	// This is the regular level. Every normal message will be logged with instance level.
 	Info Level = 300
 
-// @id warning
-//
-// If a problem appears but the program is still able to continue its work, instance level is used.
+	// @id warning
+	//
+	// If a problem appears but the program is still able to continue its work, instance level is used.
 	Warning Level = 400
 
-// @id error
-//
-// If a problem appears and the program is not longer able to continue its work, instance level is used.
+	// @id error
+	//
+	// If a problem appears and the program is not longer able to continue its work, instance level is used.
 	Error Level = 500
 
-// @id fatal
-//
-// This level is used on dramatic problems.
+	// @id fatal
+	//
+	// This level is used on dramatic problems.
 	Fatal Level = 600
 )
 

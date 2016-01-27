@@ -1,12 +1,12 @@
 package logger
 
 import (
-	"sync"
+	"github.com/echocat/caretakerd/errors"
+	. "github.com/echocat/caretakerd/values"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/errors"
-	"gopkg.in/natefinch/lumberjack.v2"
+	"sync"
 )
 
 var writeSynchronizerLock = new(sync.Mutex)
@@ -30,10 +30,10 @@ func NewWriteFor(filename String, writer *lumberjack.Logger) *Writer {
 		result.lock.Unlock()
 	} else {
 		result = &Writer{
-			lock: new(sync.Mutex),
+			lock:       new(sync.Mutex),
 			ownerCount: 1,
-			filename: filename,
-			writer: writer,
+			filename:   filename,
+			writer:     writer,
 		}
 		filenameToWriteSynchronizer[filename] = result
 	}

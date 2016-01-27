@@ -21,7 +21,7 @@ func New(message string, a ...interface{}) Error {
 	}
 	result := Error{
 		message: targetMessage,
-		stack: stack.CaptureStack(1),
+		stack:   stack.CaptureStack(1),
 	}
 	return result
 }

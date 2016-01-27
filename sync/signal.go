@@ -1,9 +1,9 @@
 package sync
 
 import (
-	"time"
-	"runtime"
 	"github.com/echocat/caretakerd/errors"
+	"runtime"
+	"time"
 )
 
 type Signal struct {
@@ -13,7 +13,7 @@ type Signal struct {
 
 func (sg *SyncGroup) NewSignal() *Signal {
 	result := &Signal{
-		sg: sg,
+		sg:      sg,
 		channel: make(chan bool),
 	}
 	runtime.SetFinalizer(result, finalizeSignalInstance)
@@ -32,7 +32,7 @@ func (i *Signal) Wait(duration time.Duration) error {
 		return sg.removeAndReturn(i, TimeoutError{})
 	case c := <-i.channel:
 		var result error
-		if ! c {
+		if !c {
 			result = InterruptedError{}
 		}
 		return sg.removeAndReturn(i, result)
@@ -57,7 +57,7 @@ func (i *Signal) Send() error {
 		}
 	}()
 	send := true
-	for ; send; {
+	for send {
 		select {
 		case i.channel <- true:
 			send = true

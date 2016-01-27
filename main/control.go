@@ -1,14 +1,14 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"encoding/json"
-	"strings"
-	. "github.com/echocat/caretakerd/values"
+	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/client"
+	"github.com/echocat/caretakerd/stack"
+	. "github.com/echocat/caretakerd/values"
+	"os"
+	"strings"
 )
 
 type DirectError struct {
@@ -155,11 +155,11 @@ func ensureServiceNameAndSignalArgument(context *cli.Context) error {
 
 func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "config",
-		Flags: commonClientFlags,
+		Name:      "config",
+		Flags:     commonClientFlags,
 		ArgsUsage: " ",
-		Usage: "Query whole daemon configuration.",
-		Before: ensureNoControlArgument,
+		Usage:     "Query whole daemon configuration.",
+		Before:    ensureNoControlArgument,
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetConfig()
 		}),
@@ -168,11 +168,11 @@ func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Cli
 
 func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "controlConfig",
-		Flags: commonClientFlags,
+		Name:      "controlConfig",
+		Flags:     commonClientFlags,
 		ArgsUsage: " ",
-		Usage: "Query control configuration.",
-		Before: ensureNoControlArgument,
+		Usage:     "Query control configuration.",
+		Before:    ensureNoControlArgument,
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetControlConfig()
 		}),
@@ -181,11 +181,11 @@ func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 
 func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "services",
-		Flags: commonClientFlags,
+		Name:      "services",
+		Flags:     commonClientFlags,
 		ArgsUsage: " ",
-		Usage: "Query whole daemon configuration with all its actual service stats.",
-		Before: ensureNoControlArgument,
+		Usage:     "Query whole daemon configuration with all its actual service stats.",
+		Before:    ensureNoControlArgument,
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetServices()
 		}),
@@ -194,11 +194,11 @@ func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.C
 
 func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "service",
-		Flags: commonClientFlags,
+		Name:      "service",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Usage: "Query service configuration and its actual stats.",
-		Before: ensureServiceNameArgument,
+		Usage:     "Query service configuration and its actual stats.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetService(name)
 		}),
@@ -207,11 +207,11 @@ func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Cl
 
 func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceConfig",
-		Flags: commonClientFlags,
+		Name:      "serviceConfig",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Usage: "Query service configuration.",
-		Before: ensureServiceNameArgument,
+		Usage:     "Query service configuration.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServiceConfig(name)
 		}),
@@ -220,12 +220,12 @@ func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 
 func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceStatus",
-		Flags: commonClientFlags,
+		Name:      "serviceStatus",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"status"},
-		Usage: "Query service status.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"status"},
+		Usage:     "Query service status.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServiceStatus(name)
 		}),
@@ -234,12 +234,12 @@ func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *cli
 
 func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "servicePid",
-		Flags: commonClientFlags,
+		Name:      "servicePid",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"pid"},
-		Usage: "Query service pid.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"pid"},
+		Usage:     "Query service pid.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServicePid(name)
 		}),
@@ -248,12 +248,12 @@ func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client
 
 func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceStart",
-		Flags: commonClientFlags,
+		Name:      "serviceStart",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"start"},
-		Usage: "Start a service.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"start"},
+		Usage:     "Start a service.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.StartService(name)
 		}),
@@ -262,12 +262,12 @@ func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *clie
 
 func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceRestart",
-		Flags: commonClientFlags,
+		Name:      "serviceRestart",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"restart"},
-		Usage: "Restart a service.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"restart"},
+		Usage:     "Restart a service.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.RestartService(name)
 		}),
@@ -276,12 +276,12 @@ func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *cl
 
 func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceStop",
-		Flags: commonClientFlags,
+		Name:      "serviceStop",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"stop"},
-		Usage: "Stop a service.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"stop"},
+		Usage:     "Stop a service.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.StopService(name)
 		}),
@@ -290,12 +290,12 @@ func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 
 func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceKill",
-		Flags: commonClientFlags,
+		Name:      "serviceKill",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name>",
-		Aliases: []string{"kill"},
-		Usage: "Kill a service.",
-		Before: ensureServiceNameArgument,
+		Aliases:   []string{"kill"},
+		Usage:     "Kill a service.",
+		Before:    ensureServiceNameArgument,
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.KillService(name)
 		}),
@@ -304,12 +304,12 @@ func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 
 func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
 	return cli.Command{
-		Name: "serviceSignal",
-		Flags: commonClientFlags,
+		Name:      "serviceSignal",
+		Flags:     commonClientFlags,
 		ArgsUsage: "<service name> <signal>",
-		Aliases: []string{"signal"},
-		Usage: "Send a signal to service.",
-		Before: ensureServiceNameAndSignalArgument,
+		Aliases:   []string{"signal"},
+		Usage:     "Send a signal to service.",
+		Before:    ensureServiceNameAndSignalArgument,
 		Action: actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
 			args := context.Args()
 			name := args[0]
@@ -326,8 +326,7 @@ func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *cli
 func registerControlCommandsAt(app *cli.App) {
 	clientFactory := client.NewClientFactory(conf.Instance())
 
-	commonClientFlags := []cli.Flag{
-	}
+	commonClientFlags := []cli.Flag{}
 
 	app.Commands = append(app.Commands,
 		createConfigCommand(commonClientFlags, clientFactory),

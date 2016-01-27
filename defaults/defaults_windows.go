@@ -13,4 +13,3 @@ func AuthFileKeyFilename() String {
 func ConfigFilename() String {
 	return String("C:\\ProgramData\\caretakerd\\config.yaml")
 }
-

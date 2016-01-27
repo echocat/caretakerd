@@ -1,10 +1,10 @@
 package stack
 
 import (
-	"io"
-	"fmt"
-	"reflect"
 	"bytes"
+	"fmt"
+	"io"
+	"reflect"
 )
 
 type MessageEnabled interface {
@@ -49,7 +49,7 @@ func ErrorMessageFor(what error) string {
 
 func StringOf(what interface{}, framesToSkip int) string {
 	buf := new(bytes.Buffer)
-	Print(what, buf, framesToSkip + 1)
+	Print(what, buf, framesToSkip+1)
 	return buf.String()
 }
 

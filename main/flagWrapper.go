@@ -12,7 +12,7 @@ type FlagWrapper struct {
 
 func NewFlagWrapper(initialValue cli.Generic) *FlagWrapper {
 	return &FlagWrapper{
-		value: initialValue,
+		value:       initialValue,
 		explicitSet: false,
 	}
 }

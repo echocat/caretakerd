@@ -1,28 +1,28 @@
 package logger
 
 import (
-	"time"
 	"fmt"
-	"strconv"
-	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/stack"
 	"github.com/eknkc/dateformat"
+	"strconv"
+	"time"
 )
 
 func (i *Logger) EntryFor(framesToSkip int, problem interface{}, priority Level, time time.Time, message string) Entry {
 	uptime := i.Uptime()
-	return NewEntry(framesToSkip + 1, problem, i.name, priority, time, message, uptime)
+	return NewEntry(framesToSkip+1, problem, i.name, priority, time, message, uptime)
 }
 
 func NewEntry(framesToSkip int, problem interface{}, category string, prioriy Level, time time.Time, message string, uptime time.Duration) Entry {
 	return Entry{
-		Time: time,
-		Message: message,
+		Time:     time,
+		Message:  message,
 		Priority: prioriy,
 		Category: category,
-		Stack: stack.CaptureStack(framesToSkip + 1),
-		Uptime: uptime,
-		Problem: problem,
+		Stack:    stack.CaptureStack(framesToSkip + 1),
+		Uptime:   uptime,
+		Problem:  problem,
 	}
 }
 
@@ -51,7 +51,7 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 				if c == '{' {
 					return "", NewFormatError(positiion, "Unexpedted character %c at instance position within flag argument %c.", c, flag)
 				} else if c == '}' {
-					flagPlainContent, err := e.contentOf(positiion, flag, string(flagArguments), framesToSkip + 1)
+					flagPlainContent, err := e.contentOf(positiion, flag, string(flagArguments), framesToSkip+1)
 					if err != nil {
 						return "", err
 					}
@@ -79,11 +79,11 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 			} else if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') {
 				flagStarted = true
 				flag = c
-				if (len(pattern) > positiion + 1) && pattern[positiion + 1] == '{' {
+				if (len(pattern) > positiion+1) && pattern[positiion+1] == '{' {
 					flagArgumentsStarted = true
 					positiion++
 				} else {
-					flagPlainContent, err := e.contentOf(positiion, flag, "", framesToSkip + 1)
+					flagPlainContent, err := e.contentOf(positiion, flag, "", framesToSkip+1)
 					if err != nil {
 						return "", err
 					}
@@ -131,7 +131,7 @@ func (e Entry) contentOf(position int, flag byte, arguments string, framesToSkip
 	case 'p':
 		return e.Priority.DisplayForLogging(), nil
 	case 'P':
-		return e.formatProblemIfNeeded(arguments, framesToSkip + 1)
+		return e.formatProblemIfNeeded(arguments, framesToSkip+1)
 	case 'r':
 		return fmt.Sprintf("%d", (e.Uptime / time.Millisecond)), nil
 	case 'n':
@@ -179,20 +179,20 @@ func isFileSegmentSeparator(c byte) bool {
 func (e Entry) formatProblemIfNeeded(arguments string, framesToSkip int) (string, error) {
 	problem := e.Problem
 	if problem != nil {
-		problemAsString := stack.StringOf(problem, framesToSkip + 1)
-		subEntry := NewEntry(framesToSkip + 1, nil, e.Category, e.Priority, e.Time, problemAsString, e.Uptime)
+		problemAsString := stack.StringOf(problem, framesToSkip+1)
+		subEntry := NewEntry(framesToSkip+1, nil, e.Category, e.Priority, e.Time, problemAsString, e.Uptime)
 		pattern := arguments
 		if len(pattern) <= 0 {
 			pattern = "%n%m"
 		}
-		return subEntry.Format(Pattern(pattern), framesToSkip + 1)
+		return subEntry.Format(Pattern(pattern), framesToSkip+1)
 	}
 	return "", nil
 }
 
 func NewFormatError(position int, message string, a ...interface{}) FormatError {
 	return FormatError{
-		Message: errors.New(message, a...).Message(),
+		Message:  errors.New(message, a...).Message(),
 		Position: position,
 	}
 }
@@ -205,5 +205,3 @@ type FormatError struct {
 func (e FormatError) Error() string {
 	return fmt.Sprintf("At index %d: %s", e.Position, e.Message)
 }
-
-

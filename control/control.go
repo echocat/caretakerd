@@ -2,8 +2,8 @@ package control
 
 import (
 	"github.com/echocat/caretakerd/access"
-	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
 )
 
 type Control struct {

@@ -1,22 +1,22 @@
 package rpc
 
 import (
-	"net/http"
+	"crypto/tls"
+	"crypto/x509"
+	"github.com/echocat/caretakerd/access"
+	"github.com/echocat/caretakerd/control"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/service"
+	. "github.com/echocat/caretakerd/values"
 	"github.com/emicklei/go-restful"
 	"log"
 	"net"
-	"strings"
+	"net/http"
 	"strconv"
-	"crypto/tls"
-	"crypto/x509"
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/panics"
-	"github.com/echocat/caretakerd/service"
-	"github.com/echocat/caretakerd/access"
-	"github.com/echocat/caretakerd/logger"
-	"github.com/echocat/caretakerd/keyStore"
-	"github.com/echocat/caretakerd/control"
+	"strings"
 )
 
 type Caretakerd interface {
@@ -56,7 +56,7 @@ func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 	}
 	result := &StoppableListener{
 		TCPListener: tcpL,
-		stop: make(chan int),
+		stop:        make(chan int),
 	}
 	return result, nil
 }
@@ -92,10 +92,10 @@ type Rpc struct {
 
 func NewRpc(conf Config, execution Execution, executable Caretakerd, log *logger.Logger) *Rpc {
 	rpc := Rpc{
-		conf: conf,
-		execution: execution,
+		conf:       conf,
+		execution:  execution,
 		caretakerd: executable,
-		logger: log,
+		logger:     log,
 	}
 	return &rpc
 }
@@ -131,7 +131,7 @@ func (instance *Rpc) Run() {
 	container.Add(ws)
 
 	server := &http.Server{
-		Handler: container,
+		Handler:  container,
 		ErrorLog: log.New(instance.logger.ReceiverFor(logger.Debug), "", 0),
 	}
 	instance.logger.Log(logger.Debug, "Rpc will bind to %v...", instance.conf.Listen)
@@ -168,11 +168,11 @@ func (instance *Rpc) secure(in net.Listener) net.Listener {
 	}
 
 	out = tls.NewListener(in, &tls.Config{
-		NextProtos: []string{"http/1.1"},
+		NextProtos:   []string{"http/1.1"},
 		Certificates: []tls.Certificate{keyPair},
-		RootCAs: rootCas,
-		ClientCAs: rootCas,
-		ClientAuth: tls.RequireAndVerifyClientCert,
+		RootCAs:      rootCas,
+		ClientCAs:    rootCas,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
 	})
 
 	return out
@@ -197,7 +197,7 @@ func (instance *Rpc) checkPermission(request *restful.Request, permissionChecker
 					if acc.IsCertValid(cert) && permissionChecker(*acc) {
 						return true
 					}
-					for _, serv := range (*instance.caretakerd.Services()) {
+					for _, serv := range *instance.caretakerd.Services() {
 						acc := serv.Access()
 						if acc.IsCertValid(cert) && permissionChecker(*acc) {
 							return true
@@ -309,7 +309,7 @@ func (instance *Rpc) serviceRestart(request *restful.Request, response *restful.
 			if err == nil {
 				response.Write([]byte("OK"))
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: " + err.Error())
+				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -322,9 +322,9 @@ func (instance *Rpc) serviceStart(request *restful.Request, response *restful.Re
 			if err == nil {
 				response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.ServiceAlreadyRunningError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: " + sde.Error())
+				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: " + err.Error())
+				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -337,9 +337,9 @@ func (instance *Rpc) serviceStop(request *restful.Request, response *restful.Res
 			if err == nil {
 				response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.ServiceDownError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: " + sde.Error())
+				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: " + err.Error())
+				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -352,9 +352,9 @@ func (instance *Rpc) serviceKill(request *restful.Request, response *restful.Res
 			if err == nil {
 				response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.ServiceDownError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: " + sde.Error())
+				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: " + err.Error())
+				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -370,15 +370,15 @@ func (instance *Rpc) serviceSignal(request *restful.Request, response *restful.R
 			sb := SignalBody{}
 			err := request.ReadEntity(&sb)
 			if err != nil {
-				response.WriteErrorString(http.StatusBadRequest, "ERROR: Illegal body. " + err.Error())
+				response.WriteErrorString(http.StatusBadRequest, "ERROR: Illegal body. "+err.Error())
 			} else {
 				err = instance.execution.Kill(sc)
 				if err == nil {
 					response.Write([]byte("OK"))
 				} else if sde, ok := err.(service.ServiceDownError); ok {
-					response.WriteErrorString(http.StatusConflict, "ERROR: " + sde.Error())
+					response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 				} else {
-					response.WriteErrorString(http.StatusInternalServerError, "ERROR: " + err.Error())
+					response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 				}
 			}
 		})
@@ -404,4 +404,3 @@ func (instance *Rpc) doWithExecution(request *restful.Request, response *restful
 		}
 	})
 }
-

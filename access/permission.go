@@ -1,18 +1,18 @@
 package access
 
 import (
-	"strconv"
-	"strings"
+	"encoding/json"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
-	"encoding/json"
+	"strconv"
+	"strings"
 )
 
 type Permission int
 
 const (
 	Forbidden Permission = 0
-	ReadOnly Permission = 1
+	ReadOnly  Permission = 1
 	ReadWrite Permission = 2
 )
 
@@ -99,4 +99,3 @@ func (instance Permission) Validate() error {
 	_, err := instance.CheckedString()
 	return err
 }
-

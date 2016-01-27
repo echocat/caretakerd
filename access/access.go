@@ -1,11 +1,11 @@
 package access
 
 import (
+	"crypto/x509"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
 	"os"
 	"os/user"
-	"github.com/echocat/caretakerd/keyStore"
-	"crypto/x509"
 	"reflect"
 )
 
@@ -41,9 +41,9 @@ func NewAccess(conf Config, name string, ks *keyStore.KeyStore) (*Access, error)
 
 func newNoneInstance(name string) (*Access, error) {
 	return &Access{
-		t: None,
+		t:          None,
 		permission: Forbidden,
-		name: name,
+		name:       name,
 	}, nil
 }
 
@@ -60,17 +60,17 @@ func newTrustedInstance(conf Config, name string, ks *keyStore.KeyStore) (*Acces
 		}
 	}
 	return &Access{
-		t: Trusted,
+		t:          Trusted,
 		permission: conf.Permission,
-		name: name,
-		cert: cert,
+		name:       name,
+		cert:       cert,
 	}, nil
 }
 
 func checkForIsCa(name string, sec *keyStore.KeyStore) error {
 	if !sec.IsCA() {
-		return errors.New("It is not possible to generate a new certificate for service '%v' with a caretakerd certificate that is not a CA. " +
-		"Use trusted access for service '%v', configure caretakerd to generate its own certificate or provide a CA enabled certificate for caretakerd.", name, name)
+		return errors.New("It is not possible to generate a new certificate for service '%v' with a caretakerd certificate that is not a CA. "+
+			"Use trusted access for service '%v', configure caretakerd to generate its own certificate or provide a CA enabled certificate for caretakerd.", name, name)
 	}
 	return nil
 }
@@ -84,11 +84,11 @@ func newGenerateToEnvironmentInstance(conf Config, name string, ks *keyStore.Key
 		return nil, errors.New("Could not generate pem for '%v'.", name).CausedBy(err)
 	}
 	return &Access{
-		t: GenerateToEnvironment,
+		t:          GenerateToEnvironment,
 		permission: conf.Permission,
-		name: name,
-		pem: pem,
-		cert: cert,
+		name:       name,
+		pem:        pem,
+		cert:       cert,
 	}, nil
 }
 
@@ -105,23 +105,23 @@ func newGenerateToFileInstance(conf Config, name string, ks *keyStore.KeyStore) 
 		return nil, errors.New("Could not generate pem file for '%v'.", name).CausedBy(err)
 	}
 	return &Access{
-		t: GenerateToFile,
-		permission: conf.Permission,
-		name: name,
-		pem: pem,
-		cert: cert,
+		t:                 GenerateToFile,
+		permission:        conf.Permission,
+		name:              name,
+		pem:               pem,
+		cert:              cert,
 		temporaryFilename: &file,
 	}, nil
 }
 
 func generateFileForPem(conf Config, pem []byte) (string, error) {
 	permission := conf.PemFilePermission.ThisOrDefault().AsFileMode()
-	f, err := os.OpenFile(conf.PemFile.String(), os.O_WRONLY | os.O_CREATE | os.O_TRUNC, permission)
+	f, err := os.OpenFile(conf.PemFile.String(), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, permission)
 	if err != nil {
 		return "", errors.New("Could not create pemFile '%s'.", conf.PemFile).CausedBy(err)
 	}
 	defer f.Close()
-	if ! conf.PemFileUser.IsEmpty() {
+	if !conf.PemFileUser.IsEmpty() {
 		_, lerr := user.Lookup(conf.PemFileUser.String())
 		if lerr != nil {
 			return "", errors.New("Could not set ownership of pemFile '%s' to '%s'.", conf.PemFile, conf.PemFileUser).CausedBy(err)

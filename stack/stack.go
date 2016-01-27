@@ -1,16 +1,16 @@
 package stack
 
 import (
-	"runtime"
-	"path/filepath"
 	"fmt"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
 var (
 	unknownFunction = string("<unknown function>")
-	runtimeMain = string("runtime.main")
-	runtimeGoexit = string("runtime.goexit")
+	runtimeMain     = string("runtime.main")
+	runtimeGoexit   = string("runtime.goexit")
 )
 
 type StackElement struct {
@@ -47,12 +47,12 @@ func CaptureStack(framesToSkip int) Stack {
 				valid = false
 			} else {
 				result = append(result, StackElement{
-					File: file,
+					File:      file,
 					ShortFile: filepath.Base(file),
-					Line:  line,
-					Function: functionNameOf(fullFunctionName),
-					Package: packageNameOf(fullFunctionName),
-					Pc: pc,
+					Line:      line,
+					Function:  functionNameOf(fullFunctionName),
+					Package:   packageNameOf(fullFunctionName),
+					Pc:        pc,
 				})
 			}
 		} else {
@@ -64,8 +64,8 @@ func CaptureStack(framesToSkip int) Stack {
 
 func functionNameOf(fullFunctionName string) string {
 	lastDot := strings.LastIndex(fullFunctionName, ".")
-	if lastDot >= 0 && lastDot + 1 < len(fullFunctionName) {
-		return fullFunctionName[lastDot + 1:]
+	if lastDot >= 0 && lastDot+1 < len(fullFunctionName) {
+		return fullFunctionName[lastDot+1:]
 	} else {
 		return fullFunctionName
 	}

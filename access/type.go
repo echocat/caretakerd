@@ -1,19 +1,19 @@
 package access
 
 import (
+	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
-	"encoding/json"
 )
 
 type Type int
 
 const (
-	None Type = 0
-	Trusted Type = 1
+	None                  Type = 0
+	Trusted               Type = 1
 	GenerateToEnvironment Type = 2
-	GenerateToFile Type = 3
+	GenerateToFile        Type = 3
 )
 
 var AllTypes = []Type{
@@ -118,4 +118,3 @@ func (instance Type) Validate() error {
 	_, err := instance.CheckedString()
 	return err
 }
-

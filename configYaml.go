@@ -1,12 +1,12 @@
 package caretakerd
 
 import (
-	"io/ioutil"
+	"fmt"
+	"github.com/echocat/caretakerd/errors"
 	. "github.com/echocat/caretakerd/values"
 	"gopkg.in/blaubaer/goyaml.v66"
-	"github.com/echocat/caretakerd/errors"
+	"io/ioutil"
 	"os"
-	"fmt"
 )
 
 type ConfigDoesNotExistError struct {

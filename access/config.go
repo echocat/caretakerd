@@ -1,16 +1,16 @@
 package access
 
 import (
-	. "github.com/echocat/caretakerd/values"
 	"github.com/echocat/caretakerd/errors"
+	. "github.com/echocat/caretakerd/values"
 )
 
 type Config struct {
-	Type              Type `json:"type" yaml:"type"`
-	Permission        Permission `json:"permission" yaml:"permission"`
-	PemFile           String `json:"pemFile,omitempty" yaml:"pemFile"`
+	Type              Type           `json:"type" yaml:"type"`
+	Permission        Permission     `json:"permission" yaml:"permission"`
+	PemFile           String         `json:"pemFile,omitempty" yaml:"pemFile"`
 	PemFilePermission FilePermission `json:"pemFilePermission,omitempty" yaml:"pemFilePermission"`
-	PemFileUser       String `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
+	PemFileUser       String         `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
 }
 
 func NewNoneConfig() Config {
@@ -21,25 +21,25 @@ func NewNoneConfig() Config {
 
 func NewTrustedConfig(permission Permission) Config {
 	return Config{
-		Type: Trusted,
+		Type:       Trusted,
 		Permission: permission,
 	}
 }
 
 func NewGenerateToEnvironmentConfig(permission Permission) Config {
 	return Config{
-		Type: GenerateToEnvironment,
+		Type:       GenerateToEnvironment,
 		Permission: permission,
 	}
 }
 
 func NewGenerateToFileConfig(permission Permission, pemFile String) Config {
 	return Config{
-		Type: GenerateToFile,
-		Permission: permission,
-		PemFile: String(pemFile),
+		Type:              GenerateToFile,
+		Permission:        permission,
+		PemFile:           String(pemFile),
 		PemFilePermission: DefaultFilePermission(),
-		PemFileUser: String(""),
+		PemFileUser:       String(""),
 	}
 }
 
@@ -69,14 +69,14 @@ func (instance Config) validateRequireStringValue(value String, fieldName string
 }
 
 func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
-	if ! isAllowedMethod() && !value.IsEmpty() {
+	if !isAllowedMethod() && !value.IsEmpty() {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }
 
 func (instance Config) validateUint32OnlyAllowedValue(value uint32, fieldName string, isAllowedMethod func() bool) error {
-	if ! isAllowedMethod() && value != 0 {
+	if !isAllowedMethod() && value != 0 {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil

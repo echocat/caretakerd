@@ -1,12 +1,12 @@
 package main
 
 import (
-	"os"
-	"runtime"
-	"path/filepath"
-	"github.com/echocat/caretakerd/panics"
-	"strings"
 	"encoding/json"
+	"github.com/echocat/caretakerd/panics"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 var GOPATH = os.Getenv("GOPATH")
@@ -24,9 +24,9 @@ func (instance Project) String() string {
 }
 
 func DeterminateProject(srcRootPath string) Project {
-	result := determinateProjectIn(GOPATH + "/src", srcRootPath)
+	result := determinateProjectIn(GOPATH+"/src", srcRootPath)
 	if result == nil {
-		result = determinateProjectIn(GOROOT + "/src", srcRootPath)
+		result = determinateProjectIn(GOROOT+"/src", srcRootPath)
 	}
 	if result == nil {
 		if len(GOPATH) > 0 {
@@ -47,14 +47,13 @@ func determinateProjectIn(goSrcPath string, srcRootPath string) *Project {
 	if err != nil {
 		panics.New("Could not make srcRootPath '%v' absolute.", srcRootPath).CausedBy(err).Throw()
 	}
-	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath) + 1 > len(cleanGoPath) {
-		rootPackage := cleanSrcRootPath[len(cleanGoPath) + 1:]
+	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath)+1 > len(cleanGoPath) {
+		rootPackage := cleanSrcRootPath[len(cleanGoPath)+1:]
 		return &Project{
-			GoSrcPath: cleanGoPath,
+			GoSrcPath:   cleanGoPath,
 			SrcRootPath: cleanSrcRootPath,
 			RootPackage: rootPackage,
 		}
 	}
 	return nil
 }
-

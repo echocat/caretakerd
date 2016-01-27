@@ -1,15 +1,15 @@
 package main
 
 import (
-	"os"
-	"regexp"
-	"strings"
 	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
-	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/panics"
+	"os"
+	"regexp"
+	"strings"
 )
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BASE_NAME + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
@@ -74,13 +74,13 @@ func newAppFor(executableType ExecutableType) *cli.App {
 	app.Commands = []cli.Command{}
 	app.Flags = []cli.Flag{
 		cli.GenericFlag{
-			Name: "config,c",
-			Value: conf,
-			Usage: configDescription,
+			Name:   "config,c",
+			Value:  conf,
+			Usage:  configDescription,
 			EnvVar: configEnvVar,
 		},
 		cli.GenericFlag{
-			Name: "address,a",
+			Name:  "address,a",
 			Value: listenAddress,
 			Usage: "Listen address of the daemon.",
 		},
@@ -88,7 +88,7 @@ func newAppFor(executableType ExecutableType) *cli.App {
 
 	if executableType != daemon {
 		app.Flags = append(app.Flags, cli.GenericFlag{
-			Name: "pem,p",
+			Name:  "pem,p",
 			Value: pemFile,
 			Usage: "Location of PEM file which contains the private public key pair for access to the daemon.",
 		})
@@ -124,7 +124,7 @@ type ExecutableType int
 
 const (
 	generic ExecutableType = 0
-	daemon ExecutableType = 1
+	daemon  ExecutableType = 1
 	control ExecutableType = 2
 )
 

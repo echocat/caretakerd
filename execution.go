@@ -1,14 +1,14 @@
 package caretakerd
 
 import (
-	ssync "sync"
-	"time"
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/service"
+	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/service"
 	"github.com/echocat/caretakerd/sync"
-	"github.com/echocat/caretakerd/errors"
+	. "github.com/echocat/caretakerd/values"
+	ssync "sync"
+	"time"
 )
 
 type Executable interface {
@@ -30,12 +30,12 @@ type Execution struct {
 
 func NewExecution(executable Executable, syncGroup *sync.SyncGroup) *Execution {
 	return &Execution{
-		executable: executable,
-		executions: map[*service.Service]*service.Execution{},
+		executable:      executable,
+		executions:      map[*service.Service]*service.Execution{},
 		restartRequests: map[*service.Service]bool{},
-		lock: new(ssync.RWMutex),
-		wg: new(ssync.WaitGroup),
-		syncGroup: syncGroup,
+		lock:            new(ssync.RWMutex),
+		wg:              new(ssync.WaitGroup),
+		syncGroup:       syncGroup,
 	}
 }
 
@@ -78,7 +78,7 @@ func (instance *Execution) drive(target *service.Execution) {
 	doRun := true
 	for run := 1; doRun && target != nil; run++ {
 		if respectDelay {
-			if ! instance.delayedStartIfNeeded(target.Service(), run) {
+			if !instance.delayedStartIfNeeded(target.Service(), run) {
 				break
 			}
 		} else {
@@ -155,7 +155,7 @@ func (instance *Execution) delayedStartIfNeeded(s *service.Service, currentRun i
 func (instance *Execution) delayedStartIfNeededFor(s *service.Service, delayInSeconds NonNegativeInteger, messagePattern string) bool {
 	if s.Config().StartDelayInSeconds > 0 {
 		s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
-		return instance.syncGroup.Sleep(time.Duration(delayInSeconds) * time.Second) == nil
+		return instance.syncGroup.Sleep(time.Duration(delayInSeconds)*time.Second) == nil
 	} else {
 		return true
 	}
@@ -179,7 +179,7 @@ func (instance *Execution) StopAll() {
 func (instance *Execution) Restart(target *service.Service) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
-	if ! ok {
+	if !ok {
 		instance.doRUnlock()
 		return instance.Start(target)
 	}
@@ -192,7 +192,7 @@ func (instance *Execution) Restart(target *service.Service) error {
 func (instance *Execution) Stop(target *service.Service) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
-	if ! ok {
+	if !ok {
 		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
@@ -204,7 +204,7 @@ func (instance *Execution) Stop(target *service.Service) error {
 func (instance *Execution) Kill(target *service.Service) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
-	if ! ok {
+	if !ok {
 		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
@@ -216,7 +216,7 @@ func (instance *Execution) Kill(target *service.Service) error {
 func (instance *Execution) Signal(target *service.Service, what Signal) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
-	if ! ok {
+	if !ok {
 		instance.doRUnlock()
 		return service.ServiceDownError{Name: target.Name()}
 	}
@@ -292,7 +292,7 @@ func (instance *Execution) GetFor(s *service.Service) (*service.Execution, bool)
 
 func (instance *Execution) Information() map[string]service.Information {
 	result := map[string]service.Information{}
-	for _, service := range (*instance.executable.Services()) {
+	for _, service := range *instance.executable.Services() {
 		result[service.Name()] = instance.InformationFor(service)
 	}
 	return result

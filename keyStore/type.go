@@ -1,10 +1,10 @@
 package keyStore
 
 import (
+	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
-	"encoding/json"
 )
 
 // @id Type
@@ -16,22 +16,22 @@ import (
 type Type int
 
 const (
-// @id generated
-//
-// Indicates that caretakerd have to generate its own keyStore on startup.
-// This is the best solution in most cases.
+	// @id generated
+	//
+	// Indicates that caretakerd have to generate its own keyStore on startup.
+	// This is the best solution in most cases.
 	Generated Type = 0
 
-// @id fromFile
-//
-// Load keyStore from a provided PEM file.
-// If instance type is selected instance file have to be provided.
+	// @id fromFile
+	//
+	// Load keyStore from a provided PEM file.
+	// If instance type is selected instance file have to be provided.
 	FromFile Type = 1
 
-// @id fromEnvironment
-//
-// Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
-// If instance type is selected instance variable have to be provided.
+	// @id fromEnvironment
+	//
+	// Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
+	// If instance type is selected instance variable have to be provided.
 	FromEnvironment Type = 2
 )
 
@@ -126,4 +126,3 @@ func (i Type) Validate() error {
 	_, err := i.CheckedString()
 	return err
 }
-

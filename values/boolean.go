@@ -28,10 +28,14 @@ func (instance Boolean) CheckedString() (string, error) {
 
 func (instance *Boolean) Set(value string) error {
 	switch strings.ToLower(value) {
-	case "1": fallthrough
-	case "on": fallthrough
-	case "yes": fallthrough
-	case "y": fallthrough
+	case "1":
+		fallthrough
+	case "on":
+		fallthrough
+	case "yes":
+		fallthrough
+	case "y":
+		fallthrough
 	case "true":
 		return instance.SetFromBool(true)
 	}

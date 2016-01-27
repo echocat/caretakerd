@@ -1,12 +1,12 @@
 package caretakerd
 
 import (
-	"os"
-	"strings"
+	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/service"
-	"github.com/echocat/caretakerd/errors"
 	. "github.com/echocat/caretakerd/values"
+	"os"
+	"strings"
 )
 
 const (
@@ -15,57 +15,57 @@ const (
 
 var globalEnvKeyToHandler = map[string]func(*Config, string) error{
 	// logger.config
-	"LOG_LEVEL": handleGlobalLogLevelEnv,
-	"LOG_STDOUT_LEVEL": handleGlobalLogStdoutLevelEnv,
-	"LOG_STDERR_LEVEL": handleGlobalLogStderrLevelEnv,
-	"LOG_FILE": handleGlobalLogFilenameEnv,
-	"LOG_FILE_NAME": handleGlobalLogFilenameEnv,
-	"LOG_MAX_SIZE": handleGlobalLogMaxSizeInMbEnv,
-	"LOG_MAX_SIZE_IN_MB": handleGlobalLogMaxSizeInMbEnv,
-	"LOG_MAX_BACKUPS": handleGlobalLogMaxBackupsEnv,
-	"LOG_MAX_AGE": handleGlobalLogMaxAgeInDaysEnv,
+	"LOG_LEVEL":           handleGlobalLogLevelEnv,
+	"LOG_STDOUT_LEVEL":    handleGlobalLogStdoutLevelEnv,
+	"LOG_STDERR_LEVEL":    handleGlobalLogStderrLevelEnv,
+	"LOG_FILE":            handleGlobalLogFilenameEnv,
+	"LOG_FILE_NAME":       handleGlobalLogFilenameEnv,
+	"LOG_MAX_SIZE":        handleGlobalLogMaxSizeInMbEnv,
+	"LOG_MAX_SIZE_IN_MB":  handleGlobalLogMaxSizeInMbEnv,
+	"LOG_MAX_BACKUPS":     handleGlobalLogMaxBackupsEnv,
+	"LOG_MAX_AGE":         handleGlobalLogMaxAgeInDaysEnv,
 	"LOG_MAX_AGE_IN_DAYS": handleGlobalLogMaxAgeInDaysEnv,
 }
 
 var serviceEnvKeyToFunction = map[string]func(*service.Config, string) error{
 	// service.config
-	"CMD": handleServiceCommandEnv,
-	"COMMAND": handleServiceCommandEnv,
-	"TYPE": handleServiceTypeEnv,
-	"START_DELAY": handleServiceStartDelayInSecondsEnv,
-	"START_DELAY_IN_SECONDS": handleServiceStartDelayInSecondsEnv,
-	"RESTART_DELAY": handleServiceRestartDelayInSecondsEnv,
+	"CMD":                      handleServiceCommandEnv,
+	"COMMAND":                  handleServiceCommandEnv,
+	"TYPE":                     handleServiceTypeEnv,
+	"START_DELAY":              handleServiceStartDelayInSecondsEnv,
+	"START_DELAY_IN_SECONDS":   handleServiceStartDelayInSecondsEnv,
+	"RESTART_DELAY":            handleServiceRestartDelayInSecondsEnv,
 	"RESTART_DELAY_IN_SECONDS": handleServiceRestartDelayInSecondsEnv,
-	"SUCCESS": handleServiceSuccessExitCodesEnv,
-	"EXIT_CODE": handleServiceSuccessExitCodesEnv,
-	"EXIT_CODES": handleServiceSuccessExitCodesEnv,
-	"SUCCESS_EXIT_CODE": handleServiceSuccessExitCodesEnv,
-	"SUCCESS_EXIT_CODES": handleServiceSuccessExitCodesEnv,
-	"STOP_WAIT": handleServiceStopWaitInSecondsEnv,
-	"STOP_WAIT_IN_SECONDS": handleServiceStopWaitInSecondsEnv,
-	"USER": handleServiceUserEnv,
-	"DIR": handleServiceDirectoryEnv,
-	"DIRECORY": handleServiceDirectoryEnv,
-	"RESTART": handleServiceAutoRestartEnv,
-	"AUTO_RESTART": handleServiceAutoRestartEnv,
-	"INHERIT_ENV": handleServiceInheritEnvironmentEnv,
-	"INHERIT_ENVIRONMENT": handleServiceInheritEnvironmentEnv,
+	"SUCCESS":                  handleServiceSuccessExitCodesEnv,
+	"EXIT_CODE":                handleServiceSuccessExitCodesEnv,
+	"EXIT_CODES":               handleServiceSuccessExitCodesEnv,
+	"SUCCESS_EXIT_CODE":        handleServiceSuccessExitCodesEnv,
+	"SUCCESS_EXIT_CODES":       handleServiceSuccessExitCodesEnv,
+	"STOP_WAIT":                handleServiceStopWaitInSecondsEnv,
+	"STOP_WAIT_IN_SECONDS":     handleServiceStopWaitInSecondsEnv,
+	"USER":                     handleServiceUserEnv,
+	"DIR":                      handleServiceDirectoryEnv,
+	"DIRECORY":                 handleServiceDirectoryEnv,
+	"RESTART":                  handleServiceAutoRestartEnv,
+	"AUTO_RESTART":             handleServiceAutoRestartEnv,
+	"INHERIT_ENV":              handleServiceInheritEnvironmentEnv,
+	"INHERIT_ENVIRONMENT":      handleServiceInheritEnvironmentEnv,
 	// logger.config
-	"LOG_LEVEL": handleServiceLogLevelEnv,
-	"LOG_STDOUT_LEVEL": handleServiceLogStdoutLevelEnv,
-	"LOG_STDERR_LEVEL": handleServiceLogStderrLevelEnv,
-	"LOG_FILE": handleServiceLogFilenameEnv,
-	"LOG_FILE_NAME": handleServiceLogFilenameEnv,
-	"LOG_MAX_SIZE": handleServiceLogMaxSizeInMbEnv,
-	"LOG_MAX_SIZE_IN_MB": handleServiceLogMaxSizeInMbEnv,
-	"LOG_MAX_BACKUPS": handleServiceLogMaxBackupsEnv,
-	"LOG_MAX_AGE": handleServiceLogMaxAgeInDaysEnv,
+	"LOG_LEVEL":           handleServiceLogLevelEnv,
+	"LOG_STDOUT_LEVEL":    handleServiceLogStdoutLevelEnv,
+	"LOG_STDERR_LEVEL":    handleServiceLogStderrLevelEnv,
+	"LOG_FILE":            handleServiceLogFilenameEnv,
+	"LOG_FILE_NAME":       handleServiceLogFilenameEnv,
+	"LOG_MAX_SIZE":        handleServiceLogMaxSizeInMbEnv,
+	"LOG_MAX_SIZE_IN_MB":  handleServiceLogMaxSizeInMbEnv,
+	"LOG_MAX_BACKUPS":     handleServiceLogMaxBackupsEnv,
+	"LOG_MAX_AGE":         handleServiceLogMaxAgeInDaysEnv,
 	"LOG_MAX_AGE_IN_DAYS": handleServiceLogMaxAgeInDaysEnv,
 }
 
 var serviceSubEnvKeyToFunction = map[string]func(*service.Config, string, string) error{
 	// service.config
-	"ENV": handleEnvironmentEnv,
+	"ENV":         handleEnvironmentEnv,
 	"ENVIRONMENT": handleEnvironmentEnv,
 }
 

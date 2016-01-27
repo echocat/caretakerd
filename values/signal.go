@@ -1,12 +1,12 @@
 package values
 
 import (
+	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
 	"syscall"
 	"time"
-	"encoding/json"
 )
 
 // @id Signal
@@ -18,69 +18,69 @@ import (
 type Signal syscall.Signal
 
 const (
-// @id NOOP
+	// @id NOOP
 	NOOP = Signal(0x0)
-// @id ABRT
+	// @id ABRT
 	ABRT = Signal(0x6)
-// @id ALRM
+	// @id ALRM
 	ALRM = Signal(0xe)
-// @id BUS
+	// @id BUS
 	BUS = Signal(0x7)
-// @id CHLD
+	// @id CHLD
 	CHLD = Signal(0x11)
-// @id CONT
+	// @id CONT
 	CONT = Signal(0x12)
-// @id FPE
+	// @id FPE
 	FPE = Signal(0x8)
-// @id HUP
+	// @id HUP
 	HUP = Signal(0x1)
-// @id ILL
+	// @id ILL
 	ILL = Signal(0x4)
-// @id INT
+	// @id INT
 	INT = Signal(0x2)
-// @id IO
+	// @id IO
 	IO = Signal(0x1d)
-// @id KILL
+	// @id KILL
 	KILL = Signal(0x9)
-// @id PIPE
+	// @id PIPE
 	PIPE = Signal(0xd)
-// @id PROF
+	// @id PROF
 	PROF = Signal(0x1b)
-// @id PWR
+	// @id PWR
 	PWR = Signal(0x1e)
-// @id QUIT
+	// @id QUIT
 	QUIT = Signal(0x3)
-// @id SEGV
+	// @id SEGV
 	SEGV = Signal(0xb)
-// @id STKFLT
+	// @id STKFLT
 	STKFLT = Signal(0x10)
-// @id STOP
+	// @id STOP
 	STOP = Signal(0x13)
-// @id SYS
+	// @id SYS
 	SYS = Signal(0x1f)
-// @id TERM
+	// @id TERM
 	TERM = Signal(0xf)
-// @id TRAP
+	// @id TRAP
 	TRAP = Signal(0x5)
-// @id TSTP
+	// @id TSTP
 	TSTP = Signal(0x14)
-// @id TTIN
+	// @id TTIN
 	TTIN = Signal(0x15)
-// @id TTOU
+	// @id TTOU
 	TTOU = Signal(0x16)
-// @id URG
+	// @id URG
 	URG = Signal(0x17)
-// @id USR1
+	// @id USR1
 	USR1 = Signal(0xa)
-// @id USR2
+	// @id USR2
 	USR2 = Signal(0xc)
-// @id VTALRM
+	// @id VTALRM
 	VTALRM = Signal(0x1a)
-// @id WINCH
+	// @id WINCH
 	WINCH = Signal(0x1c)
-// @id XCPU
+	// @id XCPU
 	XCPU = Signal(0x18)
-// @id XFSZ
+	// @id XFSZ
 	XFSZ = Signal(0x19)
 )
 
@@ -210,7 +210,7 @@ func (i *Signal) Set(value string) error {
 		lowerValue := strings.ToUpper(value)
 		for _, candidate := range AllSignals {
 			candidateAsString := strings.ToUpper(candidate.String())
-			if candidateAsString == lowerValue || "sig" + candidateAsString == lowerValue {
+			if candidateAsString == lowerValue || "sig"+candidateAsString == lowerValue {
 				(*i) = candidate
 				return nil
 			}
@@ -267,11 +267,10 @@ func IsHandlingOfSignalIgnoreable(what Signal) bool {
 
 func RecordSendSignal(what Signal) {
 	lastSendSignals[what] = time.Now().Add(lastSendSignalThreshold)
-	if (what == INT) {
+	if what == INT {
 		lastSendSignals[TERM] = time.Now().Add(lastSendSignalThreshold)
 	}
-	if (what == TERM) {
+	if what == TERM {
 		lastSendSignals[INT] = time.Now().Add(lastSendSignalThreshold)
 	}
 }
-

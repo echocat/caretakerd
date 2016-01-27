@@ -1,20 +1,20 @@
 package caretakerd
 
 import (
-	"runtime"
-	"sync"
-	"os"
-	"syscall"
-	osignal "os/signal"
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/service"
-	"github.com/echocat/caretakerd/logger"
-	usync "github.com/echocat/caretakerd/sync"
-	"github.com/echocat/caretakerd/keyStore"
-	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/control"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
+	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/rpc"
+	"github.com/echocat/caretakerd/service"
+	usync "github.com/echocat/caretakerd/sync"
+	. "github.com/echocat/caretakerd/values"
+	"os"
+	osignal "os/signal"
+	"runtime"
+	"sync"
+	"syscall"
 )
 
 type Caretakerd struct {
@@ -56,14 +56,14 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 		return nil, err
 	}
 	result := Caretakerd{
-		open: true,
-		config: conf,
-		logger: log,
-		control: ctl,
-		keyStore: ks,
-		services: services,
-		lock: new(sync.Mutex),
-		syncGroup: syncGroup,
+		open:          true,
+		config:        conf,
+		logger:        log,
+		control:       ctl,
+		keyStore:      ks,
+		services:      services,
+		lock:          new(sync.Mutex),
+		syncGroup:     syncGroup,
 		signalChannel: nil,
 	}
 	runtime.SetFinalizer(&result, finalize)

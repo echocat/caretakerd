@@ -5,14 +5,14 @@ import (
 )
 
 var defaults = map[string]interface{}{
-	"Level": Info,
-	"StdoutLevel": Info,
-	"StderrLevel": Error,
-	"Filename": String("console"),
-	"MaxSizeInMb": NonNegativeInteger(500),
-	"MaxBackups": NonNegativeInteger(5),
+	"Level":        Info,
+	"StdoutLevel":  Info,
+	"StderrLevel":  Error,
+	"Filename":     String("console"),
+	"MaxSizeInMb":  NonNegativeInteger(500),
+	"MaxBackups":   NonNegativeInteger(5),
 	"MaxAgeInDays": NonNegativeInteger(1),
-	"Pattern": Pattern("%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"),
+	"Pattern":      Pattern("%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"),
 }
 
 // @id Logger
@@ -26,19 +26,19 @@ type Config struct {
 	// @default info
 	//
 	// Minimal log level the logger will output its messages. All below will be ignored.
-	Level        Level `json:"level" yaml:"level"`
+	Level Level `json:"level" yaml:"level"`
 
 	// @id      stdoutLevel
 	// @default info
 	//
 	// If the service prints something to ``stdout`` instance will logged with instance level.
-	StdoutLevel  Level `json:"stdoutLevel" yaml:"stdoutLevel"`
+	StdoutLevel Level `json:"stdoutLevel" yaml:"stdoutLevel"`
 
 	// @id      stderrLevel
 	// @default error
 	//
 	// If the service prints something to ``stderr`` instance will logged with instance level.
-	StderrLevel  Level `json:"stderrLevel" yaml:"stderrLevel"`
+	StderrLevel Level `json:"stderrLevel" yaml:"stderrLevel"`
 
 	// @id      filename
 	// @default "console"
@@ -47,7 +47,7 @@ type Config struct {
 	//
 	// If instance value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
 	// above or equal to {@ref Level#warn}.
-	Filename     String `json:"filename" yaml:"filename"`
+	Filename String `json:"filename" yaml:"filename"`
 
 	// @id      maxSizeInMb
 	// @default 500
@@ -55,7 +55,7 @@ type Config struct {
 	// Maximum size in megabytes of the log file before it gets rotated.
 	//
 	// This is ignored if {@ref #filename} os set to ``console``.
-	MaxSizeInMb  NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
+	MaxSizeInMb NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
 
 	// @id      maxBackups
 	// @default 500
@@ -63,7 +63,7 @@ type Config struct {
 	// Maximum number of old log files to retain.
 	//
 	// This is ignored if {@ref #filename} os set to ``console``.
-	MaxBackups   NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
+	MaxBackups NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
 
 	// @id      maxAgeInDays
 	// @default 1
@@ -80,7 +80,7 @@ type Config struct {
 	// @default "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"
 	//
 	// Pattern how to format the log messages to output with.
-	Pattern      Pattern `json:"pattern" yaml:"pattern"`
+	Pattern Pattern `json:"pattern" yaml:"pattern"`
 }
 
 func NewConfig() Config {

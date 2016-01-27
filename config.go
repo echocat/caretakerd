@@ -1,18 +1,18 @@
 package caretakerd
 
 import (
-	"github.com/echocat/caretakerd/logger"
-	"github.com/echocat/caretakerd/service"
-	"github.com/echocat/caretakerd/rpc"
 	"github.com/echocat/caretakerd/control"
 	"github.com/echocat/caretakerd/keyStore"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/rpc"
+	"github.com/echocat/caretakerd/service"
 )
 
 type Config struct {
 	KeyStore keyStore.Config `json:"keyStore" yaml:"keyStore,omitempty"`
-	Rpc      rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
-	Control  control.Config `json:"control" yaml:"control,omitempty"`
-	Logger   logger.Config `json:"logger" yaml:"logger,omitempty"`
+	Rpc      rpc.Config      `json:"rpc" yaml:"rpc,omitempty"`
+	Control  control.Config  `json:"control" yaml:"control,omitempty"`
+	Logger   logger.Config   `json:"logger" yaml:"logger,omitempty"`
 	Services service.Configs `json:"services" yaml:"services,omitempty"`
 }
 

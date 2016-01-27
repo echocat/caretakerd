@@ -1,9 +1,9 @@
 package sync
 
 import (
-	"time"
-	"runtime"
 	"errors"
+	"runtime"
+	"time"
 )
 
 type Condition struct {
@@ -14,9 +14,9 @@ type Condition struct {
 
 func (sg *SyncGroup) NewCondition(mutex *Mutex) *Condition {
 	result := &Condition{
-		sg: sg,
+		sg:      sg,
 		channel: make(chan bool),
-		mutex: mutex,
+		mutex:   mutex,
 	}
 	runtime.SetFinalizer(result, finalizeConditionInstance)
 	return result
@@ -36,7 +36,7 @@ func (i *Condition) Wait(duration time.Duration) error {
 		return sg.removeAndReturn(i, TimeoutError{})
 	case c := <-i.channel:
 		var result error
-		if ! c {
+		if !c {
 			result = InterruptedError{}
 		}
 		return sg.removeAndReturn(i, result)

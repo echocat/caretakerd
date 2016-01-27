@@ -1,8 +1,8 @@
 package control
 
 import (
-	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/access"
+	"github.com/echocat/caretakerd/defaults"
 )
 
 type Config struct {

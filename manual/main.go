@@ -1,18 +1,18 @@
 package main
 
 import (
-	"github.com/russross/blackfriday"
-	"io/ioutil"
 	"fmt"
-	"os"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
+	"github.com/russross/blackfriday"
+	"io/ioutil"
+	"os"
 )
 
 var LOGGER, _ = logger.NewLogger(logger.Config{
-	Level: logger.Info,
+	Level:    logger.Info,
 	Filename: "console",
-	Pattern: "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] %m%n%P{%m}",
+	Pattern:  "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] %m%n%P{%m}",
 }, "manual", sync.NewSyncGroup())
 
 func panicHandler() {

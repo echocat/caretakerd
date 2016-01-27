@@ -1,11 +1,11 @@
 package access
 
 import (
-	"os"
 	"encoding/json"
-	"regexp"
 	"fmt"
 	"github.com/echocat/caretakerd/errors"
+	"os"
+	"regexp"
 )
 
 var filePermissionOctPattern = regexp.MustCompile("^(\\d?)(\\d)(\\d)(\\d)$")

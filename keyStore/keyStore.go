@@ -1,19 +1,19 @@
 package keyStore
 
 import (
-	"github.com/echocat/caretakerd/panics"
-	"github.com/echocat/caretakerd/errors"
-	"os"
 	"crypto/rand"
-	"math/big"
+	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"time"
 	"encoding/pem"
-	"crypto/rsa"
-	"strings"
-	"strconv"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/panics"
 	"io/ioutil"
+	"math/big"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type KeyStore struct {
@@ -33,7 +33,7 @@ func NewKeyStore(enabled bool, conf Config) (*KeyStore, error) {
 	if !enabled {
 		return &KeyStore{
 			enabled: false,
-			config: conf,
+			config:  conf,
 		}, nil
 	}
 	switch conf.Type {
@@ -76,11 +76,11 @@ func generateCertificate(conf Config, privateKey interface{}, publicKey interfac
 		Subject: pkix.Name{
 			CommonName: "caretakerd",
 		},
-		IsCA: true,
-		NotBefore: notBefore,
-		NotAfter: notAfter,
-		KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+		IsCA:                  true,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign | x509.KeyUsageCRLSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 		BasicConstraintsValid: true,
 	}
 
@@ -145,11 +145,11 @@ func newPemFromBytes(conf Config, pem []byte) (*KeyStore, error) {
 		return nil, err
 	}
 	return &KeyStore{
-		enabled: true,
-		config: conf,
-		pem: pem,
-		ca: ca,
-		cert: certs[0],
+		enabled:    true,
+		config:     conf,
+		pem:        pem,
+		ca:         ca,
+		cert:       certs[0],
 		privateKey: privateKey,
 	}, nil
 }
@@ -164,11 +164,11 @@ func newGenerated(conf Config) (*KeyStore, error) {
 		return nil, errors.New("Could not build CA bundle for keyStore config.").CausedBy(err)
 	}
 	return &KeyStore{
-		enabled: true,
-		config: conf,
-		pem: pem,
-		ca: ca,
-		cert: cert,
+		enabled:    true,
+		config:     conf,
+		pem:        pem,
+		ca:         ca,
+		cert:       cert,
 		privateKey: privateKey,
 	}, nil
 }
@@ -270,15 +270,15 @@ func (instance KeyStore) generateClientCertificate(name string, publicKey interf
 
 	template := x509.Certificate{
 		SerialNumber: newSerialNumber(),
-		Issuer: instance.cert.Subject,
+		Issuer:       instance.cert.Subject,
 		Subject: pkix.Name{
 			CommonName: name,
 		},
-		IsCA: true,
-		NotBefore: notBefore,
-		NotAfter: notAfter,
-		KeyUsage: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		IsCA:                  true,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: false,
 	}
 

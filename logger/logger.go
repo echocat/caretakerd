@@ -1,14 +1,14 @@
 package logger
 
 import (
-	"github.com/echocat/caretakerd/panics"
-	"gopkg.in/natefinch/lumberjack.v2"
-	"strings"
 	"fmt"
+	"github.com/echocat/caretakerd/panics"
+	usync "github.com/echocat/caretakerd/sync"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"runtime"
+	"strings"
 	"sync"
 	"time"
-	"runtime"
-	usync "github.com/echocat/caretakerd/sync"
 )
 
 type Logger struct {
@@ -28,7 +28,7 @@ func NewLogger(conf Config, name string, syncGroup *usync.SyncGroup) (*Logger, e
 		return nil, err
 	}
 	filename := conf.Filename.String()
-	var output *lumberjack.Logger;
+	var output *lumberjack.Logger
 	if len(strings.TrimSpace(filename)) > 0 && strings.ToLower(filename) != "console" {
 		output = &lumberjack.Logger{
 			Filename:   conf.Filename.String(),
@@ -41,13 +41,13 @@ func NewLogger(conf Config, name string, syncGroup *usync.SyncGroup) (*Logger, e
 		output = nil
 	}
 	result := &Logger{
-		config: conf,
-		name: name,
-		open: true,
-		syncGroup: syncGroup,
-		lock: new(sync.Mutex),
-		output: output,
-		created: time.Now(),
+		config:            conf,
+		name:              name,
+		open:              true,
+		syncGroup:         syncGroup,
+		lock:              new(sync.Mutex),
+		output:            output,
+		created:           time.Now(),
 		writeSynchronizer: NewWriteFor(conf.Filename, output),
 	}
 	runtime.SetFinalizer(result, finalize)
@@ -70,8 +70,8 @@ func (i *Logger) LogCustom(framesToSkip int, problem interface{}, level Level, p
 	if level >= i.config.Level {
 		now := time.Now()
 		message := FormatMessage(pattern, args...)
-		entry := i.EntryFor(framesToSkip + 1, problem, level, now, message)
-		toLog, err := entry.Format(i.config.Pattern, framesToSkip + 1)
+		entry := i.EntryFor(framesToSkip+1, problem, level, now, message)
+		toLog, err := entry.Format(i.config.Pattern, framesToSkip+1)
 		if err != nil {
 			panics.New("Could not format log entry with given pattern '%v'. Got: %v", i.config.Pattern, err)
 		}
@@ -92,7 +92,7 @@ func FormatMessage(pattern interface{}, args ...interface{}) string {
 func (i *Logger) write(level Level, message []byte) {
 	i.lock.Lock()
 	defer i.unlocker()
-	if ! i.IsOpen() {
+	if !i.IsOpen() {
 		panics.New("The logger is not open.").Throw()
 	}
 	i.writeSynchronizer.Write(message, level.IsIndicatingProblem())

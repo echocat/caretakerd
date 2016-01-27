@@ -1,10 +1,10 @@
 package main
 
 import (
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd"
+	"github.com/echocat/caretakerd/defaults"
+	"github.com/echocat/caretakerd/errors"
+	. "github.com/echocat/caretakerd/values"
 )
 
 type ConfigWrapper struct {
@@ -16,8 +16,8 @@ type ConfigWrapper struct {
 func NewConfigWrapper() *ConfigWrapper {
 	instance := caretakerd.NewConfig()
 	return &ConfigWrapper{
-		instance: &instance,
-		filename: defaults.ConfigFilename(),
+		instance:    &instance,
+		filename:    defaults.ConfigFilename(),
 		explicitSet: false,
 	}
 }

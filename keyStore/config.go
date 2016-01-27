@@ -1,17 +1,17 @@
 package keyStore
 
 import (
+	"github.com/echocat/caretakerd/errors"
 	. "github.com/echocat/caretakerd/values"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
 )
 
 var defaults = map[string]interface{}{
-	"Type": Generated,
+	"Type":    Generated,
 	"PemFile": String(""),
-	"Hints": String("algorithm:`rsa` bits:`1024`"),
-	"CaFile": String(""),
+	"Hints":   String("algorithm:`rsa` bits:`1024`"),
+	"CaFile":  String(""),
 }
 
 // @id KeyStore
@@ -25,7 +25,7 @@ type Config struct {
 	// @default generated
 	//
 	// Defines the type of instance keyStore.
-	Type    Type `json:"type" yaml:"type"`
+	Type Type `json:"type" yaml:"type"`
 
 	// @id      pemFile
 	// @default ""
@@ -44,13 +44,13 @@ type Config struct {
 	// Possible hints are:
 	// * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
 	// * ``bits``: Number of bits to create a new key with.
-	Hints   String `json:"hints,omitempty" yaml:"hints"`
+	Hints String `json:"hints,omitempty" yaml:"hints"`
 
 	// @id      caFile
 	// @default ""
 	//
 	// File where trusted certificates are stored in. This have to be in PEM format.
-	CaFile  String `json:"caFile,omitempty" yaml:"caFile"`
+	CaFile String `json:"caFile,omitempty" yaml:"caFile"`
 }
 
 func NewConfig() Config {
@@ -90,7 +90,7 @@ func (instance Config) validateRequireStringOrNotValue(value String, fieldName s
 }
 
 func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
-	if ! isAllowedMethod() && !value.IsEmpty() {
+	if !isAllowedMethod() && !value.IsEmpty() {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
@@ -111,11 +111,11 @@ func (instance Config) GetKeyArgument(key string) string {
 		for i < len(arguments) && arguments[i] > ' ' && arguments[i] != ':' && arguments[i] != '`' && arguments[i] != 0x7f {
 			i++
 		}
-		if i == 0 || i + 1 >= len(arguments) || arguments[i] != ':' || arguments[i + 1] != '`' {
+		if i == 0 || i+1 >= len(arguments) || arguments[i] != ':' || arguments[i+1] != '`' {
 			break
 		}
 		name := string(arguments[:i])
-		arguments = arguments[i + 1:]
+		arguments = arguments[i+1:]
 
 		i = 1
 		for i < len(arguments) && arguments[i] != '`' {
@@ -127,8 +127,8 @@ func (instance Config) GetKeyArgument(key string) string {
 		if i >= len(arguments) {
 			break
 		}
-		qvalue := string(arguments[:i + 1])
-		arguments = arguments[i + 1:]
+		qvalue := string(arguments[:i+1])
+		arguments = arguments[i+1:]
 
 		if key == name {
 			value, err := strconv.Unquote(qvalue)

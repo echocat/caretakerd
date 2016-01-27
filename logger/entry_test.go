@@ -1,9 +1,9 @@
 package logger
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestEntry_Format(t *testing.T) {
@@ -14,7 +14,7 @@ func TestEntry_Format(t *testing.T) {
 		Info,
 		time.Unix(1452347970, 0),
 		"This is a test!",
-		time.Duration(10 * time.Second),
+		time.Duration(10*time.Second),
 	)
 	f, err := e.Format("%d{YYYY-MM-DD HH:mm:ss}/%r [%-5.5p] [%-8.8c{2}] %m at %C{1}.%M(%F{1}:%L)%n", 0)
 	assert.Nil(t, err)

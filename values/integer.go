@@ -1,8 +1,8 @@
 package values
 
 import (
-	"strconv"
 	"github.com/echocat/caretakerd/errors"
+	"strconv"
 )
 
 // @id Integer

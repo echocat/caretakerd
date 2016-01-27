@@ -1,9 +1,9 @@
 package sync
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestSleep_Interrupt(t *testing.T) {

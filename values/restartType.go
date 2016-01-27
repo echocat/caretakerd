@@ -1,9 +1,9 @@
 package values
 
 import (
-	"strings"
-	"github.com/echocat/caretakerd/errors"
 	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
+	"strings"
 )
 
 // @id RestartType
@@ -21,21 +21,23 @@ type RestartType struct {
 //
 // Never restart the process.
 var Never RestartType = RestartType{
-	onSuccess: false,
+	onSuccess:  false,
 	onFailures: false,
 }
+
 // @id onFailures
 //
 // Only restart the process on failures.
 var OnFailures RestartType = RestartType{
-	onSuccess: false,
+	onSuccess:  false,
 	onFailures: true,
 }
+
 // @id always
 //
 // Always restart the process. This means on success and on failures.
 var Always RestartType = RestartType{
-	onSuccess: true,
+	onSuccess:  true,
 	onFailures: true,
 }
 var AllRestartTypes = []RestartType{

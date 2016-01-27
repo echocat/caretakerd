@@ -1,12 +1,12 @@
 package values
 
 import (
-	"strings"
-	"github.com/echocat/caretakerd/errors"
-	"regexp"
 	"fmt"
-	"strconv"
+	"github.com/echocat/caretakerd/errors"
 	"net"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
@@ -114,11 +114,11 @@ func (instance *SocketAddress) Set(value string) error {
 
 func (instance *SocketAddress) SetTcp(value string) error {
 	lastDoubleDot := strings.LastIndex(value, ":")
-	if lastDoubleDot <= 0 || lastDoubleDot + 2 >= len(value) {
+	if lastDoubleDot <= 0 || lastDoubleDot+2 >= len(value) {
 		return errors.New("No port specified for address '%v'.", value)
 	}
 	host := value[:lastDoubleDot]
-	plainPort := value[lastDoubleDot + 1:]
+	plainPort := value[lastDoubleDot+1:]
 	port, err := strconv.Atoi(plainPort)
 	if err != nil || !isValidPort(port) {
 		return errors.New("'%v' of specified address '%v' is not a valid port number.", plainPort, value)

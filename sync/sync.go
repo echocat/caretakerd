@@ -1,8 +1,8 @@
 package sync
 
 import (
-	"sync"
 	"runtime"
+	"sync"
 )
 
 type Interruptable interface {
@@ -29,7 +29,7 @@ func (instance InterruptedError) Error() string {
 func NewSyncGroup() *SyncGroup {
 	result := &SyncGroup{
 		interruptables: map[Interruptable]int{},
-		lock: new(sync.Mutex),
+		lock:           new(sync.Mutex),
 	}
 	runtime.SetFinalizer(result, finalizeSyncGroup)
 	return result
@@ -65,7 +65,7 @@ func (sg *SyncGroup) append(what Interruptable) {
 	}
 }
 
-func (sg *SyncGroup) removeAndReturn(what Interruptable, result error) (error) {
+func (sg *SyncGroup) removeAndReturn(what Interruptable, result error) error {
 	sg.lock.Lock()
 	defer sg.doUnlock()
 	if existing, ok := sg.interruptables[what]; ok {

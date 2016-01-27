@@ -1,8 +1,8 @@
 package sync
 
 import (
-	"time"
 	"runtime"
+	"time"
 )
 
 type Mutex struct {
@@ -12,7 +12,7 @@ type Mutex struct {
 
 func (sg *SyncGroup) NewMutex() *Mutex {
 	result := &Mutex{
-		sg: sg,
+		sg:      sg,
 		channel: make(chan bool, 1),
 	}
 	runtime.SetFinalizer(result, finalizeMutexInstance)

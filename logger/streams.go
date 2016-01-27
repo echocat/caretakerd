@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"strings"
 	"io"
+	"strings"
 )
 
 type Receiver struct {
@@ -10,18 +10,18 @@ type Receiver struct {
 	level  Level
 }
 
-func (i *Logger) ReceiverFor(l Level) (*Receiver) {
+func (i *Logger) ReceiverFor(l Level) *Receiver {
 	return &Receiver{
 		logger: i,
-		level: l,
+		level:  l,
 	}
 }
 
-func (i *Logger) Stdout() (*Receiver) {
+func (i *Logger) Stdout() *Receiver {
 	return i.ReceiverFor(i.config.StdoutLevel)
 }
 
-func (i *Logger) Stderr() (*Receiver) {
+func (i *Logger) Stderr() *Receiver {
 	return i.ReceiverFor(i.config.StderrLevel)
 }
 
@@ -39,10 +39,9 @@ func (i Receiver) Write(p []byte) (n int, err error) {
 	lines := strings.Split(what, "\n")
 	numberOfLines := len(lines)
 	for j, line := range lines {
-		if j < (numberOfLines - 1) || len(line) > 0 {
+		if j < (numberOfLines-1) || len(line) > 0 {
 			i.logger.Log(i.level, line)
 		}
 	}
 	return len(p), nil
 }
-
