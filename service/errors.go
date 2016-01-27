@@ -1,18 +1,18 @@
 package service
 
 type ServiceDownError struct {
-    Name string
+	Name string
 }
 
 func (this ServiceDownError) Error() string {
-    return "Service '" + this.Name + "' is down."
+	return "Service '" + this.Name + "' is down."
 }
 
 type ServiceAlreadyRunningError struct {
-    Name string
+	Name string
 }
 
 func (this ServiceAlreadyRunningError) Error() string {
-    return "Service '" + this.Name + "' already running."
+	return "Service '" + this.Name + "' already running."
 }
 

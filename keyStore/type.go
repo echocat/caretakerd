@@ -1,10 +1,10 @@
 package keyStore
 
 import (
-    "strconv"
-    "strings"
-    "github.com/echocat/caretakerd/errors"
-    "encoding/json"
+	"strconv"
+	"strings"
+	"github.com/echocat/caretakerd/errors"
+	"encoding/json"
 )
 
 // @id Type
@@ -16,114 +16,114 @@ import (
 type Type int
 
 const (
-    // @id generated
-    //
-    // Indicates that caretakerd have to generate its own keyStore on startup.
-    // This is the best solution in most cases.
-    Generated Type = 0
+// @id generated
+//
+// Indicates that caretakerd have to generate its own keyStore on startup.
+// This is the best solution in most cases.
+	Generated Type = 0
 
-    // @id fromFile
-    //
-    // Load keyStore from a provided PEM file.
-    // If this type is selected this file have to be provided.
-    FromFile Type = 1
+// @id fromFile
+//
+// Load keyStore from a provided PEM file.
+// If this type is selected this file have to be provided.
+	FromFile Type = 1
 
-    // @id fromEnvironment
-    //
-    // Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
-    // If this type is selected this variable have to be provided.
-    FromEnvironment Type = 2
+// @id fromEnvironment
+//
+// Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
+// If this type is selected this variable have to be provided.
+	FromEnvironment Type = 2
 )
 
 var AllTypes []Type = []Type{
-    Generated,
-    FromFile,
-    FromEnvironment,
+	Generated,
+	FromFile,
+	FromEnvironment,
 }
 
 func (i Type) String() string {
-    result, err := i.CheckedString()
-    if err != nil {
-        panic(err)
-    }
-    return result
+	result, err := i.CheckedString()
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func (i Type) CheckedString() (string, error) {
-    switch i {
-    case Generated:
-        return "generated", nil
-    case FromFile:
-        return "fromFile", nil
-    case FromEnvironment:
-        return "fromEnvironment", nil
-    }
-    return "", errors.New("Illegal keyStore type: %d", i)
+	switch i {
+	case Generated:
+		return "generated", nil
+	case FromFile:
+		return "fromFile", nil
+	case FromEnvironment:
+		return "fromEnvironment", nil
+	}
+	return "", errors.New("Illegal keyStore type: %d", i)
 }
 
 func (i *Type) Set(value string) error {
-    if valueAsInt, err := strconv.Atoi(value); err == nil {
-        for _, candidate := range AllTypes {
-            if int(candidate) == valueAsInt {
-                (*i) = candidate
-                return nil
-            }
-        }
-        return errors.New("Illegal keyStore type: " + value)
-    } else {
-        lowerValue := strings.ToLower(value)
-        for _, candidate := range AllTypes {
-            if strings.ToLower(candidate.String()) == lowerValue {
-                (*i) = candidate
-                return nil
-            }
-        }
-        return errors.New("Illegal keyStore type: " + value)
-    }
+	if valueAsInt, err := strconv.Atoi(value); err == nil {
+		for _, candidate := range AllTypes {
+			if int(candidate) == valueAsInt {
+				(*i) = candidate
+				return nil
+			}
+		}
+		return errors.New("Illegal keyStore type: " + value)
+	} else {
+		lowerValue := strings.ToLower(value)
+		for _, candidate := range AllTypes {
+			if strings.ToLower(candidate.String()) == lowerValue {
+				(*i) = candidate
+				return nil
+			}
+		}
+		return errors.New("Illegal keyStore type: " + value)
+	}
 }
 
 func (i Type) MarshalYAML() (interface{}, error) {
-    return i.String(), nil
+	return i.String(), nil
 }
 
 func (i *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
-    var value string
-    if err := unmarshal(&value); err != nil {
-        return err
-    }
-    return i.Set(value)
+	var value string
+	if err := unmarshal(&value); err != nil {
+		return err
+	}
+	return i.Set(value)
 }
 
 func (i Type) MarshalJSON() ([]byte, error) {
-    s, err := i.CheckedString()
-    if err != nil {
-        return []byte{}, err
-    }
-    return json.Marshal(s)
+	s, err := i.CheckedString()
+	if err != nil {
+		return []byte{}, err
+	}
+	return json.Marshal(s)
 }
 
 func (i *Type) UnmarshalJSON(b []byte) error {
-    var value string
-    if err := json.Unmarshal(b, &value); err != nil {
-        return err
-    }
-    return i.Set(value)
+	var value string
+	if err := json.Unmarshal(b, &value); err != nil {
+		return err
+	}
+	return i.Set(value)
 }
 
 func (i Type) IsTakingFilename() bool {
-    return i == FromFile
+	return i == FromFile
 }
 
 func (i Type) IsGenerating() bool {
-    return i == Generated
+	return i == Generated
 }
 
 func (i Type) IsConsumingCaFile() bool {
-    return i == FromFile || i == FromEnvironment
+	return i == FromFile || i == FromEnvironment
 }
 
 func (i Type) Validate() error {
-    _, err := i.CheckedString()
-    return err
+	_, err := i.CheckedString()
+	return err
 }
 

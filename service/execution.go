@@ -1,309 +1,309 @@
 package service
 
 import (
-    "os/exec"
-    "strings"
-    "strconv"
-    "os"
-    "syscall"
-    "time"
-    . "github.com/echocat/caretakerd/values"
-    "github.com/echocat/caretakerd/errors"
-    "github.com/echocat/caretakerd/logger"
-    "github.com/echocat/caretakerd/sync"
-    "github.com/echocat/caretakerd/access"
-    "github.com/echocat/caretakerd/keyStore"
+	"os/exec"
+	"strings"
+	"strconv"
+	"os"
+	"syscall"
+	"time"
+	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/sync"
+	"github.com/echocat/caretakerd/access"
+	"github.com/echocat/caretakerd/keyStore"
 )
 
 type Execution struct {
-    service   *Service
-    logger    *logger.Logger
-    cmd       *exec.Cmd
-    status    Status
-    lock      *sync.Mutex
-    condition *sync.Condition
-    access    *access.Access
-    syncGroup *sync.SyncGroup
+	service   *Service
+	logger    *logger.Logger
+	cmd       *exec.Cmd
+	status    Status
+	lock      *sync.Mutex
+	condition *sync.Condition
+	access    *access.Access
+	syncGroup *sync.SyncGroup
 }
 
 func (this *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error) {
-    a, err := access.NewAccess(this.config.Access, this.name, sec)
-    if err != nil {
-        return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)
-    }
-    syncGroup := this.syncGroup.NewSyncGroup()
-    cmd := this.generateCmd(a)
-    lock := syncGroup.NewMutex()
-    condition := syncGroup.NewCondition(lock)
-    return &Execution{
-        service: this,
-        logger: this.logger,
-        cmd: cmd,
-        status: Down,
-        lock: lock,
-        condition: condition,
-        access: a,
-        syncGroup: syncGroup,
-    }, nil
+	a, err := access.NewAccess(this.config.Access, this.name, sec)
+	if err != nil {
+		return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)
+	}
+	syncGroup := this.syncGroup.NewSyncGroup()
+	cmd := this.generateCmd(a)
+	lock := syncGroup.NewMutex()
+	condition := syncGroup.NewCondition(lock)
+	return &Execution{
+		service: this,
+		logger: this.logger,
+		cmd: cmd,
+		status: Down,
+		lock: lock,
+		condition: condition,
+		access: a,
+		syncGroup: syncGroup,
+	}, nil
 }
 
 func (this *Service) getRunArgumentsFor() []string {
-    args := []string{}
-    command := (*this).config.Command
-    for i := 1; i < len(command); i++ {
-        args = append(args, command[i].String())
-    }
-    return args
+	args := []string{}
+	command := (*this).config.Command
+	for i := 1; i < len(command); i++ {
+		args = append(args, command[i].String())
+	}
+	return args
 }
 
 func (this *Service) generateCmd(ai *access.Access) (*exec.Cmd) {
-    logger := (*this).logger
-    config := (*this).config
-    cmd := exec.Command(config.Command[0].String(), this.getRunArgumentsFor()...)
-    cmd.Stdout = logger.Stdout()
-    cmd.Stderr = logger.Stderr()
-    cmd.Stdin = logger.Stdin()
-    if ! config.Directory.IsTrimmedEmpty() {
-        cmd.Dir = config.Directory.String()
-    }
-    for key, value := range config.Environment {
-        cmd.Env = append(cmd.Env, key + "=" + value)
-    }
-    if ai.Type() == access.GenerateToEnvironment {
-        cmd.Env = append(cmd.Env, "CTD_PEM=" + string(ai.Pem()))
-    } else {
-        cmd.Env = append(cmd.Env, "CTD_PEM=")
-    }
-    if config.InheritEnvironment {
-        cmd.Env = append(cmd.Env, os.Environ()...)
-    }
-    serviceHandleUsersFor(this, cmd)
-    return cmd
+	logger := (*this).logger
+	config := (*this).config
+	cmd := exec.Command(config.Command[0].String(), this.getRunArgumentsFor()...)
+	cmd.Stdout = logger.Stdout()
+	cmd.Stderr = logger.Stderr()
+	cmd.Stdin = logger.Stdin()
+	if ! config.Directory.IsTrimmedEmpty() {
+		cmd.Dir = config.Directory.String()
+	}
+	for key, value := range config.Environment {
+		cmd.Env = append(cmd.Env, key + "=" + value)
+	}
+	if ai.Type() == access.GenerateToEnvironment {
+		cmd.Env = append(cmd.Env, "CTD_PEM=" + string(ai.Pem()))
+	} else {
+		cmd.Env = append(cmd.Env, "CTD_PEM=")
+	}
+	if config.InheritEnvironment {
+		cmd.Env = append(cmd.Env, os.Environ()...)
+	}
+	serviceHandleUsersFor(this, cmd)
+	return cmd
 }
 
 func (this *Execution) CommandLine() string {
-    service := (*this).service
-    result := ""
-    for i, arg := range (*service).config.Command {
-        argAsString := arg.String()
-        if i != 0 {
-            result += " "
-        }
-        if strings.Contains(argAsString, "\"") || strings.Contains(argAsString, "\\") || strings.Contains(argAsString, " ") {
-            result += strconv.Quote(argAsString)
-        } else {
-            result += argAsString
-        }
-    }
-    return result
+	service := (*this).service
+	result := ""
+	for i, arg := range (*service).config.Command {
+		argAsString := arg.String()
+		if i != 0 {
+			result += " "
+		}
+		if strings.Contains(argAsString, "\"") || strings.Contains(argAsString, "\\") || strings.Contains(argAsString, " ") {
+			result += strconv.Quote(argAsString)
+		} else {
+			result += argAsString
+		}
+	}
+	return result
 }
 
 func (this *Execution) handleBeforeRun() error {
-    cronExpression := this.service.Config().CronExpression
-    startAt := cronExpression.Next(time.Now())
-    if startAt != nil {
-        waitDuration := startAt.Sub(time.Now())
-        this.logger.Log(logger.Debug, "Start of service '%s' is timed for %v (in %v).", this.Name(), startAt, waitDuration)
-        if err := this.syncGroup.Sleep(waitDuration); err != nil {
-            return StoppedOrKilledError{error: errors.New("Process was stopped before start.")}
-        }
-    }
-    return nil
+	cronExpression := this.service.Config().CronExpression
+	startAt := cronExpression.Next(time.Now())
+	if startAt != nil {
+		waitDuration := startAt.Sub(time.Now())
+		this.logger.Log(logger.Debug, "Start of service '%s' is timed for %v (in %v).", this.Name(), startAt, waitDuration)
+		if err := this.syncGroup.Sleep(waitDuration); err != nil {
+			return StoppedOrKilledError{error: errors.New("Process was stopped before start.")}
+		}
+	}
+	return nil
 }
 
 func (this *Execution) Run() (ExitCode, error) {
-    err := this.handleBeforeRun()
-    if err != nil {
-        return ExitCode(1), err
-    }
-    this.logger.Log(logger.Debug, "Start service '%s' with command: %s", this.Name(), this.CommandLine())
-    exitCode, err, lastState := this.runBare()
-    if lastState == Killed {
-        err = StoppedOrKilledError{error: errors.New("Process was killed.")}
-        this.logger.Log(logger.Debug, "Service '%s' ended after kill: %d", this.Name(), exitCode)
-    } else if lastState == Stopped {
-        err = StoppedOrKilledError{error: errors.New("Process was stopped.")}
-        this.logger.Log(logger.Debug, "Service '%s' ended successful after stop: %d", this.Name(), exitCode)
-    } else if err != nil {
-        this.logger.Log(logger.Fatal, err)
-    } else if this.service.config.SuccessExitCodes.Contains(exitCode) {
-        this.logger.Log(logger.Debug, "Service '%s' ended successful: %d", this.Name(), exitCode)
-    } else {
-        this.logger.Log(logger.Error, "Service '%s' ended with unexpected code: %d", this.Name(), exitCode)
-        err = errors.New("Unexpected error code %d generated by service '%s'", exitCode, this.Name())
-    }
-    return exitCode, err
+	err := this.handleBeforeRun()
+	if err != nil {
+		return ExitCode(1), err
+	}
+	this.logger.Log(logger.Debug, "Start service '%s' with command: %s", this.Name(), this.CommandLine())
+	exitCode, err, lastState := this.runBare()
+	if lastState == Killed {
+		err = StoppedOrKilledError{error: errors.New("Process was killed.")}
+		this.logger.Log(logger.Debug, "Service '%s' ended after kill: %d", this.Name(), exitCode)
+	} else if lastState == Stopped {
+		err = StoppedOrKilledError{error: errors.New("Process was stopped.")}
+		this.logger.Log(logger.Debug, "Service '%s' ended successful after stop: %d", this.Name(), exitCode)
+	} else if err != nil {
+		this.logger.Log(logger.Fatal, err)
+	} else if this.service.config.SuccessExitCodes.Contains(exitCode) {
+		this.logger.Log(logger.Debug, "Service '%s' ended successful: %d", this.Name(), exitCode)
+	} else {
+		this.logger.Log(logger.Error, "Service '%s' ended with unexpected code: %d", this.Name(), exitCode)
+		err = errors.New("Unexpected error code %d generated by service '%s'", exitCode, this.Name())
+	}
+	return exitCode, err
 }
 
 type UnrecoverableError struct {
-    error
+	error
 }
 
 type StoppedOrKilledError struct {
-    error
+	error
 }
 
 func (this *Execution) runBare() (ExitCode, error, Status) {
-    cmd := (*this).cmd
-    var waitStatus syscall.WaitStatus
-    this.doSetRunningState()
-    defer this.doSetDownState()
-    if err := cmd.Run(); err != nil {
-        if exitError, ok := err.(*exec.ExitError); ok {
-            waitStatus = exitError.Sys().(syscall.WaitStatus)
-            return ExitCode(waitStatus.ExitStatus()), nil, this.status
-        } else {
-            return ExitCode(0), UnrecoverableError{error: err}, this.status
-        }
-    } else {
-        waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
-        return ExitCode(waitStatus.ExitStatus()), nil, this.status
-    }
+	cmd := (*this).cmd
+	var waitStatus syscall.WaitStatus
+	this.doSetRunningState()
+	defer this.doSetDownState()
+	if err := cmd.Run(); err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus = exitError.Sys().(syscall.WaitStatus)
+			return ExitCode(waitStatus.ExitStatus()), nil, this.status
+		} else {
+			return ExitCode(0), UnrecoverableError{error: err}, this.status
+		}
+	} else {
+		waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
+		return ExitCode(waitStatus.ExitStatus()), nil, this.status
+	}
 }
 
 func (this *Execution) doSetRunningState() {
-    this.doLock()
-    defer this.doUnlock()
-    (*this).status = Running
+	this.doLock()
+	defer this.doUnlock()
+	(*this).status = Running
 }
 
 func (this *Execution) doSetDownState() {
-    this.setStateSyncedTo(Down)
+	this.setStateSyncedTo(Down)
 }
 
 func (this *Execution) setStateSyncedTo(s Status) bool {
-    this.doLock()
-    defer this.doUnlock()
-    return this.setStateTo(s)
+	this.doLock()
+	defer this.doUnlock()
+	return this.setStateTo(s)
 }
 
 func (this *Execution) setStateTo(ns Status) bool {
-    cs := this.status
-    if cs != Down || (ns != Killed && ns != Stopped) {
-        (*this).status = ns
-        this.condition.Send()
-        if cs == Down {
-            this.access.Cleanup()
-        }
-        return true
-    }
-    this.condition.Send()
-    return false
+	cs := this.status
+	if cs != Down || (ns != Killed && ns != Stopped) {
+		(*this).status = ns
+		this.condition.Send()
+		if cs == Down {
+			this.access.Cleanup()
+		}
+		return true
+	}
+	this.condition.Send()
+	return false
 }
 
 func (this *Execution) Name() string {
-    return (*this).service.name
+	return (*this).service.name
 }
 
 func (this *Execution) Stop() {
-    this.syncGroup.Interrupt()
-    this.doLock()
-    defer this.doUnlock()
-    if this.status != Down {
-        this.sendStop()
-        if this.status != Down {
-            this.logger.Log(logger.Debug, "Stopping '%s'...", this.Name())
-            this.condition.Wait(time.Duration(this.service.config.StopWaitInSeconds) * time.Second)
-            if this.status != Down {
-                this.logger.Log(logger.Warning, "Service '%s' does not respond after %d seconds. Going to kill it now...", this.Name(), this.service.config.StopWaitInSeconds)
-                this.sendKill()
-            }
-        }
-    }
+	this.syncGroup.Interrupt()
+	this.doLock()
+	defer this.doUnlock()
+	if this.status != Down {
+		this.sendStop()
+		if this.status != Down {
+			this.logger.Log(logger.Debug, "Stopping '%s'...", this.Name())
+			this.condition.Wait(time.Duration(this.service.config.StopWaitInSeconds) * time.Second)
+			if this.status != Down {
+				this.logger.Log(logger.Warning, "Service '%s' does not respond after %d seconds. Going to kill it now...", this.Name(), this.service.config.StopWaitInSeconds)
+				this.sendKill()
+			}
+		}
+	}
 }
 
 func (this *Execution) sendStop() {
-    if this.status != Killed && this.status != Stopped && this.setStateTo(Stopped) {
-        this.sendSignal((*this).service.config.StopSignal)
-    }
+	if this.status != Killed && this.status != Stopped && this.setStateTo(Stopped) {
+		this.sendSignal((*this).service.config.StopSignal)
+	}
 }
 
 func (this *Execution) Kill() {
-    this.syncGroup.Interrupt()
-    this.doLock()
-    defer this.doUnlock()
-    this.logger.Log(logger.Debug, "Killing '%s'...", this.Name())
-    this.sendKill()
+	this.syncGroup.Interrupt()
+	this.doLock()
+	defer this.doUnlock()
+	this.logger.Log(logger.Debug, "Killing '%s'...", this.Name())
+	this.sendKill()
 }
 
 func (this *Execution) sendKill() {
-    if this.status != Killed && this.setStateTo(Killed) {
-        for ; this.status != Down; {
-            if err := this.sendSignal(KILL); err != nil {
-                this.logger.LogProblem(err, logger.Warning, "Could not kill: %v", this.service.Name())
-            }
-            if this.status != Down {
-                (*this).condition.Wait(1 * time.Second)
-            }
-        }
-    }
+	if this.status != Killed && this.setStateTo(Killed) {
+		for ; this.status != Down; {
+			if err := this.sendSignal(KILL); err != nil {
+				this.logger.LogProblem(err, logger.Warning, "Could not kill: %v", this.service.Name())
+			}
+			if this.status != Down {
+				(*this).condition.Wait(1 * time.Second)
+			}
+		}
+	}
 }
 
 func (this *Execution) Signal(what Signal) error {
-    this.doLock()
-    defer this.doUnlock()
-    this.logger.Log(logger.Debug, "Sending signal %v to '%s'...", what, this.Name())
-    return this.sendSignal(what)
+	this.doLock()
+	defer this.doUnlock()
+	this.logger.Log(logger.Debug, "Sending signal %v to '%s'...", what, this.Name())
+	return this.sendSignal(what)
 }
 
 func (this *Execution) sendSignal(s Signal) error {
-    if this.isKillSignal(s) {
-        if !this.setStateTo(Killed) {
-            return errors.New("Service '%v' is not running.", this)
-        }
-    } else if this.isStopSignal(s) {
-        if !this.setStateTo(Stopped) {
-            return errors.New("Service '%v' is not running.", this)
-        }
-    }
-    cmd := (*this).cmd
-    process := cmd.Process
-    ps := cmd.ProcessState
-    if process == nil || ps != nil {
-        this.setStateTo(Down)
-        return errors.New("Service '%v' is not running.", this)
-    }
-    if s != NOOP {
-        return sendSignalToService((*this).service, process, s)
-    }
-    return nil
+	if this.isKillSignal(s) {
+		if !this.setStateTo(Killed) {
+			return errors.New("Service '%v' is not running.", this)
+		}
+	} else if this.isStopSignal(s) {
+		if !this.setStateTo(Stopped) {
+			return errors.New("Service '%v' is not running.", this)
+		}
+	}
+	cmd := (*this).cmd
+	process := cmd.Process
+	ps := cmd.ProcessState
+	if process == nil || ps != nil {
+		this.setStateTo(Down)
+		return errors.New("Service '%v' is not running.", this)
+	}
+	if s != NOOP {
+		return sendSignalToService((*this).service, process, s)
+	}
+	return nil
 }
 
 func (this Execution) isStopSignal(s Signal) bool {
-    return s == this.service.config.StopSignal
+	return s == this.service.config.StopSignal
 }
 
 func (this Execution) isKillSignal(s Signal) bool {
-    return s == KILL
+	return s == KILL
 }
 
 func (this *Execution) doLock() {
-    this.lock.Lock()
+	this.lock.Lock()
 }
 
 func (this *Execution) doUnlock() {
-    this.lock.Unlock()
+	this.lock.Unlock()
 }
 
 func (this *Execution) Pid() int {
-    this.doLock()
-    defer this.doUnlock()
-    cmd := this.cmd
-    if cmd != nil {
-        process := cmd.Process
-        if process != nil {
-            return process.Pid
-        }
-    }
-    return 0
+	this.doLock()
+	defer this.doUnlock()
+	cmd := this.cmd
+	if cmd != nil {
+		process := cmd.Process
+		if process != nil {
+			return process.Pid
+		}
+	}
+	return 0
 }
 
 func (this *Execution) Status() Status {
-    this.doLock()
-    defer this.doUnlock()
-    return this.status
+	this.doLock()
+	defer this.doUnlock()
+	return this.status
 }
 
 func (this Execution) Service() *Service {
-    return this.service
+	return this.service
 }
