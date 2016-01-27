@@ -1,27 +1,27 @@
 package service
 
 import (
-	. "github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/access"
+	"github.com/echocat/caretakerd/logger"
+	. "github.com/echocat/caretakerd/values"
 )
 
 type Config struct {
-	Logger                logger.Config `json:"logger" yaml:"logger,omitempty"`
-	Command               []String `json:"command" yaml:"command,flow"`
-	Type                  Type `json:"type" yaml:"type"`
-	CronExpression        CronExpression `json:"cronExpression" yaml:"cronExpression"`
+	Logger                logger.Config      `json:"logger" yaml:"logger,omitempty"`
+	Command               []String           `json:"command" yaml:"command,flow"`
+	Type                  Type               `json:"type" yaml:"type"`
+	CronExpression        CronExpression     `json:"cronExpression" yaml:"cronExpression"`
 	StartDelayInSeconds   NonNegativeInteger `json:"startDelayInSeconds" yaml:"startDelayInSeconds"`
 	RestartDelayInSeconds NonNegativeInteger `json:"restartDelayInSeconds" yaml:"restartDelayInSeconds"`
-	SuccessExitCodes      ExitCodes `json:"successExitCodes" yaml:"successExitCodes,flow"`
-	StopSignal            Signal `json:"stopSignal" yaml:"stopSignal"`
+	SuccessExitCodes      ExitCodes          `json:"successExitCodes" yaml:"successExitCodes,flow"`
+	StopSignal            Signal             `json:"stopSignal" yaml:"stopSignal"`
 	StopWaitInSeconds     NonNegativeInteger `json:"stopWaitInSeconds" yaml:"stopWaitInSeconds"`
-	User                  String `json:"user" yaml:"user"`
-	Environment           Environments `json:"environment" yaml:"environment"`
-	Directory             String `json:"directory" yaml:"directory"`
-	AutoRestart           RestartType `json:"autoRestart" yaml:"autoRestart"`
-	InheritEnvironment    Boolean `json:"inheritEnvironment" yaml:"inheritEnvironment"`
-	Access                access.Config `json:"access" yaml:"access,omitempty"`
+	User                  String             `json:"user" yaml:"user"`
+	Environment           Environments       `json:"environment" yaml:"environment"`
+	Directory             String             `json:"directory" yaml:"directory"`
+	AutoRestart           RestartType        `json:"autoRestart" yaml:"autoRestart"`
+	InheritEnvironment    Boolean            `json:"inheritEnvironment" yaml:"inheritEnvironment"`
+	Access                access.Config      `json:"access" yaml:"access,omitempty"`
 }
 
 func NewConfig() Config {

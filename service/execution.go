@@ -1,18 +1,18 @@
 package service
 
 import (
-	"os/exec"
-	"strings"
-	"strconv"
-	"os"
-	"syscall"
-	"time"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/access"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
-	"github.com/echocat/caretakerd/access"
-	"github.com/echocat/caretakerd/keyStore"
+	. "github.com/echocat/caretakerd/values"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
 )
 
 type Execution struct {
@@ -36,13 +36,13 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 	lock := syncGroup.NewMutex()
 	condition := syncGroup.NewCondition(lock)
 	return &Execution{
-		service: instance,
-		logger: instance.logger,
-		cmd: cmd,
-		status: Down,
-		lock: lock,
+		service:   instance,
+		logger:    instance.logger,
+		cmd:       cmd,
+		status:    Down,
+		lock:      lock,
 		condition: condition,
-		access: a,
+		access:    a,
 		syncGroup: syncGroup,
 	}, nil
 }
@@ -56,21 +56,21 @@ func (instance *Service) getRunArgumentsFor() []string {
 	return args
 }
 
-func (instance *Service) generateCmd(ai *access.Access) (*exec.Cmd) {
+func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
 	logger := (*instance).logger
 	config := (*instance).config
 	cmd := exec.Command(config.Command[0].String(), instance.getRunArgumentsFor()...)
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
 	cmd.Stdin = logger.Stdin()
-	if ! config.Directory.IsTrimmedEmpty() {
+	if !config.Directory.IsTrimmedEmpty() {
 		cmd.Dir = config.Directory.String()
 	}
 	for key, value := range config.Environment {
-		cmd.Env = append(cmd.Env, key + "=" + value)
+		cmd.Env = append(cmd.Env, key+"="+value)
 	}
 	if ai.Type() == access.GenerateToEnvironment {
-		cmd.Env = append(cmd.Env, "CTD_PEM=" + string(ai.Pem()))
+		cmd.Env = append(cmd.Env, "CTD_PEM="+string(ai.Pem()))
 	} else {
 		cmd.Env = append(cmd.Env, "CTD_PEM=")
 	}
@@ -228,7 +228,7 @@ func (instance *Execution) Kill() {
 
 func (instance *Execution) sendKill() {
 	if instance.status != Killed && instance.setStateTo(Killed) {
-		for ; instance.status != Down; {
+		for instance.status != Down {
 			if err := instance.sendSignal(KILL); err != nil {
 				instance.logger.LogProblem(err, logger.Warning, "Could not kill: %v", instance.service.Name())
 			}

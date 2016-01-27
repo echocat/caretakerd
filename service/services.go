@@ -1,9 +1,9 @@
 package service
 
 import (
-	usync "github.com/echocat/caretakerd/sync"
-	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/keyStore"
+	"github.com/echocat/caretakerd/panics"
+	usync "github.com/echocat/caretakerd/sync"
 )
 
 type Services map[string]*Service

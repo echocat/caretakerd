@@ -1,8 +1,8 @@
 package service
 
 import (
-	"strings"
 	"github.com/echocat/caretakerd/errors"
+	"strings"
 )
 
 type Environments map[string]string

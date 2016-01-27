@@ -1,20 +1,20 @@
 package service
 
 import (
-	"github.com/echocat/caretakerd/panics"
+	"encoding/json"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/panics"
 	"strconv"
 	"strings"
-	"encoding/json"
 )
 
 type Status int
 
 const (
-	Down = Status(0)
+	Down    = Status(0)
 	Running = Status(1)
 	Stopped = Status(2)
-	Killed = Status(3)
+	Killed  = Status(3)
 )
 
 var AllStatus = []Status{
@@ -77,7 +77,8 @@ func (instance Status) Validate() {
 
 func (instance Status) IsGoDownRequest() bool {
 	switch instance {
-	case Stopped: fallthrough
+	case Stopped:
+		fallthrough
 	case Killed:
 		return true
 	}

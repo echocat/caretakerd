@@ -1,12 +1,12 @@
 package service
 
 import (
-	"github.com/echocat/caretakerd/logger"
-	"runtime"
-	usync "github.com/echocat/caretakerd/sync"
 	"github.com/echocat/caretakerd/access"
-	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/keyStore"
+	"github.com/echocat/caretakerd/logger"
+	usync "github.com/echocat/caretakerd/sync"
+	"runtime"
 )
 
 type Service struct {
@@ -35,11 +35,11 @@ func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *keySt
 		return nil, errors.New("Could not create logger for service '%v'.", name).CausedBy(err)
 	}
 	result := &Service{
-		config: conf,
-		logger: log,
-		name: name,
+		config:    conf,
+		logger:    log,
+		name:      name,
 		syncGroup: syncGroup,
-		access: acc,
+		access:    acc,
 	}
 	runtime.SetFinalizer(result, finalize)
 	return result, nil

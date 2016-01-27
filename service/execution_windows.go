@@ -3,17 +3,17 @@
 package service
 
 import (
-	"os/exec"
-	"os"
-	"syscall"
-	"github.com/echocat/caretakerd/panics"
-	"github.com/echocat/caretakerd/values"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/values"
+	"os"
+	"os/exec"
+	"syscall"
 )
 
 func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
-	if ! (*service).config.User.IsTrimmedEmpty() {
+	if !(*service).config.User.IsTrimmedEmpty() {
 		panics.New("Could not handle users under windows. Please remove it from service '%s'.", service.Name()).Throw()
 	}
 }
@@ -32,7 +32,7 @@ func sendSignalToService(service *Service, process *os.Process, what values.Sign
 			if se, ok := err.(syscall.Errno); ok {
 				ignore = se.Error() == "invalid argument"
 			}
-			if ! ignore {
+			if !ignore {
 				return errors.New("Could no signal '%v': %v", service, what).CausedBy(err)
 			}
 		}

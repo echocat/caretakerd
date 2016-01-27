@@ -1,18 +1,18 @@
 package service
 
 import (
+	"encoding/json"
+	"github.com/echocat/caretakerd/errors"
 	"strconv"
 	"strings"
-	"github.com/echocat/caretakerd/errors"
-	"encoding/json"
 )
 
 type Type int
 
 const (
-	OnDemand Type = 0
+	OnDemand  Type = 0
 	AutoStart Type = 1
-	Master Type = 2
+	Master    Type = 2
 )
 
 var AllTypes = []Type{

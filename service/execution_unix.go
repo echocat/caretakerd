@@ -3,11 +3,11 @@
 package service
 
 import (
+	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/values"
+	"os/exec"
 	"os/user"
 	"syscall"
-	"os/exec"
-	"github.com/echocat/caretakerd/values"
-	"github.com/echocat/caretakerd/panics"
 )
 
 func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {

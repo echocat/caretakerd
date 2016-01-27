@@ -13,7 +13,7 @@ type CronExpression struct {
 
 func NewCronExpression() CronExpression {
 	return CronExpression{
-		spec: "",
+		spec:     "",
 		schedule: nil,
 	}
 }
