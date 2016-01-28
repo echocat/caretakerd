@@ -2,9 +2,6 @@ package logger
 
 import "strings"
 
-// @id Pattern
-// @type simple
-//
 // ## Description
 //
 // A flexible pattern string.

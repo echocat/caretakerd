@@ -7,29 +7,20 @@ import (
 	"strings"
 )
 
-// @id Type
-// @type enum
-//
 // ## Description
 //
 // Represents the type of the keyStore.
 type Type int
 
 const (
-	// @id generated
-	//
 	// Indicates that caretakerd have to generate its own keyStore on startup.
 	// This is the best solution in most cases.
 	Generated Type = 0
 
-	// @id fromFile
-	//
 	// Load keyStore from a provided PEM file.
 	// If instance type is selected instance file have to be provided.
 	FromFile Type = 1
 
-	// @id fromEnvironment
-	//
 	// Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
 	// If instance type is selected instance variable have to be provided.
 	FromEnvironment Type = 2

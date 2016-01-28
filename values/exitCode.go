@@ -5,9 +5,6 @@ import (
 	"strconv"
 )
 
-// @id ExitCode
-// @type simple
-//
 // This represents an exit value of a process. This type is like an {@ref Integer}.
 type ExitCode int
 

@@ -14,9 +14,6 @@ var defaults = map[string]interface{}{
 	"CaFile":  String(""),
 }
 
-// @id KeyStore
-// @type struct
-//
 // ## Description
 //
 // Defines the keyStore of caretakerd.

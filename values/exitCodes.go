@@ -4,9 +4,6 @@ import (
 	"strings"
 )
 
-// @id ExitCodes
-// @type list
-//
 // This represents a list of {@ref ExitCode ExitCodes}.
 type ExitCodes []ExitCode
 

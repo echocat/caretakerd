@@ -5,9 +5,6 @@ import (
 	"strconv"
 )
 
-// @id Integer
-// @type simple
-//
 // This represents a natural number. It could be negative and positive.
 type Integer int
 

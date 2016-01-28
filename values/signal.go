@@ -9,9 +9,6 @@ import (
 	"time"
 )
 
-// @id Signal
-// @type enum
-//
 // ## Description
 //
 // This represents a system signal.

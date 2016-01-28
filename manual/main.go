@@ -31,6 +31,8 @@ func getSrcRootPath() string {
 }
 
 func main() {
+
+
 	defer panicHandler()
 	srcRootPath := getSrcRootPath()
 	project := DeterminateProject(srcRootPath)

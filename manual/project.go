@@ -11,7 +11,6 @@ import (
 
 var GOPATH = os.Getenv("GOPATH")
 var GOROOT = runtime.GOROOT()
-var GOROOT_SRC = GOROOT + string([]byte{filepath.Separator}) + "src"
 
 type Project struct {
 	GoSrcPath   string

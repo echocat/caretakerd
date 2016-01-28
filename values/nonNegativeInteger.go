@@ -5,9 +5,6 @@ import (
 	"strconv"
 )
 
-// @id NonNegativeInteger
-// @type simple
-//
 // Same like {@ref Integer} but could not be negative.
 type NonNegativeInteger int
 
