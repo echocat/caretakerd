@@ -147,9 +147,6 @@ func (instance *extractionTask) parsePackage(packageName string) (*parsedPackage
             DisableUnusedImportCheck: true,
             IgnoreFuncBodies: true,
         }
-        if contextPackage.Dir == instance.project.SrcRootPath || strings.HasPrefix(contextPackage.Dir, instance.project.SrcRootPath + string([]byte{filepath.Separator})) {
-            LOGGER.Log(logger.Info, "Check package %v...", packageName)
-        }
         pkg, err := typesConfig.Check(packageName, result.fileSet, sourceFiles, instance.info)
         if err != nil {
             return nil, errors.New("Could not check package %v.", packageName).CausedBy(err)
@@ -234,7 +231,7 @@ func parsePackage(et *extractionTask, pkg string, definitions *Definitions) erro
     if pp == nil {
         return nil
     }
-    LOGGER.Log(logger.Info, "Package: %v", pp.pkg.Path())
+    LOGGER.Log(logger.Info, "Parse package: %v", pp.pkg.Path())
     scope := pp.pkg.Scope()
     for _, name := range scope.Names() {
         element := scope.Lookup(name)

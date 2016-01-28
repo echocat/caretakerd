@@ -1,8 +1,8 @@
 package main
 
 import (
-    "path"
     "strings"
+    "path"
 )
 
 type Identifier struct {
@@ -39,18 +39,20 @@ func (instance Identifier) String() string {
 
 func NewIdentifier(project Project, packageName string, sourceName string, targetName string) Identifier {
     sourcePackage := packageName
-    targetPackage := path.Base(sourcePackage)
+    targetPackage := sourcePackage
+    if targetName == capitalize(path.Base(sourcePackage)) {
+        targetName = "_" + targetName
+    }
+    if targetName == "Config" {
+        targetName = capitalize(path.Base(sourcePackage))
+    }
+
     if sourcePackage == project.RootPackage {
         targetPackage = ""
     } else if strings.HasPrefix(sourcePackage, project.RootPackage) {
         targetPackage = sourcePackage[len(project.RootPackage) + 1:]
     }
-    if targetName == capitalize(targetPackage) {
-        targetName = "_" + targetName
-    }
-    if targetName == "Config" {
-        targetName = capitalize(targetPackage)
-    }
+
     sourceNameParts := strings.SplitAfter(sourceName, ".")
     targetNameParts := strings.SplitAfter(targetName, ".")
 
