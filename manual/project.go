@@ -11,6 +11,7 @@ import (
 
 var GOPATH = os.Getenv("GOPATH")
 var GOROOT = runtime.GOROOT()
+var GOROOT_SRC = GOROOT + string([]byte{filepath.Separator}) + "src"
 
 type Project struct {
 	GoSrcPath   string
@@ -48,7 +49,7 @@ func determinateProjectIn(goSrcPath string, srcRootPath string) *Project {
 		panics.New("Could not make srcRootPath '%v' absolute.", srcRootPath).CausedBy(err).Throw()
 	}
 	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath)+1 > len(cleanGoPath) {
-		rootPackage := cleanSrcRootPath[len(cleanGoPath)+1:]
+		rootPackage := strings.Replace(cleanSrcRootPath[len(cleanGoPath)+1:], string([]byte{filepath.Separator}), "/", -1)
 		return &Project{
 			GoSrcPath:   cleanGoPath,
 			SrcRootPath: cleanSrcRootPath,

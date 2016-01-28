@@ -8,7 +8,9 @@ import (
 	"github.com/echocat/caretakerd/service"
 )
 
+// This is a comment for config
 type Config struct {
+	// This is a comment for keyStore
 	KeyStore keyStore.Config `json:"keyStore" yaml:"keyStore,omitempty"`
 	Rpc      rpc.Config      `json:"rpc" yaml:"rpc,omitempty"`
 	Control  control.Config  `json:"control" yaml:"control,omitempty"`

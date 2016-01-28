@@ -17,7 +17,7 @@ var LOGGER, _ = logger.NewLogger(logger.Config{
 
 func panicHandler() {
 	if r := recover(); r != nil {
-		LOGGER.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
+		LOGGER.LogProblem(r, logger.Info, "There is an unrecoverable problem occured.")
 		os.Exit(2)
 	}
 }
@@ -37,12 +37,17 @@ func main() {
 	LOGGER.Log(logger.Info, "Root package: %v", project.RootPackage)
 	LOGGER.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
 
+	_, err := ExtractApiFrom(project)
+	if err != nil {
+		panic(err)
+	}
+
 	bytes, err := ioutil.ReadFile("manual/docs/configuration/examples.md")
 	if err != nil {
 		panic(err)
 	}
 	content := blackfriday.MarkdownCommon(bytes)
-	err = ioutil.WriteFile("targets/test.html", content, 0)
+	err = ioutil.WriteFile("target/test.html", content, 0)
 	if err != nil {
 		panic(err)
 	}
