@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/errors"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 )
 
 var GOPATH = os.Getenv("GOPATH")
@@ -23,37 +22,50 @@ func (instance Project) String() string {
 	return string(b)
 }
 
-func DeterminateProject(srcRootPath string) Project {
-	result := determinateProjectIn(GOPATH + "/src", srcRootPath)
-	if result == nil {
-		result = determinateProjectIn(GOROOT + "/src", srcRootPath)
+func DeterminateProject(packageName string) (Project, error) {
+	result, err := determinateProjectIn(GOPATH + "/src", packageName)
+	if err != nil {
+		return Project{}, err
 	}
 	if result == nil {
-		if len(GOPATH) > 0 {
-			panics.New("'%v' is not a subpath of GOROOT(%v). Hint: But environment variable GOPATH is not set.", srcRootPath, GOROOT).Throw()
-		} else {
-			panics.New("'%v' is neither a subpath of GOPATH(%v) nor GOROOT(%v).", srcRootPath, GOPATH, GOROOT).Throw()
+		result, err = determinateProjectIn(GOROOT + "/src", packageName)
+		if err != nil {
+			return Project{}, err
 		}
 	}
-	return *result
+	if result == nil {
+		if len(GOPATH) <= 0 {
+			return Project{}, errors.New("'%v' is not contained in GOROOT(%v). Hint: Environment variable GOPATH is not set which could contain the package.", packageName, GOROOT)
+		} else {
+			return Project{}, errors.New("'%v' is neither a contained in GOPATH(%v) nor GOROOT(%v).", packageName, GOPATH, GOROOT)
+		}
+	}
+	return *result, nil
 }
 
-func determinateProjectIn(goSrcPath string, srcRootPath string) *Project {
-	cleanGoPath, err := filepath.Abs(goSrcPath)
+func determinateProjectIn(goSrcPath string, packageName string) (*Project, error) {
+	cleanGoSrcPath, err := filepath.Abs(goSrcPath)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	cleanSrcRootPath, err := filepath.Abs(srcRootPath)
+	cleanSrcRootPath, err := filepath.Abs(goSrcPath + "/" + packageName)
 	if err != nil {
-		panics.New("Could not make srcRootPath '%v' absolute.", srcRootPath).CausedBy(err).Throw()
+		return nil, err
 	}
-	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath) + 1 > len(cleanGoPath) {
-		rootPackage := strings.Replace(cleanSrcRootPath[len(cleanGoPath) + 1:], string([]byte{filepath.Separator}), "/", -1)
-		return &Project{
-			GoSrcPath:   cleanGoPath,
-			SrcRootPath: cleanSrcRootPath,
-			RootPackage: rootPackage,
+	fileInfo, err := os.Stat(cleanSrcRootPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		} else {
+			return nil, err
 		}
 	}
-	return nil
+	if ! fileInfo.IsDir() {
+		return nil, nil
+	}
+	return &Project{
+		GoSrcPath:   cleanGoSrcPath,
+		SrcRootPath: cleanSrcRootPath,
+		RootPackage: packageName,
+	}, nil
 }

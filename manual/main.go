@@ -24,23 +24,32 @@ func panicHandler() {
 
 func getSrcRootPath() string {
 	if len(os.Args) < 2 || len(os.Args[1]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <project source root path>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %v <package>\n", os.Args[0])
 		os.Exit(1)
 	}
 	return os.Args[1]
 }
 
 func main() {
-
 	defer panicHandler()
 	srcRootPath := getSrcRootPath()
-	project := DeterminateProject(srcRootPath)
+	project, err := DeterminateProject(srcRootPath)
+	if err != nil {
+		panic(err)
+	}
 	LOGGER.Log(logger.Info, "Root package: %v", project.RootPackage)
 	LOGGER.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
 
-	_, err := ExtractApiFrom(project)
+	definitions, err := ParseDefinitions(project)
 	if err != nil {
 		panic(err)
+	}
+	pd, err := PickDefinitionsFrom(definitions, NewIdType(project.RootPackage, "Config", false))
+	if err != nil {
+		panic(err)
+	}
+	for _, definition := range pd.TopLevelDefinitions {
+		LOGGER.Log(logger.Info, "%v", definition)
 	}
 
 	bytes, err := ioutil.ReadFile("manual/docs/configuration/examples.md")

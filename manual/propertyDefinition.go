@@ -1,22 +1,22 @@
 package main
 
 type PropertyDefinition struct {
-	identifier Identifier
-	key        string
-	valueType  Identifier
-	comment    string
-	def        *string
+	id        IdType
+	key       string
+	valueType Type
+	comment   string
+	def       *string
 }
 
-func (instance PropertyDefinition) Identifier() Identifier {
-	return instance.identifier
+func (instance PropertyDefinition) Id() IdType {
+	return instance.id
 }
 
 func (instance PropertyDefinition) Key() string {
 	return instance.key
 }
 
-func (instance PropertyDefinition) ValueType() Identifier {
+func (instance PropertyDefinition) ValueType() Type {
 	return instance.valueType
 }
 
@@ -36,10 +36,11 @@ func (instance PropertyDefinition) DefaultValue() *string {
 	return instance.def
 }
 
-func newPropertyDefinition(identifier Identifier, key string, comment string, def *string) *PropertyDefinition {
+func newPropertyDefinition(id IdType, key string, valueType Type, comment string, def *string) *PropertyDefinition {
 	return &PropertyDefinition{
-		identifier: identifier,
+		id: id,
 		key: key,
+		valueType: valueType,
 		comment: comment,
 		def: def,
 	}

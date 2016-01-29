@@ -1,21 +1,21 @@
 package main
 
 type ElementDefinition struct {
-	identifier Identifier
-	valueType  Identifier
-	key        string
-	comment    string
+	id        IdType
+	valueType Type
+	key       string
+	comment   string
 }
 
-func (instance ElementDefinition) Identifier() Identifier {
-	return instance.identifier
+func (instance ElementDefinition) Id() IdType {
+	return instance.id
 }
 
 func (instance ElementDefinition) Key() string {
 	return instance.key
 }
 
-func (instance ElementDefinition) ValueType() Identifier {
+func (instance ElementDefinition) ValueType() Type {
 	return instance.valueType
 }
 
@@ -31,10 +31,11 @@ func (instance ElementDefinition) IsTopLevel() bool {
 	return false
 }
 
-func newElementDefinition(identifier Identifier, key string, comment string) *ElementDefinition {
+func newElementDefinition(id IdType, key string, valueType Type, comment string) *ElementDefinition {
 	return &ElementDefinition{
-		identifier: identifier,
+		id: id,
 		key: key,
+		valueType: valueType,
 		comment: comment,
 	}
 }

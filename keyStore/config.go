@@ -18,13 +18,11 @@ var defaults = map[string]interface{}{
 //
 // Defines the keyStore of caretakerd.
 type Config struct {
-	// @id type
 	// @default generated
 	//
 	// Defines the type of instance keyStore.
 	Type Type `json:"type" yaml:"type"`
 
-	// @id pemFile
 	// @default ""
 	//
 	// Defines the pemFile which contains the key and certificate to use.
@@ -34,7 +32,6 @@ type Config struct {
 	// This property is only evaluated and required if {@ref #type} is set to {@ref KeyStoreType#fromFile}.
 	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
 
-	// @id hints
 	// @default "algorithm:`rsa` bits:`1024`"
 	//
 	// Defines some hints for instance store in format ``[<key:`value`>...]``.
@@ -43,7 +40,6 @@ type Config struct {
 	// * ``bits``: Number of bits to create a new key with.
 	Hints String `json:"hints,omitempty" yaml:"hints"`
 
-	// @id caFile
 	// @default ""
 	//
 	// File where trusted certificates are stored in. This have to be in PEM format.

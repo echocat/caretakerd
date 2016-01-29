@@ -1,13 +1,13 @@
 package main
 
 type ObjectDefinition struct {
-	identifier Identifier
-	comment    string
-	children   []Definition
+	id       IdType
+	comment  string
+	children []Definition
 }
 
-func (instance ObjectDefinition) Identifier() Identifier {
-	return instance.identifier
+func (instance ObjectDefinition) Id() IdType {
+	return instance.id
 }
 
 func (instance ObjectDefinition) Comment() string {
@@ -30,9 +30,9 @@ func (instance *ObjectDefinition) AddChild(child Definition) {
 	instance.children = append(instance.children, child)
 }
 
-func newObjectDefinition(identifier Identifier, comment string) *ObjectDefinition {
+func newObjectDefinition(id IdType, comment string) *ObjectDefinition {
 	return &ObjectDefinition{
-		identifier: identifier,
+		id: id,
 		comment: comment,
 		children: []Definition{},
 	}

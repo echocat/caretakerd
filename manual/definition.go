@@ -7,7 +7,7 @@ import (
 )
 
 type Definition interface {
-	Identifier() Identifier
+	Id() IdType
 	Comment() string
 	TypeName() string
 	IsTopLevel() bool
@@ -27,12 +27,12 @@ type WithKey interface {
 }
 
 type WithValueType interface {
-	ValueType() Identifier
+	ValueType() Type
 }
 
 func FormatDefinition(definition Definition) string {
 	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "%v %s", definition.Identifier(), definition.TypeName())
+	fmt.Fprintf(buf, "%v %s", definition.Id(), definition.TypeName())
 	if key, ok := definition.(WithKey); ok {
 		fmt.Fprintf(buf, ": %s", key.Key())
 		if valueType, ok := definition.(WithValueType); ok {

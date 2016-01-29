@@ -1,13 +1,13 @@
 package main
 
 type EnumDefinition struct {
-	identifier Identifier
-	comment    string
-	children   []Definition
+	id       IdType
+	comment  string
+	children []Definition
 }
 
-func (instance EnumDefinition) Identifier() Identifier {
-	return instance.identifier
+func (instance EnumDefinition) Id() IdType {
+	return instance.id
 }
 
 func (instance EnumDefinition) Comment() string {
@@ -30,9 +30,9 @@ func (instance *EnumDefinition) AddChild(child Definition) {
 	instance.children = append(instance.children, child)
 }
 
-func newEnumDefinition(identifier Identifier, comment string) *EnumDefinition {
+func newEnumDefinition(id IdType, comment string) *EnumDefinition {
 	return &EnumDefinition{
-		identifier: identifier,
+		id: id,
 		comment: comment,
 		children: []Definition{},
 	}

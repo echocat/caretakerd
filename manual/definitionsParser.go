@@ -4,7 +4,6 @@ import (
 	"github.com/echocat/caretakerd/errors"
 	"go/parser"
 	"go/token"
-	"github.com/echocat/caretakerd/logger"
 	"regexp"
 	"go/ast"
 	"go/types"
@@ -168,15 +167,7 @@ func (instance *extractionTask) Import(packageName string) (*types.Package, erro
 	return pp.pkg, nil
 }
 
-type Api struct {
-	Classes map[string]string
-	Project Project
-}
-
-func ExtractApiFrom(project Project) (*Api, error) {
-	api := &Api{
-		Project: project,
-	}
+func ParseDefinitions(project Project) (*Definitions, error) {
 	definitions := NewDefinitions(project)
 
 	et := &extractionTask{
@@ -197,11 +188,11 @@ func ExtractApiFrom(project Project) (*Api, error) {
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			if path == project.SrcRootPath {
-				return parsePackage(et, project.RootPackage, definitions)
+				return et.parsePackageToDefinitions(project.RootPackage, definitions)
 			} else if strings.HasPrefix(path, project.GoSrcPath + string([]byte{filepath.Separator})) {
 				subPath := path[len(project.GoSrcPath) + 1:]
 				targetPackage := strings.Replace(subPath, string([]byte{filepath.Separator}), "/", -1)
-				err := parsePackage(et, targetPackage, definitions)
+				err := et.parsePackageToDefinitions(targetPackage, definitions)
 				if _, ok := err.(*build.NoGoError); ok {
 					return nil
 				} else {
@@ -218,12 +209,22 @@ func ExtractApiFrom(project Project) (*Api, error) {
 		return nil, err
 	}
 
-	LOGGER.Log(logger.Info, "\n\nDefinitions:\n%v", definitions)
-
-	return api, nil
+	return definitions, nil
 }
 
-func parsePackage(et *extractionTask, pkg string, definitions *Definitions) error {
+func isBasic(what types.Type) bool {
+	if _, ok := what.(*types.Basic); ok {
+		return true
+	} else if _, ok := what.(*types.Map); ok {
+		return true
+	} else if _, ok := what.(*types.Slice); ok {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Definitions) error {
 	pp, err := et.parsePackage(pkg)
 	if err != nil {
 		return err
@@ -231,19 +232,16 @@ func parsePackage(et *extractionTask, pkg string, definitions *Definitions) erro
 	if pp == nil {
 		return nil
 	}
-	LOGGER.Log(logger.Info, "Parse package: %v", pp.pkg.Path())
 	scope := pp.pkg.Scope()
 	for _, name := range scope.Names() {
 		element := scope.Lookup(name)
 		eUnderlying := element.Type().Underlying()
 		if _, ok := element.(*types.TypeName); ok {
-			if _, ok := eUnderlying.(*types.Basic); ok {
+			if isBasic(eUnderlying) {
 				comment, err := pp.commentTextFor(element)
 				if err != nil {
 					return err
 				}
-
-				LOGGER.Log(logger.Debug, "  %v.%v: %v", pp.pkg.Path(), name, strings.Replace(comment, "\n", " - ", -1))
 
 				file, err := pp.fileFor(element)
 				if err != nil {
@@ -274,10 +272,9 @@ func parsePackage(et *extractionTask, pkg string, definitions *Definitions) erro
 																if enumDefinition == nil {
 																	enumDefinition = definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
 																}
+																typeIdentifier := ParseType(eConst.Type().String())
 																newComment, id := extractIdFrom(elementComment, eConst.Name())
-																// TODO! Extract target name...
-																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, newComment)
-																LOGGER.Log(logger.Debug, "C %v.%v %v // %v", pp.pkg.Path(), eConst.Name(), eConst.Type(), strings.Replace(comment, "\n", " - ", -1))
+																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, newComment)
 															} else {
 																break
 															}
@@ -307,7 +304,6 @@ func parsePackage(et *extractionTask, pkg string, definitions *Definitions) erro
 					return err
 				}
 				objectDefinition := definitions.NewObjectDefinition(pp.pkg.Path(), name, comment)
-				LOGGER.Log(logger.Debug, "  %v.%v: %v", pp.pkg.Path(), name, strings.Replace(comment, "\n", " - ", -1))
 				for n := 0; n < eStruct.NumFields(); n++ {
 					field := eStruct.Field(n)
 					tag := eStruct.Tag(n)
@@ -316,14 +312,13 @@ func parsePackage(et *extractionTask, pkg string, definitions *Definitions) erro
 					if err != nil {
 						return err
 					}
-					LOGGER.Log(logger.Debug, "  \t\t%v.%v %v: %v", pp.pkg.Path(), field.Name(), tag, strings.Replace(comment, "\n", " - ", -1))
+					typeIdentifier := ParseType(field.Type().String())
 					newComment, defValue := extractDefaultFrom(comment)
-					definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, newComment, defValue)
+					definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, typeIdentifier, newComment, defValue)
 				}
 			}
 		}
 	}
-
 	return nil
 }
 

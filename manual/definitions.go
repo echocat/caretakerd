@@ -38,36 +38,36 @@ func (instance *Definitions) NewEnumDefinition(packageName string, name string, 
 	return definition
 }
 
-func (instance *Definitions) NewPropertyDefinition(parent *ObjectDefinition, name string, key string, comment string, def *string) *PropertyDefinition {
-	identifier := instance.newIdentifierWithParent(parent, name)
-	definition := newPropertyDefinition(identifier, key, comment, def)
+func (instance *Definitions) NewPropertyDefinition(parent *ObjectDefinition, name string, key string, valueType Type, comment string, def *string) *PropertyDefinition {
+	id := instance.newIdWithParent(parent, name)
+	definition := newPropertyDefinition(id, key, valueType, comment, def)
 	parent.AddChild(definition)
 	instance.add(definition)
 	return definition
 }
 
-func (instance *Definitions) NewElementDefinition(parent *EnumDefinition, name string, key string, comment string) *ElementDefinition {
-	identifier := instance.newIdentifierWithParent(parent, name)
-	definition := newElementDefinition(identifier, key, comment)
+func (instance *Definitions) NewElementDefinition(parent *EnumDefinition, name string, key string, valueType Type, comment string) *ElementDefinition {
+	identifier := instance.newIdWithParent(parent, name)
+	definition := newElementDefinition(identifier, key, valueType, comment)
 	parent.AddChild(definition)
 	instance.add(definition)
 	return definition
 }
 
-func (instance *Definitions) newIdentifier(packageName string, name string) Identifier {
-	return NewIdentifier(packageName, name)
+func (instance *Definitions) newIdentifier(packageName string, name string) IdType {
+	return NewIdType(packageName, name, false)
 }
 
-func (instance *Definitions) newIdentifierWithParent(parent Definition, name string) Identifier {
-	parentIdentifier := parent.Identifier()
+func (instance *Definitions) newIdWithParent(parent Definition, name string) IdType {
+	parentIdentifier := parent.Id()
 	return instance.newIdentifier(
 		parentIdentifier.Package,
-		parentIdentifier.Name + "." + name,
+		parentIdentifier.Name + "#" + name,
 	)
 }
 
 func (instance *Definitions) add(definition Definition) {
-	identifier := definition.Identifier()
+	identifier := definition.Id()
 	instance.identifierToDefinition[identifier.String()] = definition
 }
 
@@ -81,7 +81,7 @@ func (instance *Definitions) AllTopLevel() []Definition {
 	return result
 }
 
-func (instance *Definitions) GetBy(identifier Identifier) Definition {
+func (instance *Definitions) GetBy(identifier IdType) Definition {
 	return instance.GetByPlain(identifier.String())
 }
 

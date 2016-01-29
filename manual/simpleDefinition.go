@@ -1,12 +1,12 @@
 package main
 
 type SimpleDefinition struct {
-	identifier Identifier
-	comment    string
+	id      IdType
+	comment string
 }
 
-func (instance SimpleDefinition) Identifier() Identifier {
-	return instance.identifier
+func (instance SimpleDefinition) Id() IdType {
+	return instance.id
 }
 
 func (instance SimpleDefinition) Comment() string {
@@ -21,9 +21,9 @@ func (instance SimpleDefinition) IsTopLevel() bool {
 	return true
 }
 
-func newSimpleDefinition(identifier Identifier, comment string) *SimpleDefinition {
+func newSimpleDefinition(id IdType, comment string) *SimpleDefinition {
 	return &SimpleDefinition{
-		identifier: identifier,
+		id: id,
 		comment: comment,
 	}
 }
