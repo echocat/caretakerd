@@ -24,9 +24,9 @@ func (instance Project) String() string {
 }
 
 func DeterminateProject(srcRootPath string) Project {
-	result := determinateProjectIn(GOPATH+"/src", srcRootPath)
+	result := determinateProjectIn(GOPATH + "/src", srcRootPath)
 	if result == nil {
-		result = determinateProjectIn(GOROOT+"/src", srcRootPath)
+		result = determinateProjectIn(GOROOT + "/src", srcRootPath)
 	}
 	if result == nil {
 		if len(GOPATH) > 0 {
@@ -47,8 +47,8 @@ func determinateProjectIn(goSrcPath string, srcRootPath string) *Project {
 	if err != nil {
 		panics.New("Could not make srcRootPath '%v' absolute.", srcRootPath).CausedBy(err).Throw()
 	}
-	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath)+1 > len(cleanGoPath) {
-		rootPackage := strings.Replace(cleanSrcRootPath[len(cleanGoPath)+1:], string([]byte{filepath.Separator}), "/", -1)
+	if strings.HasPrefix(cleanSrcRootPath, cleanGoPath) && len(cleanSrcRootPath) + 1 > len(cleanGoPath) {
+		rootPackage := strings.Replace(cleanSrcRootPath[len(cleanGoPath) + 1:], string([]byte{filepath.Separator}), "/", -1)
 		return &Project{
 			GoSrcPath:   cleanGoPath,
 			SrcRootPath: cleanSrcRootPath,
