@@ -17,9 +17,9 @@ func NewDefinitions(project Project) *Definitions {
 	}
 }
 
-func (instance *Definitions) NewSimpleDefinition(packageName string, name string, comment string) *SimpleDefinition {
+func (instance *Definitions) NewSimpleDefinition(packageName string, name string, valueType Type, comment string) *SimpleDefinition {
 	identifier := instance.newIdentifier(packageName, name)
-	definition := newSimpleDefinition(identifier, comment)
+	definition := newSimpleDefinition(identifier, valueType, comment)
 	instance.add(definition)
 	return definition
 }

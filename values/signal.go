@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// ## Description
+// # Description
 //
 // This represents a system signal.
 type Signal syscall.Signal

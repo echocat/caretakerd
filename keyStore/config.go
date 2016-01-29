@@ -14,7 +14,7 @@ var defaults = map[string]interface{}{
 	"CaFile":  String(""),
 }
 
-// ## Description
+// # Description
 //
 // Defines the keyStore of caretakerd.
 type Config struct {
@@ -29,13 +29,15 @@ type Config struct {
 	// This have to be of type PEM and have to contain the certificate and private key.
 	// Currently the private key is only supported of type RSA.
 	//
-	// This property is only evaluated and required if {@ref #type} is set to {@ref KeyStoreType#fromFile}.
+	// This property is only evaluated and required if {@ref Type} is set to
+	// {@ref github.com/echocat/caretakerd/keyStore.Type#FromFile}.
 	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
 
 	// @default "algorithm:`rsa` bits:`1024`"
 	//
 	// Defines some hints for instance store in format ``[<key:`value`>...]``.
 	// Possible hints are:
+	//
 	// * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
 	// * ``bits``: Number of bits to create a new key with.
 	Hints String `json:"hints,omitempty" yaml:"hints"`

@@ -2,7 +2,7 @@ package logger
 
 import "strings"
 
-// ## Description
+// # Description
 //
 // A flexible pattern string.
 //
@@ -31,21 +31,21 @@ import "strings"
 // a conversion character. In the example above the conversion specifier %-5p means the priority of the logging event should be left justified to a width of five characters.
 // The recognized conversion characters are
 //
-// ## Conversion patterns
+// # Conversion patterns
 //
 // * ``%d[{<dateFormat>}]``: Prints out the date of when the log event was created. See https://github.com/eknkc/dateformat for more details.
 // * ``%m``: The log message.
 // * ``%c[{<maximumNumberOfElements>}]``: Holds the logging category. Normally instance is the name of the logger or the service. If you do not specify ``maximumNumberOfElements`` the full name is displayed. If instance is for example ``%c{2}`` and the name of the category is ``a.b.c`` then the output result is ``b.c``.
 // * ``%F[{<maximumNumberOfPathElements>}]``: Holds the source file that logs instance event. If you do not specify ``maximumNumberOfPathElements`` the full file name is displayed. If instance is for example ``%F{2}`` and the file name is ``/a/b/c.go`` then the output result is ``b/c.go``.
-// * ``%l`: Holds the source location of the log event.
-// * ``%L`: Holds the line number where the log event was created.
+// * ``%l``: Holds the source location of the log event.
+// * ``%L``: Holds the line number where the log event was created.
 // * ``%C[{<maximumNumberOfElements>}]``: Holds the source code package. If you do not specify ``maximumNumberOfElements`` the full name is displayed. If instance is for example ``%C{2}`` and the name of the package is ``a.b.c`` then the output result is ``b.c``.
-// * ``%M`: Holds the method name where the log event was created.
-// * ``%p`: Holds the priority or better called log level.
-// * ``%P[{<subFormatPattern>}]`: Stacktrace of the location where a problem was raised that caused instance log message.
-// * ``%r`: Uptime of the logger.
-// * ``%n`: Prints out a new line character.
-// * ``%%`: Prints out a ``%`` character.
+// * ``%M``: Holds the method name where the log event was created.
+// * ``%p``: Holds the priority or better called log level.
+// * ``%P[{<subFormatPattern>}]``: Stacktrace of the location where a problem was raised that caused instance log message.
+// * ``%r``: Uptime of the logger.
+// * ``%n``: Prints out a new line character.
+// * ``%%``: Prints out a ``%`` character.
 type Pattern string
 
 func (instance Pattern) String() string {

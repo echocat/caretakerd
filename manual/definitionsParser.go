@@ -291,12 +291,12 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 								}
 							}
 						}
-
 					}
 				}
 
 				if enumDefinition == nil {
-					definitions.NewSimpleDefinition(pp.pkg.Path(), name, comment)
+					typeIdentifier := ParseType(eUnderlying.Underlying().String())
+					definitions.NewSimpleDefinition(pp.pkg.Path(), name, typeIdentifier, comment)
 				}
 			} else if eStruct, ok := eUnderlying.(*types.Struct); ok {
 				comment, err := pp.commentTextFor(element)
@@ -326,11 +326,11 @@ func fieldNameFor(name string, tag string) string {
 	st := reflect.StructTag(tag)
 	yaml := st.Get("yaml")
 	if len(yaml) > 0 {
-		return strings.SplitAfterN(yaml, ",", 2)[0]
+		return strings.SplitN(yaml, ",", 2)[0]
 	}
 	json := st.Get("json")
 	if len(json) > 0 {
-		return strings.SplitAfterN(json, ",", 2)[0]
+		return strings.SplitN(json, ",", 2)[0]
 	}
 	return name
 }

@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-// ## Description
+// # Description
 //
-// Represents a level for logging with a {@ref Logger}
+// Represents a level for logging with a {@ref Config}
 type Level int
 
 const (

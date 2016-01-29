@@ -11,18 +11,16 @@ import (
 
 var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
 
-// ## Description
+// # Description
 //
 // This represents a socket address in format ``<protocol>://<target>``.
 //
-// ## Protocols
+// # Protocols
 //
-// ### ``tcp``
-//
+// * ## ``tcp``
 // This address connects or binds to a TCP socket. The ``target`` should be of format ``<host>:<port>``.
 //
-// ### ``unix``
-//
+// * ## ``unix``
 // This address connects or binds to a UNIX file socket. The ``target`` should be the location of the socket file.
 type SocketAddress struct {
 	Protocol Protocol

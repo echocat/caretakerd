@@ -5,7 +5,7 @@ import (
 	"github.com/echocat/caretakerd/errors"
 	"strings"
 )
-// ## Description
+// # Description
 //
 // This tells caretakerd what to do if a process ends.
 type RestartType struct {

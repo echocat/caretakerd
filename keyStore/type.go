@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// ## Description
+// # Description
 //
 // Represents the type of the keyStore.
 type Type int

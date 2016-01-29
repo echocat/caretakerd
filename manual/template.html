@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+    <title>caretakerd manual</title>
+    <style>
+        {{includeTemplateCss}}
+    </style>
+    <style>
+        body{
+            box-sizing:border-box;
+            min-width:200px;
+            max-width:980px;
+            margin:0 auto;
+            padding:45px;
+        }
+        .dataType-kind {
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+        .markdown-body .anchor {
+            float: right;
+            display: block;
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<article class="markdown-body">
+
+    <h1>caretakerd manual</h1>
+
+    <h2>Data types</h2>
+
+    {{range .TopLevelDefinitions}}
+        <div class="dataType">
+            {{$simple := toSimple .}}
+
+            <h3 class="dataType-spec">
+                {{anchorFor "configuration.dataType" . ""}}
+                <code class="dataType-id">{{transformIdType .Id | html}}</code>
+                {{if $simple}}
+                    <code class="dataType-kind"><a href="#configuration.dataType.{{transformValueType $simple.ValueType | html}}">{{transformValueType $simple.ValueType | html}}</a></code>
+                {{else}}
+                    <span class="dataType-kind">{{.TypeName | html}}</span>
+                {{end}}
+
+            </h3>
+
+            <div class="dataType-description">{{markdown .Comment}}</div>
+
+            {{$object := toObject .}}
+            {{if $object}}
+                <h4 class="dataType-children">Properties</h4>
+                <ul>
+                {{range $object.Children}}
+                    {{$property := toProperty .}}
+                    <li class="dataType-property">
+                        <h5 class="dataType-spec">
+                            {{anchorFor "configuration.dataType" $object $property.Key}}
+                            <code class="dataType-id">{{html $property.Key}}</code>
+                            <code class="dataType-kind"><a href="#configuration.dataType.{{transformValueType $property.ValueType | html}}">{{transformValueType $property.ValueType | html}}</a></code>
+                        </h5>
+
+                        <div class="dataType-description">{{markdown $property.Comment}}</div>
+                    </li>
+                {{end}}
+                </ul>
+            {{end}}
+
+        </div>
+    {{end}}
+
+</article>
+</body>
+</html>

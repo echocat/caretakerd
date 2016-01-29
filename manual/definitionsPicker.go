@@ -70,7 +70,8 @@ func (instance *PickedDefinitions) GetSourceElementBy(id IdType) (Definition, er
 	}
 	result := instance.Source.GetBy(id)
 	if result == nil {
-		return nil, errors.New("Could not find expected element '%s'.", id)
+		return nil, nil // TODO! Should we fail here or just ignore it??
+		//return nil, errors.New("Could not find expected element '%s'.", id)
 	}
 	return result, nil
 }
