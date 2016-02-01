@@ -4,6 +4,7 @@ import (
 	"github.com/echocat/caretakerd/errors"
 )
 
+// @inline
 type Configs map[string]Config
 
 func NewConfigs() Configs {

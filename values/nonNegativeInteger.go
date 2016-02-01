@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// Same like {@ref Integer} but could not be negative.
+// @inline
 type NonNegativeInteger int
 
 func (i NonNegativeInteger) String() string {

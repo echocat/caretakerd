@@ -10,9 +10,13 @@ import (
 type Type int
 
 const (
+	// @id none
 	None                  Type = 0
+	// @id trusted
 	Trusted               Type = 1
+	// @id generateToEnvironment
 	GenerateToEnvironment Type = 2
+	// @id generateToFile
 	GenerateToFile        Type = 3
 )
 

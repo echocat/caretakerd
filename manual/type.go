@@ -127,3 +127,17 @@ func ExtractAllIdTypesFrom(t Type) []IdType {
 	}
 	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
 }
+
+func ExtractValueIdType(t Type) IdType {
+	if idType, ok := t.(IdType); ok {
+		return idType
+	} else if arrayType, ok := t.(ArrayType); ok {
+		return ExtractValueIdType(arrayType.Value)
+	} else if pointerType, ok := t.(PointerType); ok {
+		return ExtractValueIdType(pointerType.Value)
+	} else if mapType, ok := t.(MapType); ok {
+		return ExtractValueIdType(mapType.Value)
+	}
+	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
+}
+

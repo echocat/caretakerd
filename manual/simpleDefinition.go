@@ -4,6 +4,7 @@ type SimpleDefinition struct {
 	id        IdType
 	valueType Type
 	comment   string
+	inlined   bool
 }
 
 func (instance SimpleDefinition) Id() IdType {
@@ -18,6 +19,10 @@ func (instance SimpleDefinition) Comment() string {
 	return instance.comment
 }
 
+func (instance SimpleDefinition) Inlined() bool {
+	return instance.inlined
+}
+
 func (instance SimpleDefinition) TypeName() string {
 	return "simple"
 }
@@ -26,11 +31,12 @@ func (instance SimpleDefinition) IsTopLevel() bool {
 	return true
 }
 
-func newSimpleDefinition(id IdType, valueType Type, comment string) *SimpleDefinition {
+func newSimpleDefinition(id IdType, valueType Type, comment string, inlined bool) *SimpleDefinition {
 	return &SimpleDefinition{
 		id: id,
 		valueType: valueType,
 		comment: comment,
+		inlined: inlined,
 	}
 }
 

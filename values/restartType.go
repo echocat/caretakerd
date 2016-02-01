@@ -5,29 +5,23 @@ import (
 	"github.com/echocat/caretakerd/errors"
 	"strings"
 )
+
 // # Description
 //
 // This tells caretakerd what to do if a process ends.
-type RestartType struct {
-	onSuccess  bool
-	onFailures bool
-}
-// Never restart the process.
-var Never RestartType = RestartType{
-	onSuccess:  false,
-	onFailures: false,
-}
-// Only restart the process on failures.
-var OnFailures RestartType = RestartType{
-	onSuccess:  false,
-	onFailures: true,
-}
+type RestartType int
 
-// Always restart the process. This means on success and on failures.
-var Always RestartType = RestartType{
-	onSuccess:  true,
-	onFailures: true,
-}
+const (
+	// @id never
+	// Never restart the process.
+	Never RestartType = 0
+	// @id onFailures
+	// Only restart the process on failures.
+	OnFailures RestartType = 1
+	// @id always
+	// Always restart the process. This means on success and on failures.
+	Always RestartType = 2
+)
 var AllRestartTypes = []RestartType{
 	Never,
 	OnFailures,
@@ -94,11 +88,11 @@ func (i *RestartType) UnmarshalJSON(b []byte) error {
 }
 
 func (i RestartType) OnSuccess() bool {
-	return i.onSuccess
+	return i == Always
 }
 
 func (i RestartType) OnFailures() bool {
-	return i.onFailures
+	return i == OnFailures || i == Always
 }
 
 func (i RestartType) Validate() error {

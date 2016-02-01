@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// @serializedAs string
 type CronExpression struct {
 	spec     string
 	schedule cron.Schedule

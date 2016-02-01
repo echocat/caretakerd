@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// @inline
 type Environments map[string]string
 
 func (i Environments) String() string {

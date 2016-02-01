@@ -30,6 +30,11 @@ type WithValueType interface {
 	ValueType() Type
 }
 
+type WithInlinedMarker interface {
+	Inlined() bool
+	ValueType() Type
+}
+
 func FormatDefinition(definition Definition) string {
 	buf := new(bytes.Buffer)
 	fmt.Fprintf(buf, "%v %s", definition.Id(), definition.TypeName())

@@ -11,8 +11,11 @@ import (
 type Permission int
 
 const (
+	// @id forbidden
 	Forbidden Permission = 0
+	// @id readOnly
 	ReadOnly  Permission = 1
+	// @id readWrite
 	ReadWrite Permission = 2
 )
 

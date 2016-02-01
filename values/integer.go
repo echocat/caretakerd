@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// This represents a natural number. It could be negative and positive.
+// @inline
 type Integer int
 
 func (instance Integer) String() string {

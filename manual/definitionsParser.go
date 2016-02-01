@@ -19,6 +19,8 @@ import (
 
 var extractIdPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
 var extractDefaultPropertyPattern = regexp.MustCompile("(?m)^\\s*@default\\s+(.*)\\s*(:?\r\n|\n)")
+var extractInlinePropertyPattern = regexp.MustCompile("(?m)^\\s*@inline\\s*(:?\r\n|\n)")
+var extractSerializedAsPropertyPattern = regexp.MustCompile("(?m)^\\s*@serializedAs\\s+(.*)\\s*(:?\r\n|\n)")
 
 type PosEnabled interface {
 	Pos() token.Pos
@@ -273,8 +275,8 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 																	enumDefinition = definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
 																}
 																typeIdentifier := ParseType(eConst.Type().String())
-																newComment, id := extractIdFrom(elementComment, eConst.Name())
-																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, newComment)
+																elementComment, id := extractIdFrom(elementComment, eConst.Name())
+																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, elementComment)
 															} else {
 																break
 															}
@@ -296,25 +298,32 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 
 				if enumDefinition == nil {
 					typeIdentifier := ParseType(eUnderlying.Underlying().String())
-					definitions.NewSimpleDefinition(pp.pkg.Path(), name, typeIdentifier, comment)
+					comment, inlined := extractInlinedFrom(comment)
+					definitions.NewSimpleDefinition(pp.pkg.Path(), name, typeIdentifier, comment, inlined)
 				}
 			} else if eStruct, ok := eUnderlying.(*types.Struct); ok {
 				comment, err := pp.commentTextFor(element)
 				if err != nil {
 					return err
 				}
-				objectDefinition := definitions.NewObjectDefinition(pp.pkg.Path(), name, comment)
-				for n := 0; n < eStruct.NumFields(); n++ {
-					field := eStruct.Field(n)
-					tag := eStruct.Tag(n)
-					targetName := fieldNameFor(field.Name(), tag)
-					comment, err := pp.commentTextFor(field)
-					if err != nil {
-						return err
+				comment, serializedAs := serializedAs(comment)
+				if serializedAs != nil {
+					comment, inlined := extractInlinedFrom(comment)
+					definitions.NewSimpleDefinition(pp.pkg.Path(), name, serializedAs, comment, inlined)
+				} else {
+					objectDefinition := definitions.NewObjectDefinition(pp.pkg.Path(), name, comment)
+					for n := 0; n < eStruct.NumFields(); n++ {
+						field := eStruct.Field(n)
+						tag := eStruct.Tag(n)
+						targetName := fieldNameFor(field.Name(), tag)
+						comment, err := pp.commentTextFor(field)
+						if err != nil {
+							return err
+						}
+						typeIdentifier := ParseType(field.Type().String())
+						comment, defValue := extractDefaultFrom(comment)
+						definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, typeIdentifier, comment, defValue)
 					}
-					typeIdentifier := ParseType(field.Type().String())
-					newComment, defValue := extractDefaultFrom(comment)
-					definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, typeIdentifier, newComment, defValue)
 				}
 			}
 		}
@@ -350,6 +359,26 @@ func extractDefaultFrom(comment string) (string, *string) {
 	if len(matches) > 0 {
 		defValue := strings.TrimSpace(matches[0][1])
 		return extractDefaultPropertyPattern.ReplaceAllString(comment, ""), &defValue
+	} else {
+		return comment, nil
+	}
+}
+
+func extractInlinedFrom(comment string) (string, bool) {
+	matches := extractInlinePropertyPattern.FindAllStringSubmatch(comment, -1)
+	if len(matches) > 0 {
+		return extractInlinePropertyPattern.ReplaceAllString(comment, ""), true
+	} else {
+		return comment, false
+	}
+}
+
+func serializedAs(comment string) (string, Type) {
+	matches := extractSerializedAsPropertyPattern.FindAllStringSubmatch(comment, -1)
+	if len(matches) > 0 {
+		plainType := strings.TrimSpace(matches[0][1])
+		t := ParseType(plainType)
+		return extractSerializedAsPropertyPattern.ReplaceAllString(comment, ""), t
 	} else {
 		return comment, nil
 	}

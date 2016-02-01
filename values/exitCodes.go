@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// This represents a list of {@ref ExitCode ExitCodes}.
+// @inline
 type ExitCodes []ExitCode
 
 func (i ExitCodes) String() string {

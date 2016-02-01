@@ -11,6 +11,7 @@ import (
 
 var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
 
+// @serializedAs string
 // # Description
 //
 // This represents a socket address in format ``<protocol>://<target>``.

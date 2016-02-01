@@ -6,8 +6,10 @@ import (
 )
 
 type PickedDefinitions struct {
+	RootId              IdType
 	Source              *Definitions
 	NameToDefinition    map[string]Definition
+	NameToInlinedMarker map[string]WithInlinedMarker
 	TopLevelDefinitions []Definition
 }
 
@@ -15,6 +17,7 @@ func PickDefinitionsFrom(source *Definitions, rootElementId IdType) (*PickedDefi
 	pd := &PickedDefinitions{
 		Source: source,
 		NameToDefinition: map[string]Definition{},
+		NameToInlinedMarker: map[string]WithInlinedMarker{},
 		TopLevelDefinitions: []Definition{},
 	}
 	err := enrichWithElementAndItsChildren(pd, rootElementId)
@@ -23,12 +26,15 @@ func PickDefinitionsFrom(source *Definitions, rootElementId IdType) (*PickedDefi
 	}
 	defs := definitions{}
 	for _, definition := range pd.NameToDefinition {
-		if definition.IsTopLevel() {
+		if inlinedMarker, ok := definition.(WithInlinedMarker); ok && inlinedMarker.Inlined() {
+			pd.NameToInlinedMarker[definition.Id().String()] = inlinedMarker
+		} else if definition.IsTopLevel() {
 			defs = append(defs, definition)
 		}
 	}
 	sort.Sort(defs)
 	pd.TopLevelDefinitions = defs
+	pd.RootId = rootElementId
 	return pd, nil
 }
 
@@ -76,6 +82,14 @@ func (instance *PickedDefinitions) GetSourceElementBy(id IdType) (Definition, er
 	return result, nil
 }
 
+func (instance *PickedDefinitions) FindInlinedFor(id IdType) WithInlinedMarker {
+	result, ok := instance.NameToInlinedMarker[id.String()]
+	if ok {
+		return result
+	}
+	return nil
+}
+
 type definitions []Definition
 
 func (instance definitions) Len() int {
@@ -89,3 +103,4 @@ func (instance definitions) Swap(i, j int) {
 func (instance definitions) Less(i, j int) bool {
 	return instance[i].Id().String() < instance[j].Id().String()
 }
+

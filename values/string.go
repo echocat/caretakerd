@@ -2,7 +2,7 @@ package values
 
 import "strings"
 
-// This represents a slice of characters.
+// @inline
 type String string
 
 func (instance String) String() string {

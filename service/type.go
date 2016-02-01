@@ -10,8 +10,11 @@ import (
 type Type int
 
 const (
+	// @id onDemand
 	OnDemand  Type = 0
+	// @id autoStart
 	AutoStart Type = 1
+	// @id master
 	Master    Type = 2
 )
 

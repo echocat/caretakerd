@@ -25,46 +25,85 @@
             padding: 0;
             margin: 0;
         }
+        .configuration-structure-element {
+            font-weight: bold;
+        }
+        .configuration-structure-hint,
+        .configuration-structure-hint a {
+            color: #aaaaaa;
+        }
     </style>
 </head>
 <body>
 <article class="markdown-body">
 
-    <h1>caretakerd manual</h1>
+    {{header 1 "" "" "caretakerd manual"}}
 
-    <h2>Data types</h2>
+    {{header 2 "configuration" "" "Configuration"}}
+
+    {{header 3 "configuration.structure" "" "Structure"}}
+    <pre class="configuration-structure"><code>{{renderDefinitionStructure 0 .RootId}}</code></pre>
+
+    {{header 2 "dataTypes" "" "Data types"}}
+
+    {{header 3 "dataType.overview" "" "Overview"}}
+    <ul class="dataTypes-overview">
+        {{range .TopLevelDefinitions}}
+            <li>
+                <code class="dataType-id">{{ renderValueType .Id }}</code>
+            </li>
+        {{end}}
+    </ul>
 
     {{range .TopLevelDefinitions}}
         <div class="dataType">
             {{$simple := toSimple .}}
 
             <h3 class="dataType-spec">
-                {{anchorFor "configuration.dataType" . ""}}
-                <code class="dataType-id">{{transformIdType .Id | html}}</code>
+                {{renderDataTypeAnchor . ""}}
+                <code class="dataType-id">{{transformIdType .Id}}</code>
                 {{if $simple}}
-                    <code class="dataType-kind"><a href="#configuration.dataType.{{transformValueType $simple.ValueType | html}}">{{transformValueType $simple.ValueType | html}}</a></code>
+                    <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
                 {{else}}
-                    <span class="dataType-kind">{{.TypeName | html}}</span>
+                    <span class="dataType-kind">{{.TypeName}}</span>
                 {{end}}
 
             </h3>
 
-            <div class="dataType-description">{{markdown .Comment}}</div>
+            <div class="dataType-description">{{renderMarkdown .Comment}}</div>
 
             {{$object := toObject .}}
             {{if $object}}
-                <h4 class="dataType-children">Properties</h4>
+                <h4 class="dataType-children dataType-properties">Properties</h4>
                 <ul>
                 {{range $object.Children}}
                     {{$property := toProperty .}}
                     <li class="dataType-property">
                         <h5 class="dataType-spec">
-                            {{anchorFor "configuration.dataType" $object $property.Key}}
+                            {{renderDataTypeAnchor $object $property.Key}}
                             <code class="dataType-id">{{html $property.Key}}</code>
-                            <code class="dataType-kind"><a href="#configuration.dataType.{{transformValueType $property.ValueType | html}}">{{transformValueType $property.ValueType | html}}</a></code>
+                            <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
                         </h5>
 
-                        <div class="dataType-description">{{markdown $property.Comment}}</div>
+                        <div class="dataType-description">{{renderMarkdown $property.Comment}}</div>
+                    </li>
+                {{end}}
+                </ul>
+            {{end}}
+
+            {{$enum := toEnum .}}
+            {{if $enum}}
+                <h4 class="dataType-children dataType-elements">Elements</h4>
+                <ul>
+                {{range $enum.Children}}
+                    {{$element := toElement .}}
+                    <li class="dataType-element">
+                        <h5 class="dataType-spec">
+                            {{renderDataTypeAnchor $enum $element.Key}}
+                            <code class="dataType-id">{{html $element.Key}}</code>
+                        </h5>
+
+                        <div class="dataType-description">{{renderMarkdown $element.Comment}}</div>
                     </li>
                 {{end}}
                 </ul>
