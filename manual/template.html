@@ -32,6 +32,15 @@
         .configuration-structure-hint a {
             color: #aaaaaa;
         }
+        .dataType-default {
+            font-weight: normal;
+            color: #aaaaaa;
+        }
+        .dataType-default-assign {
+            padding: 0 0.2em;
+            font-weight: normal;
+            color: #aaaaaa;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +92,9 @@
                             {{renderDataTypeAnchor $object $property.Key}}
                             <code class="dataType-id">{{html $property.Key}}</code>
                             <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
+                            {{if $property.DefaultValue}}
+                            <span class="dataType-default-assign">=</span><code class="dataType-default">{{$property.DefaultValue}}</code>
+                            {{end}}
                         </h5>
 
                         <div class="dataType-description">{{renderMarkdown $property.Comment}}</div>
