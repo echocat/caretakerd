@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"github.com/codegangsta/cli"
@@ -46,7 +46,7 @@ func runDaemon(conf caretakerd.Config, args []string) {
 func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
 	var name string
 	switch executableType {
-	case daemon:
+	case Daemon:
 		name = "run"
 	default:
 		name = "daemon"

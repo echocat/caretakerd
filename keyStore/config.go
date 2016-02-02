@@ -29,8 +29,8 @@ type Config struct {
 	// This have to be of type PEM and have to contain the certificate and private key.
 	// Currently the private key is only supported of type RSA.
 	//
-	// This property is only evaluated and required if {@ref Type} is set to
-	// {@ref github.com/echocat/caretakerd/keyStore.Type#FromFile}.
+	// This property is only evaluated and required if {@ref #Type type} is set to
+	// {@ref .Type#FromFile fromFile}.
 	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
 
 	// @default "algorithm:`rsa` bits:`1024`"

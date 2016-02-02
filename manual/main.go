@@ -5,10 +5,8 @@ import (
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
 	"os"
-	"regexp"
+	"github.com/echocat/caretakerd/app"
 )
-
-var headerPrefix = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
 
 var LOGGER, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
@@ -18,7 +16,7 @@ var LOGGER, _ = logger.NewLogger(logger.Config{
 
 func panicHandler() {
 	if r := recover(); r != nil {
-		LOGGER.LogProblem(r, logger.Info, "There is an unrecoverable problem occured.")
+		LOGGER.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
 		os.Exit(2)
 	}
 }
@@ -50,7 +48,9 @@ func main() {
 		panic(err)
 	}
 
-	renderer, err := NewRendererFor(project, pd)
+	apps := app.NewApps()
+
+	renderer, err := NewRendererFor(project, pd, apps)
 	if err != nil {
 		panic(err)
 	}

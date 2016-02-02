@@ -9,7 +9,7 @@ import (
 
 // # Description
 //
-// Represents a level for logging with a {@ref Config}
+// Represents a level for logging with a {@ref .Config Logger}
 type Level int
 
 const (

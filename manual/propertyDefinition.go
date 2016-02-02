@@ -20,7 +20,7 @@ func (instance PropertyDefinition) ValueType() Type {
 	return instance.valueType
 }
 
-func (instance PropertyDefinition) Comment() string {
+func (instance PropertyDefinition) Description() string {
 	return instance.comment
 }
 

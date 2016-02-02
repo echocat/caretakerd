@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// This represents an exit value of a process. This type is like an {@ref Integer}.
+// This represents an exit value of a process.
 type ExitCode int
 
 func (i ExitCode) String() string {

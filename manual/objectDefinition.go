@@ -10,7 +10,7 @@ func (instance ObjectDefinition) Id() IdType {
 	return instance.id
 }
 
-func (instance ObjectDefinition) Comment() string {
+func (instance ObjectDefinition) Description() string {
 	return instance.comment
 }
 

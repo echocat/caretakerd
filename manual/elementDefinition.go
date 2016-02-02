@@ -19,7 +19,7 @@ func (instance ElementDefinition) ValueType() Type {
 	return instance.valueType
 }
 
-func (instance ElementDefinition) Comment() string {
+func (instance ElementDefinition) Description() string {
 	return instance.comment
 }
 

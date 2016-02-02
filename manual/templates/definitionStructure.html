@@ -1,0 +1,4 @@
+{{$indent := .indent}}{{$nextIndent := .nextIndent}}{{$nextNextLevel := .nextNextLevel}}{{$nextLevel := .nextLevel}}{{$object := .object}}{{ range $propertyId, $property := .properties }}
+{{ $indent }}<span class="configuration-structure-hint"># ({{renderValueType $property.Definition.ValueType}}) {{$property.Excerpt}}</span>
+{{ $indent }}<a  class="configuration-structure-element" href="#configuration.dataType.{{getDisplayIdOf $property.Definition}}">{{$property.Definition.Key}}</a><span class="configuration-structure-default">:{{if $property.Definition.DefaultValue}} {{$property.Definition.DefaultValue}}{{end}}</span>{{ if $property.MapKeyMarker }}
+{{ $nextIndent }}&lt;{{ $property.MapKeyMarker }}&gt;:{{renderDefinitionStructure $nextNextLevel $property.Id}}{{else}}{{renderDefinitionStructure $nextLevel $property.Id}}{{end}}{{ end }}

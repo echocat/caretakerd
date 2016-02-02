@@ -10,7 +10,7 @@ func (instance EnumDefinition) Id() IdType {
 	return instance.id
 }
 
-func (instance EnumDefinition) Comment() string {
+func (instance EnumDefinition) Description() string {
 	return instance.comment
 }
 

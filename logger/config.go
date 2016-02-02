@@ -39,21 +39,21 @@ type Config struct {
 	// Target file of the logger. The file will be created if not exist - but not the parent directory.
 	//
 	// If instance value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
-	// above or equal to {@ref Level#Warn}.
+	// above or equal to {@ref .Level#Warning warning}.
 	Filename String `json:"filename" yaml:"filename"`
 
 	// @default 500
 	//
 	// Maximum size in megabytes of the log file before it gets rotated.
 	//
-	// This is ignored if {@ref #Filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} os set to ``console``.
 	MaxSizeInMb NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
 
 	// @default 500
 	//
 	// Maximum number of old log files to retain.
 	//
-	// This is ignored if {@ref #Filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} os set to ``console``.
 	MaxBackups NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
 
 	// @default 1
@@ -63,7 +63,7 @@ type Config struct {
 	// hours and may not exactly correspond to calendar days due to daylight
 	// savings, leap seconds, etc.
 	//
-	// This is ignored if {@ref #Filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} os set to ``console``.
 	MaxAgeInDays NonNegativeInteger `json:"maxAgeInDays" yaml:"maxAgeInDays"`
 
 	// @default "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"

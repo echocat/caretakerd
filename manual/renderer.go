@@ -8,7 +8,24 @@ import (
 	"strings"
 	"path"
 	"bytes"
+	"regexp"
+	"github.com/echocat/caretakerd_/errors"
+	"path/filepath"
+	"github.com/codegangsta/cli"
+	"github.com/echocat/caretakerd/app"
 )
+
+var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
+var excerptFromCommentExtractionPattern = regexp.MustCompile("(?s)^(.*?(?:\\.\\s|$))")
+var refPropertyPattern = regexp.MustCompile("{@ref +([^\\}\\s]+)\\s*([^\\}]*)}")
+var titlePropertyPattern = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
+var commandsInAppPattern = regexp.MustCompile("(?s)(COMMANDS:\n)(.*?)(\n[\t ]*\n|$)")
+var commandLinePattern = regexp.MustCompile("(?m)^( +|\t)([a-z][a-zA-Z0-9]+)(.*)$")
+
+type Describeable interface {
+	Id() IdType
+	Description() string
+}
 
 type Renderer struct {
 	Template                    *template.Template
@@ -23,49 +40,51 @@ type Renderer struct {
 	Functions                   template.FuncMap
 	Project                     Project
 	PickedDefinitions           *PickedDefinitions
+	Apps                        map[app.ExecutableType]*cli.App
 }
 
 func (instance *Renderer) Execute(writer io.Writer) error {
-	return instance.Template.ExecuteTemplate(writer, "manual/template.html", instance.PickedDefinitions)
+	return instance.Template.ExecuteTemplate(writer, instance.Project.SrcRootPath + "/manual/templates/root.html", instance)
 }
 
-func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions) (*Renderer, error) {
+func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*cli.App) (*Renderer, error) {
 	renderer := &Renderer{
 		Project: project,
 		PickedDefinitions: pickedDefinitions,
+		Apps: apps,
 	}
 	renderer.Functions = newFunctionsFor(renderer)
 
 	var err error
-	renderer.Template, err = parseTemplate("template", renderer.Functions)
+	renderer.Template, err = parseTemplate(project, "root", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.IdTemplate, err = parseTemplate("template.idType", renderer.Functions)
+	renderer.IdTemplate, err = parseTemplate(project, "idType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.PointerTemplate, err = parseTemplate("template.pointerType", renderer.Functions)
+	renderer.PointerTemplate, err = parseTemplate(project, "pointerType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.ArrayTemplate, err = parseTemplate("template.arrayType", renderer.Functions)
+	renderer.ArrayTemplate, err = parseTemplate(project, "arrayType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.MapTemplate, err = parseTemplate("template.mapType", renderer.Functions)
+	renderer.MapTemplate, err = parseTemplate(project, "mapType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.DataTypeAnchorTemplate, err = parseTemplate("template.dataTypeAnchor", renderer.Functions)
+	renderer.DataTypeAnchorTemplate, err = parseTemplate(project, "dataTypeAnchor", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.DefinitionStructureTemplate, err = parseTemplate("template.definitionStructure", renderer.Functions)
+	renderer.DefinitionStructureTemplate, err = parseTemplate(project, "definitionStructure", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.HeaderTemplate, err = parseTemplate("template.header", renderer.Functions)
+	renderer.HeaderTemplate, err = parseTemplate(project, "header", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +95,7 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions) (*Ren
 func newFunctionsFor(renderer *Renderer) template.FuncMap {
 	return template.FuncMap{
 		"transformIdType": renderer.transformIdType,
+		"getDisplayIdOf": renderer.getDisplayIdOf,
 		"renderValueType": renderer.renderValueType,
 		"renderMarkdown": renderer.renderMarkdown,
 		"toSimple": func(definition Definition) *SimpleDefinition {
@@ -108,13 +128,50 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			}
 			return nil
 		},
-		"includeTemplateCss": func() (template.CSS, error) {
-			content, err := ioutil.ReadFile("manual/template.css")
+		"includeJavaScript": func(name string) (template.JS, error) {
+			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/scripts/" + name + ".js")
+			if err != nil {
+				return "", err
+			}
+			return template.JS(content), err
+		},
+		"includeCss": func(name string) (template.CSS, error) {
+			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/styles/" + name + ".css")
 			if err != nil {
 				return "", err
 			}
 			return template.CSS(content), err
 		},
+		"includeLicense": func() (string, error) {
+			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/LICENSE")
+			if err != nil {
+				return "", err
+			}
+			return string(content), err
+		},
+		"includeAppUsageOf": func(executableType app.ExecutableType, app *cli.App) template.HTML {
+			app.HelpName = executableType.String()
+			buf := new(bytes.Buffer)
+			cli.HelpPrinter(buf, cli.AppHelpTemplate, app)
+			return template.HTML(commandsInAppPattern.ReplaceAllStringFunc(buf.String(), func(what string) string {
+				match := commandsInAppPattern.FindStringSubmatch(what)
+				content := commandLinePattern.ReplaceAllStringFunc(match[2], func(subWhat string) string {
+					subMatch := commandLinePattern.FindStringSubmatch(subWhat)
+
+					return subMatch[1] + "<a href=\"#commands." + executableType.String() + "." + subMatch[2] + "\">" + subMatch[2] + "</a>" + subMatch[3]
+				})
+				return match[1] + content + match[3]
+			}))
+		},
+		"includeCommandUsageOf": func(command *cli.Command) string {
+			if len(command.HelpName) <= 0 {
+				command.HelpName = command.Name
+			}
+			buf := new(bytes.Buffer)
+			cli.HelpPrinter(buf, cli.CommandHelpTemplate, command)
+			return buf.String()
+		},
+		"collectExamples": renderer.collectExamples,
 		"renderDataTypeAnchor": renderer.renderDataTypeAnchor,
 		"renderDefinitionStructure": renderer.renderDefinitionStructure,
 		"header": renderer.header,
@@ -126,6 +183,13 @@ func (instance *Renderer) transformIdType(id IdType) string {
 		return id.Name
 	}
 	name := id.Name
+	suffix := ""
+	lastHash := strings.LastIndex(id.Name, "#")
+	if lastHash > 0 && len(id.Name) > lastHash + 1 {
+		name = id.Name[:lastHash]
+		suffix = "." + id.Name[lastHash + 1:]
+	}
+
 	if name == "Config" {
 		name = instance.capitalize(path.Base(id.Package))
 	} else if name == instance.capitalize(path.Base(id.Package)) {
@@ -134,13 +198,36 @@ func (instance *Renderer) transformIdType(id IdType) string {
 
 	project := instance.Project
 	if id.Package == project.RootPackage {
-		return name
+		return name + suffix
 	}
 	p := id.Package
 	if strings.HasPrefix(id.Package, project.RootPackage + "/") {
 		p = p[len(project.RootPackage) + 1:]
 	}
-	return p + "." + name
+	return p + "." + name + suffix
+}
+
+func (instance *Renderer) getDisplayIdOf(describeable Describeable) string {
+	id := describeable.Id()
+	if withKey, ok := describeable.(WithKey); ok {
+		lastHash := strings.LastIndex(id.Name, "#")
+		if lastHash > 0 {
+			id.Name = id.Name[:lastHash] + "#" + withKey.Key()
+		}
+	}
+	return instance.transformIdType(id)
+}
+
+func (instance *Renderer) isMapType(t Type) bool {
+	if _, ok := t.(MapType); ok {
+		return true
+	} else if idType, ok := t.(IdType); ok {
+		inlined := instance.PickedDefinitions.FindInlinedFor(idType)
+		if inlined != nil && inlined.Inlined() {
+			return instance.isMapType(inlined.ValueType())
+		}
+	}
+	return false
 }
 
 func (instance *Renderer) renderValueType(t Type) (template.HTML, error) {
@@ -174,12 +261,8 @@ func (instance *Renderer) renderValueType(t Type) (template.HTML, error) {
 	return template.HTML(buf.String()), nil
 }
 
-func (instance *Renderer) renderDataTypeAnchor(definition Definition, suffix string) (template.HTML, error) {
-	id := ""
-	id += instance.transformIdType(definition.Id())
-	if len(suffix) > 0 {
-		id += "." + suffix
-	}
+func (instance *Renderer) renderDataTypeAnchor(definition Definition) (template.HTML, error) {
+	id := instance.getDisplayIdOf(definition)
 
 	buf := new(bytes.Buffer)
 	err := instance.DataTypeAnchorTemplate.Execute(buf, id)
@@ -189,9 +272,23 @@ func (instance *Renderer) renderDataTypeAnchor(definition Definition, suffix str
 	return template.HTML(buf.String()), nil
 }
 
+func (instance *Renderer) extractExcerptFrom(definition Definition) (template.HTML, error) {
+	excerpt := definition.Description()
+	match := excerptFromCommentExtractionPattern.FindStringSubmatch(excerpt)
+	if match != nil && len(match) == 2 {
+		excerpt = match[1]
+	}
+	excerpt = strings.Replace(excerpt, "\r", "", -1)
+	excerpt = strings.Replace(excerpt, "\n", " ", -1)
+	excerpt = strings.TrimSpace(excerpt)
+	return instance.renderMarkdownWithContext(excerpt, definition)
+}
+
 type RenderDefinitionProperty struct {
-	Definition *PropertyDefinition
-	Id         IdType
+	Definition   *PropertyDefinition
+	MapKeyMarker string
+	Id           IdType
+	Excerpt      template.HTML
 }
 
 func (instance *Renderer) renderDefinitionStructure(level int, id IdType) (template.HTML, error) {
@@ -212,21 +309,33 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType) (templ
 				id = ExtractValueIdType(inlined.ValueType())
 				inlined = instance.PickedDefinitions.FindInlinedFor(id)
 			}
-			properties = append(properties, RenderDefinitionProperty{
+			excerpt, err := instance.extractExcerptFrom(propertyDefinition)
+			if err != nil {
+				return "", err
+			}
+			renderDefinitionProperty := RenderDefinitionProperty{
 				Definition: propertyDefinition,
 				Id: id,
-			})
+				Excerpt: excerpt,
+			}
+			if instance.isMapType(propertyDefinition.ValueType()) {
+				renderDefinitionProperty.MapKeyMarker = instance.singular(propertyDefinition.Key()) + " name"
+			}
+			properties = append(properties, renderDefinitionProperty)
 		}
 		indent := ""
 		for i := 0; i < level; i++ {
 			indent += "    "
 		}
+		nextIndent := indent + "    "
 		object := map[string]interface{}{
 			"object": objectDefinition,
 			"properties": properties,
 			"level": level,
 			"nextLevel": level + 1,
+			"nextNextLevel": level + 2,
 			"indent": indent,
+			"nextIndent": nextIndent,
 		}
 		buf := new(bytes.Buffer)
 		err := instance.DefinitionStructureTemplate.Execute(buf, object)
@@ -258,14 +367,114 @@ func (instance *Renderer) header(level int, id string, css string, content strin
 	return template.HTML(buf.String()), nil
 }
 
-func (instance *Renderer) renderMarkdown(markup string) (template.HTML, error) {
-	escapedMarkup := headerPrefix.ReplaceAllString(markup, "$1####")
-	html := blackfriday.MarkdownCommon([]byte(escapedMarkup))
-	return template.HTML(html), nil
+func (instance *Renderer) renderMarkdown(of Describeable) (template.HTML, error) {
+	return instance.renderMarkdownWithContext(of.Description(), of)
 }
 
-func parseTemplate(name string, functions template.FuncMap) (*template.Template, error) {
-	source := "manual/" + name + ".html"
+func (instance *Renderer) renderMarkdownWithContext(markup string, context Describeable) (template.HTML, error) {
+	var err error
+	markup = headerPrefixPattern.ReplaceAllString(markup, "$1####")
+	markup = refPropertyPattern.ReplaceAllStringFunc(markup, func(inline string) string {
+		match := refPropertyPattern.FindStringSubmatch(inline)
+		ref := match[1]
+		idType := instance.resolveRef(ref, context)
+		element, pErr := instance.PickedDefinitions.GetSourceElementBy(idType)
+		if pErr != nil {
+			err = pErr
+			return inline
+		}
+		if element != nil {
+			targetType := instance.getDisplayIdOf(element)
+			display := strings.TrimSpace(match[2])
+			if len(display) <= 0 {
+				display = targetType
+			}
+			return "[``" + display + "``](#configuration.dataType." + targetType + ")"
+		} else {
+			err = errors.New("Unknonwn reference: %v", ref)
+			return markup
+		}
+	})
+	if err != nil {
+		return "", err
+	}
+	html := blackfriday.MarkdownCommon([]byte(markup))
+	return template.HTML(strings.TrimSpace(string(html))), nil
+}
+
+func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
+	if strings.HasPrefix(ref, "#") {
+		name := ref[1:]
+		contextId := context.Id()
+		lastDotIfContextId := strings.LastIndex(contextId.Name, "#")
+		if lastDotIfContextId > 0 {
+			name = contextId.Name[:lastDotIfContextId] + "#" + name
+		}
+		return IdType{
+			Package: contextId.Package,
+			Name: name,
+		}
+	} else if strings.HasPrefix(ref, ".") {
+		contextId := context.Id()
+		return IdType{
+			Package: contextId.Package,
+			Name: ref[1:],
+		}
+	} else {
+		t := ParseType(ref)
+		if idType, ok := t.(IdType); ok {
+			return idType
+		} else {
+			return IdType{Name: ref}
+		}
+	}
+}
+
+type Example struct {
+	Id          string
+	Title       string
+	CodeType    string
+	CodeContent string
+}
+
+func (instance *Renderer) collectExamples() ([]Example, error) {
+	examplesSources, err := filepath.Glob(instance.Project.SrcRootPath + "/manual/examples/*.yaml")
+	if err != nil {
+		return []Example{}, err
+	}
+	examples := []Example{}
+	for _, exampleSource := range examplesSources {
+		bytes, err := ioutil.ReadFile(exampleSource)
+		if err != nil {
+			return nil, err
+		}
+		content, title, id := instance.extractTitleFrom(string(bytes), exampleSource)
+		examples = append(examples, Example{
+			Id: "configuration.examples." + id,
+			Title: title,
+			CodeType: "yaml",
+			CodeContent: content,
+		})
+	}
+	return examples, nil
+}
+
+func (instance *Renderer) extractTitleFrom(source string, filename string) (string, string, string) {
+	id := filepath.Base(filename)
+	ext := filepath.Ext(id)
+	if len(ext) > 0 {
+		id = id[:len(id) - len(ext)]
+	}
+	match := titlePropertyPattern.FindStringSubmatch(source)
+	if match != nil && len(match) > 0 {
+		return titlePropertyPattern.ReplaceAllString(source, ""), match[1], id
+	}
+
+	return source, id, id
+}
+
+func parseTemplate(project Project, name string, functions template.FuncMap) (*template.Template, error) {
+	source := project.SrcRootPath + "/manual/templates/" + name + ".html"
 	bytes, err := ioutil.ReadFile(source)
 	if err != nil {
 		return nil, err
@@ -286,4 +495,11 @@ func (instance *Renderer) capitalize(what string) string {
 	} else {
 		return strings.ToUpper(what[0:1]) + what[1:]
 	}
+}
+
+func (instance *Renderer) singular(what string) string {
+	if strings.HasPrefix(what, "s") {
+		return what[:len(what) - 1]
+	}
+	return what
 }

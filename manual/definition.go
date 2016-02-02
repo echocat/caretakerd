@@ -8,7 +8,7 @@ import (
 
 type Definition interface {
 	Id() IdType
-	Comment() string
+	Description() string
 	TypeName() string
 	IsTopLevel() bool
 }
@@ -52,7 +52,7 @@ func FormatDefinition(definition Definition) string {
 			fmt.Fprintf(buf, " = %v", *def)
 		}
 	}
-	comment := definition.Comment()
+	comment := definition.Description()
 	if len(comment) > 0 {
 		fmt.Fprintf(buf, " // %s", strings.Replace(comment, "\n", " - ", -1))
 	}

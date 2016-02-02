@@ -15,7 +15,7 @@ func (instance SimpleDefinition) ValueType() Type {
 	return instance.valueType
 }
 
-func (instance SimpleDefinition) Comment() string {
+func (instance SimpleDefinition) Description() string {
 	return instance.comment
 }
 

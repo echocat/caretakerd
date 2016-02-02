@@ -1,2 +1,0 @@
-{{$indent := .indent}}{{$nextLevel := .nextLevel}}{{$object := .object}}{{ range $propertyId, $property := .properties }}
-{{ $indent }}<a  class="configuration-structure-element" href="#configuration.dataType.{{transformIdType $object.Id}}.{{$property.Definition.Key}}">{{$property.Definition.Key}}</a><span class="configuration-structure-hint">: {{renderValueType $property.Definition.ValueType}}</span>{{renderDefinitionStructure $nextLevel $property.Id}}{{ end }}
