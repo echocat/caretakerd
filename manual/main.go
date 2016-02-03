@@ -23,7 +23,7 @@ func panicHandler() {
 
 func getSrcRootPath() string {
 	if len(os.Args) < 2 || len(os.Args[1]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <package>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
 		os.Exit(1)
 	}
 	return os.Args[1]
@@ -55,7 +55,12 @@ func main() {
 		panic(err)
 	}
 
-	file, err := os.OpenFile("target/manual.html", os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0)
+	if len(os.Args) < 3 || len(os.Args[2]) <= 0 {
+		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
+		os.Exit(1)
+	}
+
+	file, err := os.OpenFile(os.Args[2], os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0)
 	if err != nil {
 		panic(err)
 	}

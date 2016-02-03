@@ -9,7 +9,7 @@ import (
 	"path"
 	"bytes"
 	"regexp"
-	"github.com/echocat/caretakerd_/errors"
+	"github.com/echocat/caretakerd/errors"
 	"path/filepath"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/app"
