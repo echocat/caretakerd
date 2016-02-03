@@ -3,7 +3,6 @@ import org.apache.commons.compress.archivers.ArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang.SystemUtils
 import org.apache.maven.project.MavenProject
@@ -34,7 +33,6 @@ public class PrepareGoToolchain {
 
     private static void downloadAndExtract(String goVersion, String targetPath, boolean force) {
         final downloadUrl = determinateDownloadUrl(goVersion)
-        final urlExtension = FilenameUtils.getExtension(downloadUrl.toExternalForm())
         final target = new File(targetPath)
 
         final targetMarker = new File("${target.path}.downloaded")
@@ -50,10 +48,10 @@ public class PrepareGoToolchain {
             final is = downloadUrl.openStream()
             try {
                 final ArchiveInputStream archive;
-                if (urlExtension == "tar.gz") {
+                if (downloadUrl.toExternalForm().endsWith(".tar.gz")) {
                     final gzip = new GZIPInputStream(is)
                     archive = new TarArchiveInputStream(gzip)
-                } else if (urlExtension == "zip") {
+                } else if (downloadUrl.toExternalForm().endsWith(".zip")) {
                     archive = new ZipArchiveInputStream(new BufferedInputStream(is), "UTF8", true, true)
                 } else {
                     throw new IllegalStateException("Does not support download archive of type ${urlExtension}.")
