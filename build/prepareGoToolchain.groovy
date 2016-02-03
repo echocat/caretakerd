@@ -54,7 +54,7 @@ public class PrepareGoToolchain {
                 } else if (downloadUrl.toExternalForm().endsWith(".zip")) {
                     archive = new ZipArchiveInputStream(new BufferedInputStream(is), "UTF8", true, true)
                 } else {
-                    throw new IllegalStateException("Does not support download archive of type ${downloadUrl}.")
+                    throw new IllegalStateException("Does not support download archive of type ${downloadUrl.toExternalForm()}.")
                 }
                 def ArchiveEntry entry = archive.nextEntry
                 while (entry != null) {
