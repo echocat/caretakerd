@@ -76,9 +76,8 @@ public class PrepareGoToolchain {
             } finally {
                 IOUtils.closeQuietly(is)
             }
-            if (! SystemUtils.IS_OS_WINDOWS) {
-                new File(target, "bin/go").setExecutable(true, false)
-            }
+            new File(target, "bin/go").setExecutable(true, false)
+            new File(target, "src/make.bash").setExecutable(true, false)
             LOG.info("Going to download {} and extract it to {}... DONE!", downloadUrl, target)
             FileUtils.writeStringToFile(targetMarker, downloadUrl.toExternalForm())
         } else {
@@ -101,9 +100,6 @@ public class PrepareGoToolchain {
             final sourceDirectory = new File("${goroot}/src")
             final makeScriptExtension = SystemUtils.IS_OS_WINDOWS ? "bat" : "bash"
             final makeScript = new File(sourceDirectory, "make.${makeScriptExtension}")
-            if (! SystemUtils.IS_OS_WINDOWS) {
-                makeScript.setExecutable(true, false)
-            }
             final pb = new ProcessBuilder(makeScript.path, "--no-clean")
             pb.directory(sourceDirectory)
             pb.environment().put("GOROOT", goroot)
