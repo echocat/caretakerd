@@ -98,6 +98,9 @@ public class PrepareGoToolchain {
             final sourceDirectory = new File("${goroot}/src")
             final makeScriptExtension = SystemUtils.IS_OS_WINDOWS ? "bat" : "bash"
             final makeScript = new File(sourceDirectory, "make.${makeScriptExtension}")
+            if (! SystemUtils.IS_OS_WINDOWS) {
+                makeScript.setExecutable(true, false)
+            }
             final pb = new ProcessBuilder(makeScript.path, "--no-clean")
             pb.directory(sourceDirectory)
             pb.environment().put("GOROOT", goroot)
