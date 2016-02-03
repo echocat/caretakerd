@@ -76,6 +76,9 @@ public class PrepareGoToolchain {
             } finally {
                 IOUtils.closeQuietly(is)
             }
+            if (! SystemUtils.IS_OS_WINDOWS) {
+                new File(target, "bin/go").setExecutable(true, false)
+            }
             LOG.info("Going to download {} and extract it to {}... DONE!", downloadUrl, target)
             FileUtils.writeStringToFile(targetMarker, downloadUrl.toExternalForm())
         } else {
