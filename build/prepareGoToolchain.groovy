@@ -104,6 +104,7 @@ public class PrepareGoToolchain {
             final pb = new ProcessBuilder(makeScript.path, "--no-clean")
             pb.directory(sourceDirectory)
             pb.environment().put("GOROOT", goroot)
+            pb.environment().put("GOROOT_BOOTSTRAP", goroot)
             pb.environment().put("GOOS", os)
             pb.environment().put("GOARCH", architecture)
             pb.environment().put("CGO_ENABLED", "0")
