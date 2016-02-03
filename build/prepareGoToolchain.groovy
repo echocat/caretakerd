@@ -1,5 +1,6 @@
 import org.apache.commons.compress.archivers.ArchiveEntry
 import org.apache.commons.compress.archivers.ArchiveInputStream
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import org.apache.commons.io.FileUtils
@@ -69,6 +70,12 @@ public class PrepareGoToolchain {
                             IOUtils.copy(archive, os)
                         } finally {
                             IOUtils.closeQuietly(os)
+                        }
+                        if (entry instanceof TarArchiveEntry) {
+                            entryFile.setExecutable(
+                                    (entry.getMode() | 0100) > 0,
+                                    (entry.getMode() | 0001) == 0
+                            )
                         }
                     }
                     entry = archive.nextEntry
