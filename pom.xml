@@ -8,6 +8,8 @@
     <artifactId>caretakerd</artifactId>
     <groupId>org.echocat</groupId>
     <version>0.1.0</version>
+    <description>caretakerd is a minimal process supervisor build for easy use with no dependencies.</description>
+    <url>https://github.com/echocat/caretakerd</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -137,6 +139,13 @@
                                         <exclude>target/**/*</exclude>
                                         <exclude>.mvn/**/*</exclude>
                                     </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.sourceDirectory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>**/*.toFilter.*</include>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>
