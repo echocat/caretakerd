@@ -1,0 +1,7 @@
+general:
+  artifacts:
+    - "target"
+
+test:
+  override:
+    - mvn clean package
