@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/app"
+	"github.com/echocat/caretakerd"
 )
 
 var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
@@ -33,7 +34,6 @@ type Renderer struct {
 	PointerTemplate             *template.Template
 	ArrayTemplate               *template.Template
 	MapTemplate                 *template.Template
-	DataTypeAnchorTemplate      *template.Template
 	DefinitionStructureTemplate *template.Template
 	HeaderTemplate              *template.Template
 
@@ -41,6 +41,11 @@ type Renderer struct {
 	Project                     Project
 	PickedDefinitions           *PickedDefinitions
 	Apps                        map[app.ExecutableType]*cli.App
+
+	Name                        string
+	Version                     string
+	Description                 string
+	Url                         string
 }
 
 func (instance *Renderer) Execute(writer io.Writer) error {
@@ -52,6 +57,10 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 		Project: project,
 		PickedDefinitions: pickedDefinitions,
 		Apps: apps,
+		Name: caretakerd.DAEMON_NAME,
+		Version: caretakerd.VERSION,
+		Description: caretakerd.DESCRIPTION,
+		Url: caretakerd.URL,
 	}
 	renderer.Functions = newFunctionsFor(renderer)
 
@@ -73,10 +82,6 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 		return nil, err
 	}
 	renderer.MapTemplate, err = parseTemplate(project, "mapType", renderer.Functions)
-	if err != nil {
-		return nil, err
-	}
-	renderer.DataTypeAnchorTemplate, err = parseTemplate(project, "dataTypeAnchor", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
@@ -142,6 +147,14 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			}
 			return template.CSS(content), err
 		},
+		"includeMarkdown": func(name string, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
+			source := renderer.Project.SrcRootPath + "/manual/includes/" + name + ".md"
+			content, err := ioutil.ReadFile(source)
+			if err != nil {
+				return "", err
+			}
+			return renderer.renderMarkdownWithContext(string(content), nil, headerTypeStart, headerIdPrefix)
+		},
 		"includeLicense": func() (string, error) {
 			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/LICENSE")
 			if err != nil {
@@ -172,7 +185,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			return buf.String()
 		},
 		"collectExamples": renderer.collectExamples,
-		"renderDataTypeAnchor": renderer.renderDataTypeAnchor,
+		"transformElementHtmlId": renderer.transformElementHtmlId,
 		"renderDefinitionStructure": renderer.renderDefinitionStructure,
 		"header": renderer.header,
 	}
@@ -261,18 +274,12 @@ func (instance *Renderer) renderValueType(t Type) (template.HTML, error) {
 	return template.HTML(buf.String()), nil
 }
 
-func (instance *Renderer) renderDataTypeAnchor(definition Definition) (template.HTML, error) {
+func (instance *Renderer) transformElementHtmlId(definition Definition) (string, error) {
 	id := instance.getDisplayIdOf(definition)
-
-	buf := new(bytes.Buffer)
-	err := instance.DataTypeAnchorTemplate.Execute(buf, id)
-	if err != nil {
-		return "", err
-	}
-	return template.HTML(buf.String()), nil
+	return "configuration.dataType." + id, nil
 }
 
-func (instance *Renderer) extractExcerptFrom(definition Definition) (template.HTML, error) {
+func (instance *Renderer) extractExcerptFrom(definition Definition, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
 	excerpt := definition.Description()
 	match := excerptFromCommentExtractionPattern.FindStringSubmatch(excerpt)
 	if match != nil && len(match) == 2 {
@@ -281,7 +288,7 @@ func (instance *Renderer) extractExcerptFrom(definition Definition) (template.HT
 	excerpt = strings.Replace(excerpt, "\r", "", -1)
 	excerpt = strings.Replace(excerpt, "\n", " ", -1)
 	excerpt = strings.TrimSpace(excerpt)
-	return instance.renderMarkdownWithContext(excerpt, definition)
+	return instance.renderMarkdownWithContext(excerpt, definition, headerTypeStart, headerIdPrefix)
 }
 
 type RenderDefinitionProperty struct {
@@ -291,7 +298,7 @@ type RenderDefinitionProperty struct {
 	Excerpt      template.HTML
 }
 
-func (instance *Renderer) renderDefinitionStructure(level int, id IdType) (template.HTML, error) {
+func (instance *Renderer) renderDefinitionStructure(level int, id IdType, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
 	definition, err := instance.PickedDefinitions.GetSourceElementBy(id)
 	if err != nil {
 		return "", err
@@ -309,7 +316,7 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType) (templ
 				id = ExtractValueIdType(inlined.ValueType())
 				inlined = instance.PickedDefinitions.FindInlinedFor(id)
 			}
-			excerpt, err := instance.extractExcerptFrom(propertyDefinition)
+			excerpt, err := instance.extractExcerptFrom(propertyDefinition, headerTypeStart, headerIdPrefix)
 			if err != nil {
 				return "", err
 			}
@@ -336,6 +343,8 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType) (templ
 			"nextNextLevel": level + 2,
 			"indent": indent,
 			"nextIndent": nextIndent,
+			"headerTypeStart": headerTypeStart,
+			"headerIdPrefix": headerIdPrefix,
 		}
 		buf := new(bytes.Buffer)
 		err := instance.DefinitionStructureTemplate.Execute(buf, object)
@@ -367,13 +376,14 @@ func (instance *Renderer) header(level int, id string, css string, content strin
 	return template.HTML(buf.String()), nil
 }
 
-func (instance *Renderer) renderMarkdown(of Describeable) (template.HTML, error) {
-	return instance.renderMarkdownWithContext(of.Description(), of)
+func (instance *Renderer) renderMarkdown(of Describeable, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
+	return instance.renderMarkdownWithContext(of.Description(), of, headerTypeStart, headerIdPrefix)
 }
 
-func (instance *Renderer) renderMarkdownWithContext(markup string, context Describeable) (template.HTML, error) {
+func (instance *Renderer) renderMarkdownWithContext(markup string, context Describeable, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
 	var err error
-	markup = headerPrefixPattern.ReplaceAllString(markup, "$1####")
+
+	markup = headerPrefixPattern.ReplaceAllString(markup, "$1" + strings.Repeat("#", headerTypeStart))
 	markup = refPropertyPattern.ReplaceAllStringFunc(markup, func(inline string) string {
 		match := refPropertyPattern.FindStringSubmatch(inline)
 		ref := match[1]
@@ -398,12 +408,38 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 	if err != nil {
 		return "", err
 	}
-	html := blackfriday.MarkdownCommon([]byte(markup))
+	prefix := ""
+	if len(headerIdPrefix) > 0 {
+		prefix = headerIdPrefix + "."
+	}
+	renderer := blackfriday.HtmlRendererWithParameters(blackfriday.HTML_USE_XHTML |
+		blackfriday.HTML_USE_SMARTYPANTS |
+		blackfriday.HTML_SMARTYPANTS_FRACTIONS |
+		blackfriday.HTML_SMARTYPANTS_DASHES |
+		blackfriday.HTML_SMARTYPANTS_LATEX_DASHES,
+		"",
+		"",
+		blackfriday.HtmlRendererParameters{
+			HeaderIDPrefix: prefix,
+		},
+	)
+	html := blackfriday.MarkdownOptions([]byte(markup), renderer, blackfriday.Options{
+		Extensions:  blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
+			blackfriday.EXTENSION_TABLES |
+			blackfriday.EXTENSION_FENCED_CODE |
+			blackfriday.EXTENSION_AUTOLINK |
+			blackfriday.EXTENSION_STRIKETHROUGH |
+			blackfriday.EXTENSION_SPACE_HEADERS |
+			blackfriday.EXTENSION_HEADER_IDS |
+			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK |
+			blackfriday.EXTENSION_DEFINITION_LISTS |
+			blackfriday.EXTENSION_AUTO_HEADER_IDS,
+	})
 	return template.HTML(strings.TrimSpace(string(html))), nil
 }
 
 func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
-	if strings.HasPrefix(ref, "#") {
+	if context != nil && strings.HasPrefix(ref, "#") {
 		name := ref[1:]
 		contextId := context.Id()
 		lastDotIfContextId := strings.LastIndex(contextId.Name, "#")
@@ -414,7 +450,7 @@ func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
 			Package: contextId.Package,
 			Name: name,
 		}
-	} else if strings.HasPrefix(ref, ".") {
+	} else if context != nil && strings.HasPrefix(ref, ".") {
 		contextId := context.Id()
 		return IdType{
 			Package: contextId.Package,

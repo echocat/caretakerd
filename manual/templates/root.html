@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-    <title>caretakerd</title>
+    <title>{{.Name}} - {{.Version}}</title>
     <script>
         {{includeJavaScript "highlight.pack"}}
     </script>
@@ -58,18 +58,24 @@
 <body>
 <article class="markdown-body">
 
-    {{header 1 "" "" "caretakerd"}}
+    {{header 1 "caretakerd" "" .Name}}
     <p>
-        caretakerd is a minimal process supervisor build for easy use with no dependencies.
+        Version: {{.Version}}
+    </p>
+    <p>
+        {{.Description}}
     </p>
 
     {{header 2 "topics" "" "Topics"}}
     <ul class="toc">
+        <li><a href="#gettingStarted">Getting started</a></li>
         <li><a href="#commands">Commands</a></li>
         <li><a href="#configuration">Configuration</a></li>
         <li><a href="#dataTypes">Data Types</a></li>
         <li><a href="#license">License</a></li>
     </ul>
+
+    {{includeMarkdown "gettingStarted" 2 ""}}
 
     {{header 2 "commands" "" "Commands"}}
 
@@ -116,16 +122,16 @@
     {{end}}
 
     {{header 3 "configuration.structure" "" "Structure"}}
-    <pre class="configuration-structure yaml"><code>{{renderDefinitionStructure 0 .PickedDefinitions.RootId}}</code></pre>
+    <pre class="configuration-structure yaml"><code>{{renderDefinitionStructure 0 .PickedDefinitions.RootId 4 "configuration.structure"}}</code></pre>
 
     {{header 2 "dataTypes" "" "Data types"}}
 
     {{range .PickedDefinitions.TopLevelDefinitions}}
         <div class="dataType">
             {{$simple := toSimple .}}
+            {{$id := transformElementHtmlId .}}
 
-            <h3 class="dataType-spec">
-                {{renderDataTypeAnchor .}}
+            <h3 class="dataType-spec" id="{{$id}}">
                 <code class="dataType-id">{{getDisplayIdOf .}}</code>
                 {{if $simple}}
                     <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
@@ -135,7 +141,7 @@
 
             </h3>
 
-            <div class="dataType-description">{{renderMarkdown .}}</div>
+            <div class="dataType-description">{{renderMarkdown . 4 $id}}</div>
 
             {{$object := toObject .}}
             {{if $object}}
@@ -143,9 +149,9 @@
                 <ul>
                 {{range $object.Children}}
                     {{$property := toProperty .}}
+                    {{$propertyId := transformElementHtmlId $property}}
                     <li class="dataType-property">
-                        <h5 class="dataType-spec">
-                            {{renderDataTypeAnchor $property}}
+                        <h5 class="dataType-spec" id="{{$propertyId}}">
                             <code class="dataType-id">{{html $property.Key}}</code>
                             <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
                             {{if $property.DefaultValue}}
@@ -153,7 +159,7 @@
                             {{end}}
                         </h5>
 
-                        <div class="dataType-description">{{renderMarkdown $property}}</div>
+                        <div class="dataType-description">{{renderMarkdown $property 6 $propertyId}}</div>
                     </li>
                 {{end}}
                 </ul>
@@ -165,13 +171,13 @@
                 <ul>
                 {{range $enum.Children}}
                     {{$element := toElement .}}
+                    {{$elementId := transformElementHtmlId $element}}
                     <li class="dataType-element">
-                        <h5 class="dataType-spec">
-                            {{renderDataTypeAnchor $element}}
+                        <h5 class="dataType-spec" id="{{$elementId}}">
                             <code class="dataType-id">{{html $element.Key}}</code>
                         </h5>
 
-                        <div class="dataType-description">{{renderMarkdown $element}}</div>
+                        <div class="dataType-description">{{renderMarkdown $element 6 $elementId}}</div>
                     </li>
                 {{end}}
                 </ul>
