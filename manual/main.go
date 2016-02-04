@@ -60,7 +60,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	file, err := os.OpenFile(os.Args[2], os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0)
+	file, err := os.OpenFile(os.Args[2], os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0655)
 	if err != nil {
 		panic(err)
 	}
