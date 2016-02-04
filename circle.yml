@@ -2,6 +2,10 @@ general:
   artifacts:
     - "target"
 
+dependencies:
+    cache_directories:
+    - ~/.m2/repository
+
 test:
   override:
     - mvn clean package
