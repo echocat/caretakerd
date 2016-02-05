@@ -190,7 +190,7 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 	}
 	exclude := project.SrcRootPath + system.PATH_SEPARATOR + "target"
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
+		if info != nil && info.IsDir() {
 			if strings.HasPrefix(info.Name(), ".") {
 				// Ignore dot files and directories
 				return nil
