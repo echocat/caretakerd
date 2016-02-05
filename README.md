@@ -19,7 +19,13 @@ of the release package (``caretakerd-*.tar.gz`` or ``caretakerd-*.zip``) on the 
 
 ### Precondition
 
-For building caretakerd there is only a compatible operating system (Linux, Windows or Mac OS X) and a Java 8 installation required.
+For building caretakerd there is only:
+1. a compatible operating system (Linux, Windows or Mac OS X)
+2. and a working Java 8 installation required.
+
+There is no need for a working and installed Go installation (or anything else). The build system will download every dependency and build it if necessary.
+
+*Hint: The Go runtime build by the build system will be placed under ``~/.go-bootstrap``.*
 
 ### Run
 
