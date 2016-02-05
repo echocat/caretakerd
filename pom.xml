@@ -283,7 +283,7 @@
                             <fileSet>
                                 <directory>${project.build.directory}</directory>
                                 <includes>
-                                    <include>${project.artifactId}.html</include>
+                                    <include>docs/${project.artifactId}.html</include>
                                     <include>${project.artifactId}-*.tar.gz</include>
                                     <include>${project.artifactId}-*.zip</include>
                                 </includes>
@@ -337,6 +337,28 @@
                 <executions>
                     <execution>
                         <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
                         <phase>none</phase>
                     </execution>
                 </executions>
