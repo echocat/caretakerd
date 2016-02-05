@@ -178,9 +178,8 @@
                             <executable>${project.go.root}/bin/go</executable>
                             <arguments>
                                 <argument>test</argument>
-                                <argument>-coverprofile</argument>
-                                <argument>${project.build.directory}/test.coverage</argument>
-                                <argument>${project.go.rooPkg}</argument>
+                                <argument>-v</argument>
+                                <argument>${project.go.rooPkg}/...</argument>
                             </arguments>
                             <environmentVariables>
                                 <!--suppress MavenModelInspection -->
