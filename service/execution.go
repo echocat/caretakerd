@@ -47,11 +47,28 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 	}, nil
 }
 
-func (instance *Service) getRunArgumentsFor() []string {
+func (instance *Service) expandValue(ai *access.Access, in string) string {
+	return os.Expand(in, func(key string) string {
+		if value, ok := (*instance).config.Environment[key]; ok {
+			return value
+		} else if key == "CTD_PEM" {
+			if ai.Type() == access.GenerateToEnvironment {
+				return string(ai.Pem())
+			} else {
+				return ""
+			}
+		} else {
+			return os.Getenv(key)
+		}
+	})
+}
+
+func (instance *Service) getRunArgumentsFor(ai *access.Access) []string {
 	args := []string{}
-	command := (*instance).config.Command
+	config := (*instance).config
+	command := config.Command
 	for i := 1; i < len(command); i++ {
-		args = append(args, command[i].String())
+		args = append(args, instance.expandValue(command[i].String(), ai))
 	}
 	return args
 }
@@ -59,12 +76,13 @@ func (instance *Service) getRunArgumentsFor() []string {
 func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
 	logger := (*instance).logger
 	config := (*instance).config
-	cmd := exec.Command(config.Command[0].String(), instance.getRunArgumentsFor()...)
+	executable := instance.expandValue(config.Command[0].String(), ai)
+	cmd := exec.Command(executable, instance.getRunArgumentsFor(ai)...)
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
 	cmd.Stdin = logger.Stdin()
 	if !config.Directory.IsTrimmedEmpty() {
-		cmd.Dir = config.Directory.String()
+		cmd.Dir = instance.expandValue(config.Directory.String(), ai)
 	}
 	for key, value := range config.Environment {
 		cmd.Env = append(cmd.Env, key+"="+value)
