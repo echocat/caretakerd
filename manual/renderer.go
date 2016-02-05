@@ -178,13 +178,26 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			}
 			return template.CSS(content), err
 		},
-		"includeMarkdown": func(name string, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
+		"includeMarkdown": func(name string, headerTypeStart int, headerIdPrefix string, data interface{}) (template.HTML, error) {
 			source := renderer.Project.SrcRootPath + "/manual/includes/" + name + ".md"
 			content, err := ioutil.ReadFile(source)
 			if err != nil {
 				return "", err
 			}
-			return renderer.renderMarkdownWithContext(string(content), nil, headerTypeStart, headerIdPrefix)
+			html, err := renderer.renderMarkdownWithContext(string(content), nil, headerTypeStart, headerIdPrefix)
+			if err != nil {
+				return "", err
+			}
+			tmpl, err := template.New(source).Funcs(renderer.Functions).Parse(string(html))
+			if err != nil {
+				return "", err
+			}
+			buf := new(bytes.Buffer)
+			err = tmpl.ExecuteTemplate(buf, source, data)
+			if err != nil {
+				return "", err
+			}
+			return template.HTML(buf.String()), nil
 		},
 		"includeLicense": func() (string, error) {
 			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/LICENSE")

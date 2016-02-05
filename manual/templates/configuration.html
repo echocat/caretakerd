@@ -14,9 +14,9 @@
 </ul>
 
 {{range $example := $examples}}
-<h4 class="{{$example.Id}}">{{$example.Title}}</h4>
+<h4 id="{{$example.Id}}">{{$example.Title}}</h4>
 <pre class="configuration-example-code {{$example.CodeType}}"><code>{{$example.CodeContent}}</code></pre>
 {{end}}
 
-<h3 class="configuration.structure">Structure</h3>
+<h3 id="configuration.structure">Structure</h3>
 <pre class="configuration-structure yaml"><code>{{renderDefinitionStructure 0 .PickedDefinitions.RootId 4 "configuration.structure"}}</code></pre>
