@@ -5,7 +5,7 @@
     <name>caretakerd</name>
     <artifactId>caretakerd</artifactId>
     <groupId>org.echocat</groupId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.1</version>
     <description>caretakerd is a minimal process supervisor build for easy use with no dependencies.;</description>
     <url>https://github.com/echocat/caretakerd</url>
 
@@ -300,7 +300,7 @@
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                     <!--suppress CheckTagEmptyBody -->
-                    <scmCommentPrefix></scmCommentPrefix>
+                    <scmCommentPrefix />
                 </configuration>
             </plugin>
 
@@ -398,7 +398,7 @@
         <connection>scm:git:https://github.com/echocat/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:echocat/${project.artifactId}.git</developerConnection>
         <url>https://github.com/echocat/${project.artifactId}</url>
-        <tag>v0.1.0</tag>
+        <tag>v0.1.1</tag>
     </scm>
 
 </project>
