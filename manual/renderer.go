@@ -94,27 +94,27 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 	renderer.Functions = newFunctionsFor(renderer)
 
 	var err error
-	renderer.Template, err = parseTemplate(project, "root", renderer.Functions)
+	renderer.Template, err = parseTemplate(project, "templates/root", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.IdTemplate, err = parseTemplate(project, "idType", renderer.Functions)
+	renderer.IdTemplate, err = parseTemplate(project, "templates/idType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.PointerTemplate, err = parseTemplate(project, "pointerType", renderer.Functions)
+	renderer.PointerTemplate, err = parseTemplate(project, "templates/pointerType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.ArrayTemplate, err = parseTemplate(project, "arrayType", renderer.Functions)
+	renderer.ArrayTemplate, err = parseTemplate(project, "templates/arrayType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.MapTemplate, err = parseTemplate(project, "mapType", renderer.Functions)
+	renderer.MapTemplate, err = parseTemplate(project, "templates/mapType", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
-	renderer.DefinitionStructureTemplate, err = parseTemplate(project, "definitionStructure", renderer.Functions)
+	renderer.DefinitionStructureTemplate, err = parseTemplate(project, "templates/definitionStructure", renderer.Functions)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			return nil
 		},
 		"include": func(name string, data interface{}) (template.HTML, error) {
-			tmpl, err := parseTemplate(renderer.Project, name, renderer.Functions)
+			tmpl, err := parseTemplate(renderer.Project, "includes/" + name, renderer.Functions)
 			if err != nil {
 				return "", err
 			}
@@ -531,7 +531,7 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 }
 
 func parseTemplate(project Project, name string, functions template.FuncMap) (*Template, error) {
-	source := project.SrcRootPath + "/manual/templates/" + name + ".html"
+	source := project.SrcRootPath + "/manual/" + name + ".html"
 	bytes, err := ioutil.ReadFile(source)
 	if err != nil {
 		return nil, err

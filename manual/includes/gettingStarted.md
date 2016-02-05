@@ -3,6 +3,7 @@
 * [Installing](#gettingStarted.installing)
 * [Configuring](#gettingStarted.configuring)
 * [Run](#gettingStarted.run)
+* [Control caretakerd with caretakerctl](#gettingStarted.control-caretakerd-with-caretakerctl)
 
 ## Installing {#gettingStarted.installing}
 
@@ -34,15 +35,15 @@ See [Configuration examples](#configuration.examples) for a quick start or consu
 caretakerd run
 ```
 
-## Control caretakerd with caretakerctl
+## Control caretakerd with caretakerctl {#gettingStarted.control-caretakerd-with-caretakerctl}
 
 *Precondition: RPC is enabled. See [RPC enabled configuration example](#configuration.examples.rpcEnabled) how to done this.*
 
 ```bash
-# Start a not already running service 
+# Start a not already running service
 caretakerctl start peasant
 
-# Retrieve status of a service 
+# Retrieve status of a service
 caretakerctl status peasant
 
 # Stop a not already running service

@@ -120,15 +120,15 @@ func registerCommandsFor(executableType ExecutableType, at *cli.App) {
 type ExecutableType int
 
 const (
-	Generic ExecutableType = 0
-	Daemon  ExecutableType = 1
-	Control ExecutableType = 2
+	Daemon  ExecutableType = 0
+	Control ExecutableType = 1
+	Generic ExecutableType = 2
 )
 
 var AllExecutableTypes = []ExecutableType{
-	Generic,
 	Daemon,
 	Control,
+	Generic,
 }
 
 func (instance ExecutableType) String() string {
