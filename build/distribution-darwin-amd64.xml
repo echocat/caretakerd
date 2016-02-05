@@ -18,7 +18,6 @@
             <destName>caretakerd</destName>
             <fileMode>0755</fileMode>
         </file>
-        <
         <file>
             <source>${project.go.path}/bin/${project.artifactId}-darwin-amd64</source>
             <outputDirectory>.</outputDirectory>
