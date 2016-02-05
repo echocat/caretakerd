@@ -5,60 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
     <title>{{.Name}} - {{.Version}}</title>
     <script>
-        {{includeJavaScript "highlight.pack"}}
+        {{includeJavaScript "highlight.pack"}}{{/*
+        */}}{{includeJavaScript "root"}}{{/*
+        */}}
     </script>
     <style>
-        {{includeCss "root"}}
-        {{includeCss "highlight-github"}}
-    </style>
-    <script>
-        hljs.initHighlightingOnLoad();
-    </script>
-    <style>
-        body{
-            box-sizing:border-box;
-            min-width:200px;
-            max-width:980px;
-            margin:0 auto;
-            padding:45px;
-        }
-        .dataType-kind {
-            font-size: 0.9em;
-            font-weight: normal;
-        }
-        .markdown-body .anchor {
-            float: right;
-            display: block;
-            padding: 0;
-            margin: 0;
-        }
-        pre code p {
-            display: inline;
-            padding: 0;
-            margin: 0;
-        }
-        .configuration-structure-element {
-            font-weight: bold;
-        }
-        .configuration-structure-hint,
-        .configuration-structure-hint a {
-            color: #aaaaaa;
-        }
-        .dataType-default {
-            font-weight: normal;
-            color: #aaaaaa;
-        }
-        .dataType-default-assign {
-            padding: 0 0.2em;
-            font-weight: normal;
-            color: #aaaaaa;
-        }
+        {{includeCss "highlight-github"}}{{/*
+        */}}{{includeCss "markdown"}}{{/*
+        */}}{{includeCss "root"}}{{/*
+        */}}
     </style>
 </head>
 <body>
 <article class="markdown-body">
 
-    {{header 1 "caretakerd" "" .Name}}
+    <h1 id="caretakerd">{{.Name}}</h1>
     <p>
         Version: {{.Version}}
     </p>
@@ -66,9 +27,10 @@
         {{.Description}}
     </p>
 
-    {{header 2 "topics" "" "Topics"}}
+    <h2 id="topics">Topics</h2>
     <ul class="toc">
         <li><a href="#gettingStarted">Getting started</a></li>
+        <li><a href="#downloads">Downloads</a></li>
         <li><a href="#commands">Commands</a></li>
         <li><a href="#configuration">Configuration</a></li>
         <li><a href="#dataTypes">Data Types</a></li>
@@ -76,118 +38,12 @@
     </ul>
 
     {{includeMarkdown "gettingStarted" 2 ""}}
+    {{include "downloads" .}}
+    {{include "commands" .}}
+    {{include "configuration" .}}
+    {{include "dataTypes" .}}
+    {{include "license" .}}
 
-    {{header 2 "commands" "" "Commands"}}
-
-    <ul class="sub-toc">
-        {{ range $executableType, $app := .Apps}}
-            <li><code><a href="#commands.{{ $executableType }}">{{ $executableType }}</a></code></li>
-        {{ end }}
-    </ul>
-
-    {{ range $executableType, $app := .Apps}}
-        {{ $executableId :=  printf "commands.%v" $executableType }}
-        {{ header 3 $executableId "" $executableType.String }}
-
-        <pre class="nohighlight"><code>{{includeAppUsageOf $executableType $app}}</code></pre>
-
-        {{ range $command := $app.Commands}}
-            {{ $commandId :=  printf "commands.%v.%s" $executableType $command.Name }}
-            {{header 4 $commandId "" $command.Name}}
-            <pre class="nohighlight"><code>{{includeCommandUsageOf $command}}</code></pre>
-        {{ end }}
-
-    {{ end }}
-
-
-    {{header 2 "configuration" "" "Configuration"}}
-
-    <ul class="sub-toc">
-        <li><a href="#configuration.examples">Examples</a></li>
-        <li><a href="#configuration.structure">Structure</a></li>
-    </ul>
-
-    {{header 3 "configuration.examples" "" "Examples"}}
-    {{$examples := collectExamples}}
-    <ul class="sub-toc">
-        {{range $example := $examples}}
-            <li class="configuration-example"><a href="#{{$example.Id}}">{{$example.Title}}</a></li>
-        {{end}}
-    </ul>
-
-    {{range $example := $examples}}
-        <h4 class="configuration-example"></h4>
-        {{header 4 $example.Id "" $example.Title}}
-        <pre class="configuration-example-code {{$example.CodeType}}"><code>{{$example.CodeContent}}</code></pre>
-    {{end}}
-
-    {{header 3 "configuration.structure" "" "Structure"}}
-    <pre class="configuration-structure yaml"><code>{{renderDefinitionStructure 0 .PickedDefinitions.RootId 4 "configuration.structure"}}</code></pre>
-
-    {{header 2 "dataTypes" "" "Data types"}}
-
-    {{range .PickedDefinitions.TopLevelDefinitions}}
-        <div class="dataType">
-            {{$simple := toSimple .}}
-            {{$id := transformElementHtmlId .}}
-
-            <h3 class="dataType-spec" id="{{$id}}">
-                <code class="dataType-id">{{getDisplayIdOf .}}</code>
-                {{if $simple}}
-                    <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
-                {{else}}
-                    <span class="dataType-kind">{{.TypeName}}</span>
-                {{end}}
-
-            </h3>
-
-            <div class="dataType-description">{{renderMarkdown . 4 $id}}</div>
-
-            {{$object := toObject .}}
-            {{if $object}}
-                <h4 class="dataType-children dataType-properties">Properties</h4>
-                <ul>
-                {{range $object.Children}}
-                    {{$property := toProperty .}}
-                    {{$propertyId := transformElementHtmlId $property}}
-                    <li class="dataType-property">
-                        <h5 class="dataType-spec" id="{{$propertyId}}">
-                            <code class="dataType-id">{{html $property.Key}}</code>
-                            <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
-                            {{if $property.DefaultValue}}
-                            <span class="dataType-default-assign">=</span><code class="dataType-default">{{$property.DefaultValue}}</code>
-                            {{end}}
-                        </h5>
-
-                        <div class="dataType-description">{{renderMarkdown $property 6 $propertyId}}</div>
-                    </li>
-                {{end}}
-                </ul>
-            {{end}}
-
-            {{$enum := toEnum .}}
-            {{if $enum}}
-                <h4 class="dataType-children dataType-elements">Elements</h4>
-                <ul>
-                {{range $enum.Children}}
-                    {{$element := toElement .}}
-                    {{$elementId := transformElementHtmlId $element}}
-                    <li class="dataType-element">
-                        <h5 class="dataType-spec" id="{{$elementId}}">
-                            <code class="dataType-id">{{html $element.Key}}</code>
-                        </h5>
-
-                        <div class="dataType-description">{{renderMarkdown $element 6 $elementId}}</div>
-                    </li>
-                {{end}}
-                </ul>
-            {{end}}
-
-        </div>
-    {{end}}
-
-    {{header 2 "license" "" "License"}}
-    <pre class="nohighlight"><code>{{ includeLicense }}</code></pre>
 </article>
 </body>
 </html>

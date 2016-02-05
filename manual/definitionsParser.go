@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/echocat/caretakerd/errors"
 	"go/parser"
 	"go/token"
 	"regexp"
@@ -14,7 +13,9 @@ import (
 	"strings"
 	"reflect"
 	"os"
+	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/system"
 )
 
 var extractIdPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
@@ -187,19 +188,20 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 			Compiler: runtime.Compiler,
 		},
 	}
+	exclude := project.SrcRootPath + system.PATH_SEPARATOR + "target"
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			if strings.HasPrefix(info.Name(), ".") {
 				// Ignore dot files and directories
 				return nil
-			} else if path == (project.SrcRootPath + string([]byte{filepath.Separator}) + "target") {
+			} else if path == exclude || strings.HasPrefix(path, exclude + system.PATH_SEPARATOR) {
 				// Do not try to build target directory
 				return nil
 			} else if path == project.SrcRootPath {
 				return et.parsePackageToDefinitions(project.RootPackage, definitions)
-			} else if strings.HasPrefix(path, project.GoSrcPath + string([]byte{filepath.Separator})) {
+			} else if strings.HasPrefix(path, project.GoSrcPath + system.PATH_SEPARATOR) {
 				subPath := path[len(project.GoSrcPath) + 1:]
-				targetPackage := strings.Replace(subPath, string([]byte{filepath.Separator}), "/", -1)
+				targetPackage := strings.Replace(subPath, system.PATH_SEPARATOR, "/", -1)
 				err := et.parsePackageToDefinitions(targetPackage, definitions)
 				if _, ok := err.(*build.NoGoError); ok {
 					return nil

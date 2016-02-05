@@ -6,6 +6,8 @@ import (
 	"github.com/echocat/caretakerd/sync"
 	"os"
 	"github.com/echocat/caretakerd/app"
+	"io/ioutil"
+	"path/filepath"
 )
 
 var LOGGER, _ = logger.NewLogger(logger.Config{
@@ -60,17 +62,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	file, err := os.OpenFile(os.Args[2], os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0655)
-	if err != nil {
-		panic(err)
-	}
-	err = renderer.Execute(file)
+	content, err := renderer.Execute()
 	if err != nil {
 		panic(err)
 	}
 
-	err = file.Close()
+	plainFile := os.Args[2]
+	file, err := filepath.Abs(plainFile)
 	if err != nil {
+		panic(err)
+	}
+	directory := filepath.Dir(file)
+	if err := os.MkdirAll(directory, 0755); err != nil {
+		panic(err)
+	}
+	if err := ioutil.WriteFile(file, []byte(content),0655 ); err != nil {
 		panic(err)
 	}
 }

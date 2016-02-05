@@ -3,14 +3,17 @@ package main
 import (
 	"html/template"
 	"io/ioutil"
-	"github.com/russross/blackfriday"
-	"io"
 	"strings"
 	"path"
 	"bytes"
 	"regexp"
-	"github.com/echocat/caretakerd/errors"
 	"path/filepath"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/html"
+	"github.com/russross/blackfriday"
+	"github.com/echocat/caretakerd/errors"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd"
@@ -18,6 +21,8 @@ import (
 
 var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
 var excerptFromCommentExtractionPattern = regexp.MustCompile("(?s)^(.*?(?:\\.\\s|$))")
+var removeHtmlTags = regexp.MustCompile("(?sm)<[^>]+>")
+var findLeadingWhitespaces = regexp.MustCompile("(?m)^( +)")
 var refPropertyPattern = regexp.MustCompile("{@ref +([^\\}\\s]+)\\s*([^\\}]*)}")
 var titlePropertyPattern = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
 var commandsInAppPattern = regexp.MustCompile("(?s)(COMMANDS:\n)(.*?)(\n[\t ]*\n|$)")
@@ -29,13 +34,12 @@ type Describeable interface {
 }
 
 type Renderer struct {
-	Template                    *template.Template
-	IdTemplate                  *template.Template
-	PointerTemplate             *template.Template
-	ArrayTemplate               *template.Template
-	MapTemplate                 *template.Template
-	DefinitionStructureTemplate *template.Template
-	HeaderTemplate              *template.Template
+	Template                    *Template
+	IdTemplate                  *Template
+	PointerTemplate             *Template
+	ArrayTemplate               *Template
+	MapTemplate                 *Template
+	DefinitionStructureTemplate *Template
 
 	Functions                   template.FuncMap
 	Project                     Project
@@ -48,8 +52,33 @@ type Renderer struct {
 	Url                         string
 }
 
-func (instance *Renderer) Execute(writer io.Writer) error {
-	return instance.Template.ExecuteTemplate(writer, instance.Project.SrcRootPath + "/manual/templates/root.html", instance)
+func (instance *Renderer) Execute() (template.HTML, error) {
+	return instance.Template.Execute(instance)
+}
+
+type Template struct {
+	tmpl *template.Template
+	name string
+}
+
+func (instance *Template) Execute(data interface{}) (template.HTML, error) {
+	uncompressed := new(bytes.Buffer)
+	err := instance.tmpl.ExecuteTemplate(uncompressed, instance.name, data)
+	if err != nil {
+		return "", err
+	}
+	compressed := new(bytes.Buffer)
+	uncompressedReader := strings.NewReader(uncompressed.String())
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.Add("text/html", &html.Minifier{
+		KeepWhitespace:  true,
+	})
+	m.AddFunc("text/javascript", js.Minify)
+	if err := m.Minify("text/html", compressed, uncompressedReader); err != nil {
+		return "", err
+	}
+	return template.HTML(compressed.String()), nil
 }
 
 func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*cli.App) (*Renderer, error) {
@@ -89,11 +118,6 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 	if err != nil {
 		return nil, err
 	}
-	renderer.HeaderTemplate, err = parseTemplate(project, "header", renderer.Functions)
-	if err != nil {
-		return nil, err
-	}
-
 	return renderer, nil
 }
 
@@ -133,6 +157,13 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			}
 			return nil
 		},
+		"include": func(name string, data interface{}) (template.HTML, error) {
+			tmpl, err := parseTemplate(renderer.Project, name, renderer.Functions)
+			if err != nil {
+				return "", err
+			}
+			return tmpl.Execute(data)
+		},
 		"includeJavaScript": func(name string) (template.JS, error) {
 			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/scripts/" + name + ".js")
 			if err != nil {
@@ -166,15 +197,19 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			app.HelpName = executableType.String()
 			buf := new(bytes.Buffer)
 			cli.HelpPrinter(buf, cli.AppHelpTemplate, app)
-			return template.HTML(commandsInAppPattern.ReplaceAllStringFunc(buf.String(), func(what string) string {
+			content := commandsInAppPattern.ReplaceAllStringFunc(buf.String(), func(what string) string {
 				match := commandsInAppPattern.FindStringSubmatch(what)
 				content := commandLinePattern.ReplaceAllStringFunc(match[2], func(subWhat string) string {
 					subMatch := commandLinePattern.FindStringSubmatch(subWhat)
-
 					return subMatch[1] + "<a href=\"#commands." + executableType.String() + "." + subMatch[2] + "\">" + subMatch[2] + "</a>" + subMatch[3]
 				})
 				return match[1] + content + match[3]
-			}))
+			})
+			content = findLeadingWhitespaces.ReplaceAllStringFunc(content, func(spaces string) string {
+				return strings.Replace(spaces, " ", "<span class=\"indent\"></span>", -1)
+			})
+			content = strings.Replace(content, "\n", "<br>", -1)
+			return template.HTML(content)
 		},
 		"includeCommandUsageOf": func(command *cli.Command) string {
 			if len(command.HelpName) <= 0 {
@@ -187,7 +222,6 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 		"collectExamples": renderer.collectExamples,
 		"transformElementHtmlId": renderer.transformElementHtmlId,
 		"renderDefinitionStructure": renderer.renderDefinitionStructure,
-		"header": renderer.header,
 	}
 }
 
@@ -244,34 +278,22 @@ func (instance *Renderer) isMapType(t Type) bool {
 }
 
 func (instance *Renderer) renderValueType(t Type) (template.HTML, error) {
-	buf := new(bytes.Buffer)
 	if idType, ok := t.(IdType); ok {
 		inlined := instance.PickedDefinitions.FindInlinedFor(idType)
 		if inlined != nil && inlined.Inlined() {
 			return instance.renderValueType(inlined.ValueType())
 		} else {
-			err := instance.IdTemplate.Execute(buf, idType)
-			if err != nil {
-				return "", err
-			}
+			return instance.IdTemplate.Execute(idType)
 		}
 	} else if arrayType, ok := t.(ArrayType); ok {
-		err := instance.ArrayTemplate.Execute(buf, arrayType)
-		if err != nil {
-			return "", err
-		}
+		return instance.ArrayTemplate.Execute(arrayType)
 	} else if pointerType, ok := t.(PointerType); ok {
-		err := instance.PointerTemplate.Execute(buf, pointerType)
-		if err != nil {
-			return "", err
-		}
+		return instance.PointerTemplate.Execute(pointerType)
 	} else if mapType, ok := t.(MapType); ok {
-		err := instance.MapTemplate.Execute(buf, mapType)
-		if err != nil {
-			return "", err
-		}
+		return instance.MapTemplate.Execute(mapType)
+	} else {
+		return "", errors.New("Unknown type: %v", t)
 	}
-	return template.HTML(buf.String()), nil
 }
 
 func (instance *Renderer) transformElementHtmlId(definition Definition) (string, error) {
@@ -288,7 +310,12 @@ func (instance *Renderer) extractExcerptFrom(definition Definition, headerTypeSt
 	excerpt = strings.Replace(excerpt, "\r", "", -1)
 	excerpt = strings.Replace(excerpt, "\n", " ", -1)
 	excerpt = strings.TrimSpace(excerpt)
-	return instance.renderMarkdownWithContext(excerpt, definition, headerTypeStart, headerIdPrefix)
+	excerptHtml, err := instance.renderMarkdownWithContext(excerpt, definition, headerTypeStart, headerIdPrefix)
+	if err != nil {
+		return "", err
+	}
+	excerpt = removeHtmlTags.ReplaceAllString(string(excerptHtml), "")
+	return template.HTML(excerpt), nil
 }
 
 type RenderDefinitionProperty struct {
@@ -330,11 +357,9 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType, header
 			}
 			properties = append(properties, renderDefinitionProperty)
 		}
-		indent := ""
-		for i := 0; i < level; i++ {
-			indent += "    "
-		}
-		nextIndent := indent + "    "
+		indentContent := "<span class=\"tabIndent\"></span>"
+		indent := template.HTML(strings.Repeat(indentContent, level))
+		nextIndent := template.HTML(strings.Repeat(indentContent, level + 1))
 		object := map[string]interface{}{
 			"object": objectDefinition,
 			"properties": properties,
@@ -346,34 +371,17 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType, header
 			"headerTypeStart": headerTypeStart,
 			"headerIdPrefix": headerIdPrefix,
 		}
-		buf := new(bytes.Buffer)
-		err := instance.DefinitionStructureTemplate.Execute(buf, object)
+		html, err := instance.DefinitionStructureTemplate.Execute(object)
 		if err != nil {
 			return "", err
 		}
-		html := buf.String()
 		if level == 0 {
-			html = strings.TrimSpace(html)
+			html = template.HTML(strings.TrimSpace(string(html)))
 		}
-		return template.HTML(html), nil
+		return html, nil
 	} else {
 		return "", nil
 	}
-}
-
-func (instance *Renderer) header(level int, id string, css string, content string) (template.HTML, error) {
-	buf := new(bytes.Buffer)
-	object := map[string]interface{}{
-		"level": level,
-		"id": id,
-		"css": css,
-		"content": content,
-	}
-	err := instance.HeaderTemplate.Execute(buf, object)
-	if err != nil {
-		return "", err
-	}
-	return template.HTML(buf.String()), nil
 }
 
 func (instance *Renderer) renderMarkdown(of Describeable, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
@@ -509,17 +517,20 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 	return source, id, id
 }
 
-func parseTemplate(project Project, name string, functions template.FuncMap) (*template.Template, error) {
+func parseTemplate(project Project, name string, functions template.FuncMap) (*Template, error) {
 	source := project.SrcRootPath + "/manual/templates/" + name + ".html"
 	bytes, err := ioutil.ReadFile(source)
 	if err != nil {
 		return nil, err
 	}
-	result, err := template.New(source).Funcs(functions).Parse(string(bytes))
+	tmpl, err := template.New(source).Funcs(functions).Parse(string(bytes))
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return &Template{
+		tmpl: tmpl,
+		name: source,
+	}, nil
 }
 
 func (instance *Renderer) capitalize(what string) string {

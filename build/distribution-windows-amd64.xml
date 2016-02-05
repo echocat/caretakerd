@@ -8,17 +8,17 @@
     </formats>
     <files>
         <file>
-            <source>${project.build.directory}/${project.artifactId}.html</source>
+            <source>${project.build.directory}/docs/${project.artifactId}-windows.html</source>
             <outputDirectory>.</outputDirectory>
             <destName>${project.artifactId}.html</destName>
         </file>
         <file>
-            <source>${project.build.directory}/${project.artifactId}-windows-amd64.exe</source>
+            <source>${project.go.path}/bin/${project.artifactId}-windows-amd64.exe</source>
             <outputDirectory>.</outputDirectory>
             <destName>caretakerd.exe</destName>
         </file>
         <file>
-            <source>${project.build.directory}/${project.artifactId}-windows-amd64.exe</source>
+            <source>${project.go.path}/bin/${project.artifactId}-windows-amd64.exe</source>
             <outputDirectory>.</outputDirectory>
             <destName>caretakerctl.exe</destName>
         </file>

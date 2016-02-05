@@ -8,18 +8,19 @@
     </formats>
     <files>
         <file>
-            <source>${project.build.directory}/${project.artifactId}.html</source>
+            <source>${project.build.directory}/docs/${project.artifactId}.html</source>
             <outputDirectory>.</outputDirectory>
             <destName>${project.artifactId}.html</destName>
         </file>
         <file>
-            <source>${project.build.directory}/${project.artifactId}-darwin-amd64</source>
+            <source>${project.go.path}/bin/${project.artifactId}-darwin-amd64</source>
             <outputDirectory>.</outputDirectory>
             <destName>caretakerd</destName>
             <fileMode>0755</fileMode>
         </file>
+        <
         <file>
-            <source>${project.build.directory}/${project.artifactId}-darwin-amd64</source>
+            <source>${project.go.path}/bin/${project.artifactId}-darwin-amd64</source>
             <outputDirectory>.</outputDirectory>
             <destName>caretakerctl</destName>
             <fileMode>0755</fileMode>

@@ -1,0 +1,22 @@
+<h2 id="configuration">Configuration</h2>
+
+<ul class="sub-toc">
+    <li><a href="#configuration.examples">Examples</a></li>
+    <li><a href="#configuration.structure">Structure</a></li>
+</ul>
+
+<h3 id="configuration.examples">Examples</h3>
+{{$examples := collectExamples}}
+<ul class="sub-toc">
+    {{range $example := $examples}}
+    <li class="configuration-example"><a href="#{{$example.Id}}">{{$example.Title}}</a></li>
+    {{end}}
+</ul>
+
+{{range $example := $examples}}
+<h4 class="{{$example.Id}}">{{$example.Title}}</h4>
+<pre class="configuration-example-code {{$example.CodeType}}"><code>{{$example.CodeContent}}</code></pre>
+{{end}}
+
+<h3 class="configuration.structure">Structure</h3>
+<pre class="configuration-structure yaml"><code>{{renderDefinitionStructure 0 .PickedDefinitions.RootId 4 "configuration.structure"}}</code></pre>

@@ -68,7 +68,7 @@ func (instance *Service) getRunArgumentsFor(ai *access.Access) []string {
 	config := (*instance).config
 	command := config.Command
 	for i := 1; i < len(command); i++ {
-		args = append(args, instance.expandValue(command[i].String(), ai))
+		args = append(args, instance.expandValue(ai, command[i].String()))
 	}
 	return args
 }
@@ -76,13 +76,13 @@ func (instance *Service) getRunArgumentsFor(ai *access.Access) []string {
 func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
 	logger := (*instance).logger
 	config := (*instance).config
-	executable := instance.expandValue(config.Command[0].String(), ai)
+	executable := instance.expandValue(ai, config.Command[0].String())
 	cmd := exec.Command(executable, instance.getRunArgumentsFor(ai)...)
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
 	cmd.Stdin = logger.Stdin()
 	if !config.Directory.IsTrimmedEmpty() {
-		cmd.Dir = instance.expandValue(config.Directory.String(), ai)
+		cmd.Dir = instance.expandValue(ai, config.Directory.String())
 	}
 	for key, value := range config.Environment {
 		cmd.Env = append(cmd.Env, key+"="+value)

@@ -15,7 +15,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.versions.go>1.5.2</project.versions.go>
         <project.go.rooPkg>github.com/echocat/caretakerd</project.go.rooPkg>
-        <project.go.path>${project.build.directory}/gopath</project.go.path>
         <project.go.forceDownloadToolchain>false</project.go.forceDownloadToolchain>
         <project.go.forceBuildToolchain>false</project.go.forceBuildToolchain>
         <project.build.targetPlatforms>linux-386 linux-amd64 windows-386 windows-amd64 darwin-amd64</project.build.targetPlatforms>
@@ -80,6 +79,7 @@
                                     github.com/codegangsta/cli
                                     gopkg.in/jmcvetta/napping.v3
                                     github.com/russross/blackfriday
+                                    github.com/tdewolff/minify
                                     github.com/stretchr/testify/assert
                                 </dependencies>
                             </properties>
@@ -95,7 +95,8 @@
                             <source>${project.basedir}/build/build.groovy</source>
                             <properties>
                                 <pkg>${project.go.rooPkg}/main</pkg>
-                                <output>${project.build.directory}/${project.artifactId}</output>
+                                <!--suppress MavenModelInspection -->
+                                <output>${project.go.path}/bin/${project.artifactId}</output>
                                 <targetPlatforms>${project.build.targetPlatforms}</targetPlatforms>
                             </properties>
                         </configuration>
@@ -110,7 +111,8 @@
                             <source>${project.basedir}/build/build.groovy</source>
                             <properties>
                                 <pkg>${project.go.rooPkg}/manual</pkg>
-                                <output>${project.build.directory}/manual</output>
+                                <!--suppress MavenModelInspection -->
+                                <output>${project.go.path}/manual</output>
                                 <exportToProperty>project.build.manual-generator</exportToProperty>
                             </properties>
                         </configuration>
@@ -191,7 +193,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>generate-manual</id>
+                        <id>generate-manual-unix</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>exec</goal>
@@ -201,9 +203,31 @@
                             <executable>${project.build.manual-generator}</executable>
                             <arguments>
                                 <argument>${project.go.rooPkg}</argument>
-                                <argument>${project.build.directory}/${project.artifactId}.html</argument>
+                                <argument>${project.build.directory}/docs/${project.artifactId}.html</argument>
                             </arguments>
                             <environmentVariables>
+                                <!--suppress MavenModelInspection -->
+                                <GOROOT>${project.go.root}</GOROOT>
+                                <!--suppress MavenModelInspection -->
+                                <GOPATH>${project.go.path}</GOPATH>
+                            </environmentVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-manual-windows</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <!--suppress MavenModelInspection -->
+                            <executable>${project.build.manual-generator}</executable>
+                            <arguments>
+                                <argument>${project.go.rooPkg}</argument>
+                                <argument>${project.build.directory}/docs/${project.artifactId}-windows.html</argument>
+                            </arguments>
+                            <environmentVariables>
+                                <GOOS>windows</GOOS>
                                 <!--suppress MavenModelInspection -->
                                 <GOROOT>${project.go.root}</GOROOT>
                                 <!--suppress MavenModelInspection -->

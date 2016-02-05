@@ -1,0 +1,61 @@
+<h2 id="dataTypes">Data Types</h2>
+
+{{range .PickedDefinitions.TopLevelDefinitions}}
+<div class="dataType">
+    {{$simple := toSimple .}}
+    {{$id := transformElementHtmlId .}}
+
+    <h3 class="dataType-spec" id="{{$id}}">
+        <code class="dataType-id">{{getDisplayIdOf .}}</code>
+        {{if $simple}}
+        <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
+        {{else}}
+        <span class="dataType-kind">{{.TypeName}}</span>
+        {{end}}
+
+    </h3>
+
+    <div class="dataType-description">{{renderMarkdown . 4 $id}}</div>
+
+    {{$object := toObject .}}
+    {{if $object}}
+    <h4 class="dataType-children dataType-properties">Properties</h4>
+    <ul>
+        {{range $object.Children}}
+        {{$property := toProperty .}}
+        {{$propertyId := transformElementHtmlId $property}}
+        <li class="dataType-property">
+            <h5 class="dataType-spec" id="{{$propertyId}}">
+                <code class="dataType-id">{{html $property.Key}}</code>
+                <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
+                {{if $property.DefaultValue}}
+                <span class="dataType-default-assign">=</span><code class="dataType-default">{{$property.DefaultValue}}</code>
+                {{end}}
+            </h5>
+
+            <div class="dataType-description">{{renderMarkdown $property 6 $propertyId}}</div>
+        </li>
+        {{end}}
+    </ul>
+    {{end}}
+
+    {{$enum := toEnum .}}
+    {{if $enum}}
+    <h4 class="dataType-children dataType-elements">Elements</h4>
+    <ul>
+        {{range $enum.Children}}
+        {{$element := toElement .}}
+        {{$elementId := transformElementHtmlId $element}}
+        <li class="dataType-element">
+            <h5 class="dataType-spec" id="{{$elementId}}">
+                <code class="dataType-id">{{html $element.Key}}</code>
+            </h5>
+
+            <div class="dataType-description">{{renderMarkdown $element 6 $elementId}}</div>
+        </li>
+        {{end}}
+    </ul>
+    {{end}}
+
+</div>
+{{end}}

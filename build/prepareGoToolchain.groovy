@@ -1,10 +1,9 @@
-import org.apache.commons.compress.archivers.ArchiveEntry
-import org.apache.commons.compress.archivers.ArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.SystemUtils
 import org.apache.maven.project.MavenProject
 import org.slf4j.LoggerFactory
@@ -32,11 +31,58 @@ public class PrepareGoToolchain {
         return new URL("https://storage.googleapis.com/golang/go${goVersion}.${suffix}")
     }
 
+    private static void unTarGz(InputStream is, File target) {
+        final gzip = new GZIPInputStream(is)
+        final archive = new TarArchiveInputStream(gzip)
+        def TarArchiveEntry entry = archive.nextTarEntry
+        while (entry != null) {
+            final entryFile = new File(target, REMOVE_LEADING_GO_PATH_PATTERN.matcher(entry.name).replaceFirst("")).canonicalFile
+            if (entry.directory) {
+                FileUtils.forceMkdir(entryFile)
+            } else {
+                LOG.debug("Write: {}...", entryFile)
+                FileUtils.forceMkdir(entryFile.parentFile)
+                final os = new FileOutputStream(entryFile)
+                try {
+                    IOUtils.copy(archive, os)
+                } finally {
+                    IOUtils.closeQuietly(os)
+                }
+                entryFile.setExecutable(
+                        (entry.mode | 0100) > 0,
+                        (entry.mode | 0001) == 0
+                )
+            }
+            entry = archive.nextTarEntry
+        }
+    }
+
+    private static void unZip(InputStream is, File target) {
+        final archive = new ZipArchiveInputStream(new BufferedInputStream(is), "utf-8", false, true)
+        def entry = archive.nextZipEntry
+        while (entry != null) {
+            final entryFile = new File(target, REMOVE_LEADING_GO_PATH_PATTERN.matcher(entry.name).replaceFirst("")).canonicalFile
+            if (entry.directory) {
+                FileUtils.forceMkdir(entryFile)
+            } else {
+                LOG.debug("Write: {}...", entryFile)
+                FileUtils.forceMkdir(entryFile.getParentFile())
+                final os = new FileOutputStream(entryFile)
+                try {
+                    IOUtils.copy(archive, os)
+                } finally {
+                    IOUtils.closeQuietly(os)
+                }
+            }
+            entry = archive.nextZipEntry
+        }
+    }
+
     private static void downloadAndExtract(String goVersion, String targetPath, boolean force) {
         final downloadUrl = determinateDownloadUrl(goVersion)
         final target = new File(targetPath)
 
-        final targetMarker = new File("${target.path}.downloaded")
+        final targetMarker = new File("${target.path}/.downloaded")
         def previousDownloadLocation = ""
         try {
             previousDownloadLocation = FileUtils.readFileToString(targetMarker)
@@ -48,37 +94,12 @@ public class PrepareGoToolchain {
             LOG.info("Going to download {} and extract it to {}...", downloadUrl, target)
             final is = downloadUrl.openStream()
             try {
-                final ArchiveInputStream archive;
                 if (downloadUrl.toExternalForm().endsWith(".tar.gz")) {
-                    final gzip = new GZIPInputStream(is)
-                    archive = new TarArchiveInputStream(gzip)
+                    unTarGz(is, target)
                 } else if (downloadUrl.toExternalForm().endsWith(".zip")) {
-                    archive = new ZipArchiveInputStream(new BufferedInputStream(is), "UTF8", true, true)
+                    unZip(is, target)
                 } else {
                     throw new IllegalStateException("Does not support download archive of type ${downloadUrl.toExternalForm()}.")
-                }
-                def ArchiveEntry entry = archive.nextEntry
-                while (entry != null) {
-                    final entryFile = new File(target, REMOVE_LEADING_GO_PATH_PATTERN.matcher(entry.name).replaceFirst("")).canonicalFile
-                    if (entry.directory) {
-                        FileUtils.forceMkdir(entryFile)
-                    } else {
-                        LOG.debug("Write: {}...", entryFile)
-                        FileUtils.forceMkdir(entryFile.getParentFile())
-                        final os = new FileOutputStream(entryFile)
-                        try {
-                            IOUtils.copy(archive, os)
-                        } finally {
-                            IOUtils.closeQuietly(os)
-                        }
-                        if (entry instanceof TarArchiveEntry) {
-                            entryFile.setExecutable(
-                                    (entry.getMode() | 0100) > 0,
-                                    (entry.getMode() | 0001) == 0
-                            )
-                        }
-                    }
-                    entry = archive.nextEntry
                 }
             } finally {
                 IOUtils.closeQuietly(is)
@@ -131,7 +152,13 @@ public class PrepareGoToolchain {
     }
 
     public static run(MavenProject project){
-        project.properties.setProperty("project.go.root", "${project.build.directory}/go")
+        if (StringUtils.isEmpty(project.properties.getProperty("project.go.root"))) {
+            project.properties.setProperty("project.go.root", "${System.getProperty("user.home", project.basedir.path)}/.go-bootstrap")
+        }
+
+        if (StringUtils.isEmpty(project.properties.getProperty("project.go.path"))) {
+            project.properties.setProperty("project.go.path", "${project.build.directory}/gopath")
+        }
 
         downloadAndExtract(
                 project.properties.getProperty('project.versions.go'),

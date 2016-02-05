@@ -1,0 +1,22 @@
+<h2 id="commands">Commands</h2>
+
+<ul class="sub-toc">
+    {{ range $executableType, $app := .Apps}}
+    <li><code><a href="#commands.{{ $executableType }}">{{ $executableType }}</a></code></li>
+    {{ end }}
+</ul>
+
+{{ range $executableType, $app := .Apps}}
+{{ $executableId :=  printf "commands.%v" $executableType }}
+<h3 id="commands.$executableType">{{$executableType.String}}</h3>
+
+<pre class="nohighlight"><code>{{includeAppUsageOf $executableType $app}}</code></pre>
+
+{{ range $command := $app.Commands}}
+<h4 id="commands.{{$executableType}}.{{$command.Name}}">{{$command.Name}}</h4>
+
+<pre class="nohighlight"><code>{{includeCommandUsageOf $command}}</code></pre>
+{{ end }}
+
+{{ end }}
+

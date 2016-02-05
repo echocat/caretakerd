@@ -33,13 +33,13 @@ public class GetDependencies {
         pb.redirectOutput(ProcessBuilder.Redirect.INHERIT)
         pb.redirectErrorStream(true)
 
-        LOG.info("Going to get {}...", dependency)
+        LOG.info("Going to get http://{}...", dependency)
         final process = pb.start()
         final exitCode = process.waitFor()
         if (exitCode != 0) {
             throw new RuntimeException("Command ${pb.command()} failed with exitCode ${exitCode}.")
         }
-        LOG.info("Going to get {}... DONE!", dependency)
+        LOG.info("Going to get http://{}... DONE!", dependency)
     }
 
     public static run(MavenProject project, String dependenciesAsString) {
