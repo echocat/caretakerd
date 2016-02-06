@@ -2,18 +2,17 @@
 
 caretakerd is a minimal process supervisor build for easy use with no dependencies.
 
-* [User documentation](#user-documentation)
+* [Documentation](#documentation)
 * [Building](#building)
 * [Contributing](#contributing)
 * [Support](#support)
 * [License](#license)
 
-## User documentation
+## Documentation
 
-Each release of caretakerd is shipping its own documentation.
-Please go to the [release page](https://github.com/echocat/caretakerd/releases/latest)
-and download the ``caretakerd.html`` for the full documentaion or take the platform specific one out
-of the release package (``caretakerd-*.tar.gz`` or ``caretakerd-*.zip``) on the [release page](https://github.com/echocat/caretakerd/releases/latest).
+For general documentation please refer the official homepage: [caretakerd.echocat.org](https://caretakerd.echocat.org).
+
+For specific versions refer: [caretakerd.echocat.org/all](https://caretakerd.echocat.org/all).
 
 ## Building
 
