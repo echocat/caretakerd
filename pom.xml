@@ -7,7 +7,7 @@
     <groupId>org.echocat</groupId>
     <version>0.1.2-SNAPSHOT</version>
     <description>caretakerd is a minimal process supervisor build for easy use with no dependencies.</description>
-    <url>https://github.com/echocat/caretakerd</url>
+    <url>https://caretakerd.echocat.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

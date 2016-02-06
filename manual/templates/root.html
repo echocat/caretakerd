@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head itemscope itemtype="http://schema.org/WebSite">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-    <title>{{.Name}} - {{.Version}}</title>
+    <link rel="canonical" href="https://caretakerd.echocat.org/" itemprop="url">
+    <title itemprop="name">{{.Name}} - {{.Version}}</title>
     <script>
         {{includeJavaScript "highlight.pack"}}{{/*
         */}}{{includeJavaScript "root"}}{{/*
@@ -17,9 +18,10 @@
     </style>
 </head>
 <body>
-<article class="markdown-body">
-
-    <h1 id="caretakerd">{{.Name}}</h1>
+<article class="markdown-body" vocab="http://schema.org/" typeof="SoftwareApplication">
+    <link property="applicationCategory" href="http://schema.org/UtilitiesApplication"/>
+    <meta property="operatingSystem" content="Linux" />
+    <h1 id="caretakerd" property="name">{{.Name}}</h1>
     <p>
         Version: {{.Version}}
     </p>
@@ -28,15 +30,15 @@
     </p>
 
     <h2 id="topics">Topics</h2>
-    <ul class="toc">
-        <li><a href="#gettingStarted">Getting started</a></li>
-        <li><a href="#downloads">Downloads</a></li>
-        <li><a href="#commands">Commands</a></li>
-        <li><a href="#configuration">Configuration</a></li>
-        <li><a href="#dataTypes">Data Types</a></li>
-        <li><a href="#support">Support</a></li>
-        <li><a href="#contributing">Contributing</a></li>
-        <li><a href="#license">License</a></li>
+    <ul class="toc" vocab="http://schema.org/" typeof="BreadcrumbList">
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#gettingStarted"><span property="name">Getting started</span></a><meta property="position" content="1"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#downloads"><span property="name">Downloads</span></a><meta property="position" content="2"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#commands"><span property="name">Commands</span></a><meta property="position" content="3"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#configuration"><span property="name">Configuration</span></a><meta property="position" content="4"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#dataTypes"><span property="name">Data Types</span></a><meta property="position" content="5"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#support"><span property="name">Support</span></a><meta property="position" content="6"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#contributing"><span property="name">Contributing</span></a><meta property="position" content="7"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#license"><span property="name">License</span></a><meta property="position" content="8"></li>
     </ul>
 
     {{includeMarkdown "gettingStarted" 2 "" .}}
