@@ -15,7 +15,8 @@ sudo curl -SL https://github.com/echocat/caretakerd/releases/download/v{{.Versio
     | tar -xz --exclude caretakerd.html -C /usr/bin
 ```
 
-*Hint: You can use exact these command to in a [Dockerfile](https://docs.docker.com/engine/reference/builder/) to create caretakerd in a docker container.* 
+> Hint: You can use exact these command to in a [Dockerfile](https://docs.docker.com/engine/reference/builder/)
+> to create caretakerd in a docker container.
 
 See [Downloads](#downloads) for all possible download locations.
 
@@ -37,7 +38,7 @@ caretakerd run
 
 ## Control caretakerd with caretakerctl {#gettingStarted.control-caretakerd-with-caretakerctl}
 
-*Precondition: RPC is enabled. See [RPC enabled configuration example](#configuration.examples.rpcEnabled) how to done this.*
+> Precondition: RPC is enabled. See [RPC enabled configuration example](#configuration.examples.rpcEnabled) how to done this.
 
 ```bash
 # Start a not already running service
