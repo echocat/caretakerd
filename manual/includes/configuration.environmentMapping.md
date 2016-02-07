@@ -2,11 +2,11 @@
 
 There are several environment variables mapped to configuration parameters. There environment variables goes over configuration files.
 
-* [Examples](#examples)
-* [Services](#services)
-* [Global](#global)
+* [Examples](#configuration.environmentMapping.examples)
+* [Services](#configuration.environmentMapping.services)
+* [Global](#configuration.environmentMapping.global)
 
-## Examples {#examples}
+## Examples {#environmentMapping.examples}
 
 **caretakerd.yaml**
 ```yaml
@@ -31,7 +31,7 @@ $ caretakerd run
 root
 ```
 
-## Services {#services}
+## Services {#environmentMapping.services}
 
 | Environment variable | Configuration property |
 | --- | --- |
@@ -54,7 +54,7 @@ root
 | ``CTD.<service>.LOG_MAX_AGE_IN_DAYS`` | {@ref github.com/echocat/caretakerd/service.Config#Logger}: {@ref github.com/echocat/caretakerd/logger.Config#MaxAgeInDays} |
 | ``CTD.<service>.ENVIRONMENT.<environmentName>`` | {@ref github.com/echocat/caretakerd/service.Config#Environment}``[<environmentName>]`` |
 
-## Global {#global}
+## Global {#environmentMapping.global}
 
 | Environment variable | Configuration property |
 | --- | --- |
