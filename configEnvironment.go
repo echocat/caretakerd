@@ -36,7 +36,6 @@ var serviceEnvKeyToFunction = map[string]func(*service.Config, string) error{
 	"START_DELAY_IN_SECONDS":   handleServiceStartDelayInSecondsEnv,
 	"RESTART_DELAY":            handleServiceRestartDelayInSecondsEnv,
 	"RESTART_DELAY_IN_SECONDS": handleServiceRestartDelayInSecondsEnv,
-	"SUCCESS":                  handleServiceSuccessExitCodesEnv,
 	"EXIT_CODE":                handleServiceSuccessExitCodesEnv,
 	"EXIT_CODES":               handleServiceSuccessExitCodesEnv,
 	"SUCCESS_EXIT_CODE":        handleServiceSuccessExitCodesEnv,

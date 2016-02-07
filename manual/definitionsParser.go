@@ -280,6 +280,10 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 																	return err
 																}
 																if enumDefinition == nil {
+																	_, inlined := extractInlinedFrom(comment)
+																	if inlined {
+																		break
+																	}
 																	enumDefinition = definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
 																}
 																typeIdentifier := ParseType(eConst.Type().String())

@@ -8,13 +8,37 @@ import (
 	"github.com/echocat/caretakerd/service"
 )
 
-// This is a comment for config
+// Root configuration of caretakerd.
 type Config struct {
-	// This is a comment for keyStore
+	// Defines how the encryption of caretakerd works.
+	// This is especially important if {@ref #Rpc RPC} is used.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/keyStore.Config}.
 	KeyStore keyStore.Config `json:"keyStore" yaml:"keyStore,omitempty"`
+
+	// Defines how caretaker can controlled remotely.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/rpc.Config}.
 	Rpc      rpc.Config      `json:"rpc" yaml:"rpc,omitempty"`
+
+	// Defines the access rights of caretakerctl to caretakerd.
+	// This requires {@ref #Rpc RPC} enabled.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/control.Config}.
 	Control  control.Config  `json:"control" yaml:"control,omitempty"`
+
+	// Configures the logger for caretakerd itself.
+	// This does not include output of services.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/logger.Config}.
 	Logger   logger.Config   `json:"logger" yaml:"logger,omitempty"`
+
+	// Services configuration to run with caretakerd.
+	//
+	// > **Important**: This is a map and requires exact one service
+	// > configured as {@ref github.com/echocat/caretakerd/service.Config#Type type} = {@ref github.com/echocat/caretakerd/service.Type#Master master}.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/service.Config}.
 	Services service.Configs `json:"services" yaml:"services,omitempty"`
 }
 

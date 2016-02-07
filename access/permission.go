@@ -12,10 +12,16 @@ type Permission int
 
 const (
 	// @id forbidden
+	//
+	// The remote control/service does not have any permission to caretakerd.
 	Forbidden Permission = 0
 	// @id readOnly
-	ReadOnly  Permission = 1
+	//
+	// The remote control/service does only have read permission to caretakerd.
+	ReadOnly Permission = 1
 	// @id readWrite
+	//
+	// The remote control/service does have read and write permission to caretakerd.
 	ReadWrite Permission = 2
 )
 

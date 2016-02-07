@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-// # Description
-//
-// This represents a system signal.
+// @inline
 type Signal syscall.Signal
 
 const (

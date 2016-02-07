@@ -1,11 +1,17 @@
 <h2 id="dataTypes">Data Types</h2>
 
+<ul>
+    {{range .PickedDefinitions.TopLevelDefinitions}}
+        <li><a href="#{{transformElementHtmlId .}}">{{getDisplayIdOf .}}</a></li>
+    {{end}}
+</ul>
+
 {{range .PickedDefinitions.TopLevelDefinitions}}
 <div class="dataType">
     {{$simple := toSimple .}}
     {{$id := transformElementHtmlId .}}
 
-    <h3 class="dataType-spec" id="{{$id}}">
+    <h3 class="dataType-spec" id="{{$id}}" internalReference="{{.Id}}">
         <code class="dataType-id">{{getDisplayIdOf .}}</code>
         {{if $simple}}
         <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
@@ -25,7 +31,7 @@
         {{$property := toProperty .}}
         {{$propertyId := transformElementHtmlId $property}}
         <li class="dataType-property">
-            <h5 class="dataType-spec" id="{{$propertyId}}">
+            <h5 class="dataType-spec" id="{{$propertyId}}" internalReference="{{$property.Id}}">
                 <code class="dataType-id">{{html $property.Key}}</code>
                 <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
                 {{if $property.DefaultValue}}
@@ -47,7 +53,7 @@
         {{$element := toElement .}}
         {{$elementId := transformElementHtmlId $element}}
         <li class="dataType-element">
-            <h5 class="dataType-spec" id="{{$elementId}}">
+            <h5 class="dataType-spec" id="{{$elementId}}" internalReference="{{$element.Id}}">
                 <code class="dataType-id">{{html $element.Key}}</code>
             </h5>
 

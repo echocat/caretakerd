@@ -33,7 +33,40 @@ import "strings"
 //
 // # Conversion patterns
 //
-// * ``%d[{<dateFormat>}]``: Prints out the date of when the log event was created. See https://github.com/eknkc/dateformat for more details.
+// * ``%d[{<dateFormat>}]``: Prints out the date of when the log event was created. Possible patterns:
+//    * Month
+//       * ``M``: 1 2 ... 12
+//       * ``MM``: 01 01 ... 12
+//       * ``Mo``: 1st 2nd ... 12th
+//       * ``MMM``: Jan Feb ... Dec
+//       * ``MMMM``: January February ... December
+//    * Day of Month
+//       * ``D``: 1 2 ... 31
+//       * ``DD``: 01 02 ... 31
+//       * ``Do``: 1st 2nd ... 31st
+//    * Day of Week
+//       * ``ddd``: Sun Mon ... Sat
+//       * ``dddd``: Sunday Monday ... Saturday
+//    * Year
+//       * ``YY``: 70 71 ... 12
+//       * ``YYYY``: 1970 1971 ... 2012
+//    * Hour
+//       * ``H``: 0 1 2 ... 23
+//       * ``HH``: 00 01 02 .. 23
+//       * ``h``: 1 2 ... 12
+//       * ``hh``: 01 02 ... 12
+//    * Minute
+//       * ``m``: 0 1 2 ... 59
+//       * ``mm``: 00 01 02 ... 59
+//    * Second
+//       * ``s``: 0 1 2 ... 59
+//       * ``ss``: 00 01 02 ... 59
+//    * AM / PM
+//       * ``A``: AM PM
+//       * ``a``: am pm
+//    * Timezone
+//       * ``Z``: -07:00 -06:00 ... +07:00
+//       * ``ZZ``: -0700 -0600 ... +0700
 // * ``%m``: The log message.
 // * ``%c[{<maximumNumberOfElements>}]``: Holds the logging category. Normally instance is the name of the logger or the service. If you do not specify ``maximumNumberOfElements`` the full name is displayed. If instance is for example ``%c{2}`` and the name of the category is ``a.b.c`` then the output result is ``b.c``.
 // * ``%F[{<maximumNumberOfPathElements>}]``: Holds the source file that logs instance event. If you do not specify ``maximumNumberOfPathElements`` the full file name is displayed. If instance is for example ``%F{2}`` and the file name is ``/a/b/c.go`` then the output result is ``b/c.go``.

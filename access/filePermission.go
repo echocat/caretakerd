@@ -10,6 +10,7 @@ import (
 
 var filePermissionOctPattern = regexp.MustCompile("^(\\d?)(\\d)(\\d)(\\d)$")
 
+// @inline
 type FilePermission os.FileMode
 
 func (instance FilePermission) String() string {

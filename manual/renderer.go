@@ -17,6 +17,8 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd"
+	"os"
+	"runtime"
 )
 
 var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
@@ -27,6 +29,8 @@ var refPropertyPattern = regexp.MustCompile("{@ref +([^\\}\\s]+)\\s*([^\\}]*)}")
 var titlePropertyPattern = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
 var commandsInAppPattern = regexp.MustCompile("(?s)(COMMANDS:\n)(.*?)(\n[\t ]*\n|$)")
 var commandLinePattern = regexp.MustCompile("(?m)^( +|\t)([a-z][a-zA-Z0-9]+)(.*)$")
+var windowsEnvarPattern = regexp.MustCompile("(?m)%([a-zA-Z0-9_.]+)%")
+var otherEnvarPattern = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
 
 type Describeable interface {
 	Id() IdType
@@ -210,31 +214,25 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			app.HelpName = executableType.String()
 			buf := new(bytes.Buffer)
 			cli.HelpPrinter(buf, cli.AppHelpTemplate, app)
-			content := commandsInAppPattern.ReplaceAllStringFunc(buf.String(), func(what string) string {
-				match := commandsInAppPattern.FindStringSubmatch(what)
-				content := commandLinePattern.ReplaceAllStringFunc(match[2], func(subWhat string) string {
-					subMatch := commandLinePattern.FindStringSubmatch(subWhat)
-					return subMatch[1] + "<a href=\"#commands." + executableType.String() + "." + subMatch[2] + "\">" + subMatch[2] + "</a>" + subMatch[3]
-				})
-				return match[1] + content + match[3]
-			})
-			content = findLeadingWhitespaces.ReplaceAllStringFunc(content, func(spaces string) string {
-				return strings.Replace(spaces, " ", "<span class=\"indent\"></span>", -1)
-			})
-			content = strings.Replace(content, "\n", "<br>", -1)
+			content := buf.String()
+			content = renderer.replaceUsageEnvVarDisplaysIfNeeded(content)
 			return template.HTML(content)
-		},
-		"includeCommandUsageOf": func(command *cli.Command) string {
-			if len(command.HelpName) <= 0 {
-				command.HelpName = command.Name
-			}
-			buf := new(bytes.Buffer)
-			cli.HelpPrinter(buf, cli.CommandHelpTemplate, command)
-			return buf.String()
 		},
 		"collectExamples": renderer.collectExamples,
 		"transformElementHtmlId": renderer.transformElementHtmlId,
 		"renderDefinitionStructure": renderer.renderDefinitionStructure,
+	}
+}
+
+func (instance *Renderer) replaceUsageEnvVarDisplaysIfNeeded(content string) string {
+	goos := os.Getenv("GOOS")
+	if goos == "" {
+		goos = runtime.GOOS
+	}
+	if goos == "windows" {
+		return otherEnvarPattern.ReplaceAllString(content, "%$1%")
+	} else {
+		return windowsEnvarPattern.ReplaceAllString(content, "$$$1")
 	}
 }
 

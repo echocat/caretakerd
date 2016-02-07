@@ -42,11 +42,11 @@ caretakerd run
 
 ```bash
 # Start a not already running service
-caretakerctl start peasant
+$ caretakerctl start peasant
 
 # Retrieve status of a service
-caretakerctl status peasant
+$ caretakerctl status peasant
 
 # Stop a not already running service
-caretakerctl stop peasant
+$ caretakerctl stop peasant
 ```

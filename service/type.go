@@ -7,14 +7,33 @@ import (
 	"strings"
 )
 
+// # Description
+//
+// Identifies the differed ways how caretakerd handles services.
 type Type int
 
 const (
 	// @id onDemand
+	//
+	// The service is not automatically started by caretakerd.
+	// You have to use [``caretakerctl``](#commands.caretakerctl) or to execute a RPC call from another service
+	// to start it.
+	//
+	// This service will be automatically stopped if the {@ref #Master master} was also stopped.
 	OnDemand  Type = 0
 	// @id autoStart
+	//
+	// This services is automatically started by caretakerd.
+	//
+	// This service will be automatically stopped if the {@ref #Master master} was also stopped.
 	AutoStart Type = 1
 	// @id master
+	//
+	// This services is automatically started by caretakerd and influence all other services.
+	//
+	// > **Important:** There have to be exact one of all services specified as ``master``.
+	//
+	// Every other service will live and die together with the ``master``.
 	Master    Type = 2
 )
 

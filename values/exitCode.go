@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// This represents an exit value of a process.
+// @inline
 type ExitCode int
 
 func (i ExitCode) String() string {
@@ -16,9 +16,6 @@ func (i *ExitCode) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
 		return errors.New("Illegal exit Code value: " + value)
-	}
-	if valueAsInt < 0 {
-		return errors.New("ExitCode value have to be larger or equal to 0. But got: " + value)
 	}
 	(*i) = ExitCode(valueAsInt)
 	return nil

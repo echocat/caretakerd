@@ -11,13 +11,22 @@ type Type int
 
 const (
 	// @id none
-	None                  Type = 0
+	//
+	// Like the name said.
+	None Type = 0
 	// @id trusted
-	Trusted               Type = 1
+	//
+	// Means that caretakerd trust the remote connection based on remote name and configured {@ref github.com/echocat/caretakerd/keyStore.Config#CaFile}.
+	// Or if {@ref github.com/echocat/caretakerd/access.Config#PemFile} is specified expect exact this identity.
+	Trusted Type = 1
 	// @id generateToEnvironment
+	//
+	// Generate a new certificate to environment variable ``CTD_PEM`` and trust it.
 	GenerateToEnvironment Type = 2
 	// @id generateToFile
-	GenerateToFile        Type = 3
+	//
+	// Generate a new certificate to configured {@ref github.com/echocat/caretakerd/access.Config#PemFile} and trust it.
+	GenerateToFile Type = 3
 )
 
 var AllTypes = []Type{

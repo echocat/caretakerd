@@ -5,7 +5,14 @@ import (
 	"github.com/echocat/caretakerd/defaults"
 )
 
+// # Description
+//
+// Defines the access rights of caretakerctl to caretakerd.
 type Config struct {
+	// Configures the permission of caretakerctl to control caretakerd remotely
+	// and how to obtain the credentials for it.
+	//
+	// For details see {@ref github.com/echocat/caretakerd/access.Config}.
 	Access access.Config `json:"access" yaml:"access,omitempty"`
 }
 
