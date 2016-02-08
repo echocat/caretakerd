@@ -19,6 +19,7 @@ For specific versions refer: [caretakerd.echocat.org/all](https://caretakerd.ech
 ### Precondition
 
 For building caretakerd there is only:
+
 1. a compatible operating system (Linux, Windows or Mac OS X)
 2. and a working Java 8 installation required.
 
