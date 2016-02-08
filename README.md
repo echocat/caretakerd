@@ -25,7 +25,7 @@ For building caretakerd there is only:
 
 There is no need for a working and installed Go installation (or anything else). The build system will download every dependency and build it if necessary.
 
-*Hint: The Go runtime build by the build system will be placed under ``~/.go-bootstrap``.*
+> **Hint:** The Go runtime build by the build system will be placed under ``~/.go-bootstrap``.
 
 ### Run
 
