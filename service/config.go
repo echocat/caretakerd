@@ -31,13 +31,17 @@ type Config struct {
 	//
 	// # Parameter evaluation
 	//
-	// There could environment variables included like:
+	// Environment variables could be included like:
 	// ```yaml
 	// command: ["echo", "${MESSAGE}"]
 	// environment:
 	//     MESSAGE: "Hello world!"
 	// ```
-	// ...but this is very basic.
+	//
+	// ```bash
+	// $ caretakerd run
+	// Hello world!
+	// ```
 	//
 	// # Special master handling
 	//

@@ -18,11 +18,15 @@ var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
 //
 // # Protocols
 //
-// * ## ``tcp``
-// This address connects or binds to a TCP socket. The ``target`` should be of format ``<host>:<port>``.
-//
-// * ## ``unix``
-// This address connects or binds to a UNIX file socket. The ``target`` should be the location of the socket file.
+// * **``tcp``** This address connects or binds to a TCP socket. The ``target`` should be of format ``<host>:<port>``.<br>
+//   Examples:
+//   * ``tcp://localhost:57955``: Listen on IPv4 and IPv6 local addresses
+//   * ``tcp://[::1]:57955``: Listen on IPv6 local address
+//   * ``tcp://0.0.0.0:57955``: Listen on all addresses - this includes IPv4 and IPv6
+//   * ``tcp://192.168.0.1:57955``: Listen on specific IPv4 address
+// * **``unix``** This address connects or binds to a UNIX file socket. The ``target`` should be the location of the socket file.<br>
+//   Example:
+//   * ``unix:///var/run/caretakerd.sock``
 type SocketAddress struct {
 	Protocol Protocol
 	Target   string
