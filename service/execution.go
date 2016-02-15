@@ -169,7 +169,12 @@ func (instance *Execution) runBare() (ExitCode, error, Status) {
 	if err := cmd.Run(); err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			waitStatus = exitError.Sys().(syscall.WaitStatus)
-			return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+			exitSignal := waitStatus.Signal()
+			if exitSignal > 0 {
+				return ExitCode(int(exitSignal) + 128), nil, instance.status
+			} else {
+				return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+			}
 		} else {
 			return ExitCode(0), UnrecoverableError{error: err}, instance.status
 		}
