@@ -2,6 +2,8 @@
 
 There are several environment variables mapped to configuration parameters. There environment variables goes over configuration files.
 
+> **Hint:** Every caretakerd environment variable starts with ``CTD`` = *CareTakerD*
+
 * [Examples](#configuration.environmentMapping.examples)
 * [Services](#configuration.environmentMapping.services)
 * [Global](#configuration.environmentMapping.global)
