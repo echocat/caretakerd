@@ -10,11 +10,11 @@ import (
 	"github.com/echocat/caretakerd/service"
 	usync "github.com/echocat/caretakerd/sync"
 	. "github.com/echocat/caretakerd/values"
-	"os"
 	osignal "os/signal"
 	"runtime"
 	"sync"
 	"syscall"
+	"os"
 )
 
 type Caretakerd struct {
@@ -140,7 +140,7 @@ func (i *Caretakerd) installTerminationNotificationHandler() {
 	}()
 	if i.signalChannel == nil {
 		i.signalChannel = make(chan os.Signal, 1)
-		osignal.Notify(i.signalChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
+		osignal.Notify(i.signalChannel, syscall.SIGINT, syscall.SIGTERM)
 		go i.terminationNotificationHandler()
 	}
 }
@@ -148,12 +148,14 @@ func (i *Caretakerd) installTerminationNotificationHandler() {
 func (i *Caretakerd) terminationNotificationHandler() {
 	defer panics.DefaultPanicHandler()
 	for {
-		plainSignal := <-i.signalChannel
-		s := Signal(plainSignal.(syscall.Signal))
-		if s == NOOP {
+		osSignal, channelReady := <-i.signalChannel
+		if channelReady {
+			signal := Signal(osSignal.(syscall.Signal))
+			i.Logger().Log(logger.Debug, "Received shudown signal: %v", signal)
+			i.Stop()
+		} else {
 			break
 		}
-		i.Stop()
 	}
 }
 
