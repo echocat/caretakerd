@@ -189,7 +189,9 @@ func (instance *Execution) runBare() (ExitCode, error, Status) {
 }
 
 func (instance *Execution) doTrySetRunningState() bool {
-	instance.doLock()
+	if instance.doLock() != nil {
+		return false
+	}
 	defer instance.doUnlock()
 	if (*instance).status == New {
 		(*instance).status = Running
@@ -203,7 +205,9 @@ func (instance *Execution) doSetDownState() {
 }
 
 func (instance *Execution) setStateSyncedTo(s Status) bool {
-	instance.doLock()
+	if instance.doLock() != nil {
+		return false
+	}
 	defer instance.doUnlock()
 	return instance.setStateTo(s)
 }
@@ -228,7 +232,9 @@ func (instance *Execution) Name() string {
 
 func (instance *Execution) Stop() {
 	instance.syncGroup.Interrupt()
-	instance.doLock()
+	if instance.doLock() != nil {
+		return
+	}
 	defer instance.doUnlock()
 	if instance.status != Down {
 		instance.sendStop()
@@ -249,12 +255,15 @@ func (instance *Execution) sendStop() {
 	}
 }
 
-func (instance *Execution) Kill() {
+func (instance *Execution) Kill() error {
 	instance.syncGroup.Interrupt()
-	instance.doLock()
+	if err := instance.doLock(); err != nil {
+		return err
+	}
 	defer instance.doUnlock()
 	instance.logger.Log(logger.Debug, "Killing '%s'...", instance.Name())
 	instance.sendKill()
+	return nil
 }
 
 func (instance *Execution) sendKill() {
@@ -271,7 +280,9 @@ func (instance *Execution) sendKill() {
 }
 
 func (instance *Execution) Signal(what Signal) error {
-	instance.doLock()
+	if err := instance.doLock() ; err != nil {
+		return err
+	}
 	defer instance.doUnlock()
 	instance.logger.Log(logger.Debug, "Sending signal %v to '%s'...", what, instance.Name())
 	return instance.sendSignal(what)
@@ -308,8 +319,8 @@ func (instance Execution) isKillSignal(s Signal) bool {
 	return s == KILL
 }
 
-func (instance *Execution) doLock() {
-	instance.lock.Lock()
+func (instance *Execution) doLock() error {
+	return instance.lock.Lock()
 }
 
 func (instance *Execution) doUnlock() {
@@ -317,7 +328,9 @@ func (instance *Execution) doUnlock() {
 }
 
 func (instance *Execution) Pid() int {
-	instance.doLock()
+	if instance.doLock() != nil {
+		return 0
+	}
 	defer instance.doUnlock()
 	cmd := instance.cmd
 	if cmd != nil {
@@ -330,7 +343,9 @@ func (instance *Execution) Pid() int {
 }
 
 func (instance *Execution) Status() Status {
-	instance.doLock()
+	if instance.doLock() != nil {
+		return Unknown
+	}
 	defer instance.doUnlock()
 	return instance.status
 }

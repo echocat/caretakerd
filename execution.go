@@ -268,8 +268,7 @@ func (instance *Execution) Kill(target *service.Service) error {
 	}
 	instance.doRUnlock()
 	instance.registerStopRequestsFor(execution)
-	execution.Kill()
-	return nil
+	return execution.Kill()
 }
 
 func (instance *Execution) Signal(target *service.Service, what Signal) error {
@@ -280,8 +279,7 @@ func (instance *Execution) Signal(target *service.Service, what Signal) error {
 		return service.ServiceDownError{Name: target.Name()}
 	}
 	instance.doRUnlock()
-	execution.Signal(what)
-	return nil
+	return execution.Signal(what)
 }
 
 func (instance *Execution) createAndRegisterNotExistingExecutionFor(target *service.Service) (*service.Execution, error) {

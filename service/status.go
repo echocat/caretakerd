@@ -16,6 +16,7 @@ const (
 	Running = Status(2)
 	Stopped = Status(3)
 	Killed  = Status(4)
+	Unknown = Status(5)
 )
 
 var AllStatus = []Status{
@@ -24,6 +25,7 @@ var AllStatus = []Status{
 	Running,
 	Stopped,
 	Killed,
+	Unknown,
 }
 
 func (instance Status) String() string {
@@ -38,6 +40,8 @@ func (instance Status) String() string {
 		return "stopped"
 	case Killed:
 		return "killed"
+	case Unknown:
+		return "unknown"
 	}
 	panic(panics.New("Illegal status: %d", instance))
 }

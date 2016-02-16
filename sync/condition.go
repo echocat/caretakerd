@@ -44,8 +44,8 @@ func (i *Condition) Wait(duration time.Duration) error {
 	return sg.removeAndReturn(i, InterruptedError{})
 }
 
-func (i *Condition) doLock() {
-	i.mutex.Lock()
+func (i *Condition) doLock() error {
+	return i.mutex.Lock()
 }
 
 func (i *Condition) doUnlock() {

@@ -3,6 +3,7 @@ package sync
 import (
 	"runtime"
 	"time"
+"github.com/echocat/caretakerd/errors"
 )
 
 type Mutex struct {
@@ -23,12 +24,37 @@ func finalizeMutexInstance(s *Mutex) {
 	closeChannel(s.channel)
 }
 
-func (i *Mutex) Lock() {
-	i.channel <- true
+func (i *Mutex) Lock() error {
+	var err error
+	defer func() {
+		p := recover()
+		if p != nil {
+			if s, ok := p.(string); ok {
+				if s != "send on closed channel" {
+					panic(p)
+				} else {
+					err = errors.New("Lock interrupted.")
+				}
+			} else {
+				panic(p)
+			}
+		}
+	}()
+	select {
+	case i.channel <- true:
+		return nil
+	default:
+		return errors.New("Lock interrupted.")
+	}
+	return err
 }
 
 func (i *Mutex) Unlock() {
-	<-i.channel
+	select {
+	case <-i.channel:
+		return
+	}
+	return
 }
 
 func (i *Mutex) TryLock(timeout time.Duration) bool {
