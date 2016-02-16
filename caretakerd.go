@@ -39,7 +39,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	if err != nil {
 		return nil, err
 	}
-	log, err := logger.NewLogger(conf.Logger, "caretakerd", syncGroup.NewSyncGroup())
+	log, err := logger.NewLogger(conf.Logger, "caretakerd", syncGroup)
 	if err != nil {
 		return nil, errors.New("Could not create logger for caretakerd.").CausedBy(err)
 	}
@@ -51,7 +51,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	if err != nil {
 		return nil, err
 	}
-	services, err := service.NewServices(conf.Services, syncGroup.NewSyncGroup(), ks)
+	services, err := service.NewServices(conf.Services, syncGroup, ks)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (instance *Caretakerd) Run() (ExitCode, error) {
 		}
 	}()
 
-	execution := NewExecution(instance, instance.syncGroup.NewSyncGroup())
+	execution := NewExecution(instance)
 	if instance.config.Rpc.Enabled == Boolean(true) {
 		r = rpc.NewRpc(instance.config.Rpc, execution, instance, instance.logger)
 		r.Start()

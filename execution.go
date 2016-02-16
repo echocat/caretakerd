@@ -5,7 +5,6 @@ import (
 	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/service"
-	"github.com/echocat/caretakerd/sync"
 	. "github.com/echocat/caretakerd/values"
 	ssync "sync"
 	"time"
@@ -21,30 +20,48 @@ type Execution struct {
 	executable      Executable
 	executions      map[*service.Service]*service.Execution
 	restartRequests map[*service.Service]bool
+	stopRequests    map[*service.Service]bool
 	masterExitCode  *ExitCode
 	masterError     error
 	lock            *ssync.RWMutex
 	wg              *ssync.WaitGroup
-	syncGroup       *sync.SyncGroup
 }
 
-func NewExecution(executable Executable, syncGroup *sync.SyncGroup) *Execution {
+func NewExecution(executable Executable) *Execution {
 	return &Execution{
 		executable:      executable,
 		executions:      map[*service.Service]*service.Execution{},
 		restartRequests: map[*service.Service]bool{},
+		stopRequests:    map[*service.Service]bool{},
 		lock:            new(ssync.RWMutex),
 		wg:              new(ssync.WaitGroup),
-		syncGroup:       syncGroup,
 	}
 }
 
 func (instance *Execution) Run() (ExitCode, error) {
-	for _, service := range instance.executable.Services().GetAllAutoStartable() {
-		err := instance.Start(service)
-		if err != nil {
-			instance.executable.Logger().LogProblem(err, logger.Error, "Could not start execution of service '%v'.", service)
+	autoStartableServices := instance.executable.Services().GetAllAutoStartable()
+	// Start all not master services at first. Because this are the dependencies for the master...
+	for _, target := range autoStartableServices {
+		if target.Config().Type != service.Master {
+			instance.startAndLogProblemsIfNeeded(target)
 		}
+	}
+	// Now start the master.
+	masterStarted := false
+	for _, target := range autoStartableServices {
+		if target.Config().Type == service.Master {
+			err := instance.Start(target)
+			if err != nil {
+				(*instance).masterError = err
+			}
+			masterStarted = true
+		}
+	}
+	if ! masterStarted {
+		(*instance).masterError = errors.New("No master was started. There are no master configured?")
+	}
+	if (*instance).masterError != nil {
+		instance.stopOthers()
 	}
 	instance.wg.Wait()
 	return *instance.masterExitCode, instance.masterError
@@ -54,6 +71,13 @@ func (instance *Execution) GetCountOfActiveExecutions() int {
 	instance.doRLock()
 	defer instance.doRUnlock()
 	return len(instance.executions)
+}
+
+func (instance *Execution) startAndLogProblemsIfNeeded(target *service.Service) {
+	err := instance.Start(target)
+	if err != nil {
+		instance.executable.Logger().LogProblem(err, logger.Error, "Could not start execution of service '%v'.", target)
+	}
 }
 
 func (instance *Execution) Start(target *service.Service) error {
@@ -77,24 +101,35 @@ func (instance *Execution) drive(target *service.Execution) {
 	respectDelay := true
 	doRun := true
 	for run := 1; doRun && target != nil; run++ {
-		if respectDelay {
-			if !instance.delayedStartIfNeeded(target.Service(), run) {
-				break
-			}
-		} else {
-			run = 1
-		}
-		exitCode, err = target.Run()
-		doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
-		if doRun {
-			newTarget, err := instance.recreateExecution(target)
-			if err != nil {
-				instance.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
+		if ! instance.isAlreadyStopRequested(target) {
+			if respectDelay {
+				if !instance.delayedStartIfNeeded(target, run) {
+					break
+				}
 			} else {
-				target = newTarget
+				run = 1
+			}
+			if ! instance.isAlreadyStopRequested(target) {
+				exitCode, err = target.Run()
+				doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
+				if doRun && !instance.isAlreadyStopRequested(target) {
+					newTarget, err := instance.recreateExecution(target)
+					if err != nil {
+						instance.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
+					} else {
+						target = newTarget
+					}
+				}
 			}
 		}
 	}
+}
+
+func (instance *Execution) isAlreadyStopRequested(target *service.Execution) bool {
+	instance.doRLock()
+	defer instance.doRUnlock()
+	stopRequested, ok := instance.stopRequests[target.Service()]
+	return ok && stopRequested
 }
 
 func (instance *Execution) recreateExecution(target *service.Execution) (*service.Execution, error) {
@@ -104,11 +139,10 @@ func (instance *Execution) recreateExecution(target *service.Execution) (*servic
 	newTarget, err := s.NewExecution(instance.executable.KeyStore())
 	if err != nil {
 		delete(instance.executions, s)
-		delete(instance.restartRequests, s)
 	} else {
 		instance.executions[s] = newTarget
-		instance.restartRequests[s] = false
 	}
+	delete(instance.restartRequests, s)
 	return newTarget, err
 }
 
@@ -134,28 +168,34 @@ func (instance *Execution) doAfterExecution(target *service.Execution, exitCode 
 	if target.Service().Config().Type == service.Master {
 		instance.masterExitCode = &exitCode
 		instance.masterError = err
-		others := instance.allExecutionsButMaster()
-		if len(others) > 0 {
-			instance.executable.Logger().Log(logger.Debug, "Master '%s' is down. Stopping all left services...", target.Name())
-			for _, other := range others {
-				go instance.Stop(other.Service())
-			}
+		instance.stopOthers()
+	}
+}
+
+func (instance *Execution) stopOthers() {
+	others := instance.allExecutionsButMaster()
+	if len(others) > 0 {
+		instance.executable.Logger().Log(logger.Debug, "Master is down. Stopping all left services...")
+		for _, other := range others {
+			go instance.Stop(other.Service())
 		}
 	}
 }
 
-func (instance *Execution) delayedStartIfNeeded(s *service.Service, currentRun int) bool {
+func (instance *Execution) delayedStartIfNeeded(target *service.Execution, currentRun int) bool {
+	config := target.Service().Config()
 	if currentRun == 1 {
-		return instance.delayedStartIfNeededFor(s, s.Config().StartDelayInSeconds, "Wait %d seconds before start...")
+		return instance.delayedStartIfNeededFor(target, config.StartDelayInSeconds, "Wait %d seconds before start...")
 	} else {
-		return instance.delayedStartIfNeededFor(s, s.Config().RestartDelayInSeconds, "Wait %d seconds before restart...")
+		return instance.delayedStartIfNeededFor(target, config.RestartDelayInSeconds, "Wait %d seconds before restart...")
 	}
 }
 
-func (instance *Execution) delayedStartIfNeededFor(s *service.Service, delayInSeconds NonNegativeInteger, messagePattern string) bool {
+func (instance *Execution) delayedStartIfNeededFor(target *service.Execution, delayInSeconds NonNegativeInteger, messagePattern string) bool {
+	s := target.Service()
 	if s.Config().StartDelayInSeconds > 0 {
 		s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
-		return instance.syncGroup.Sleep(time.Duration(delayInSeconds)*time.Second) == nil
+		return target.SyncGroup().Sleep(time.Duration(delayInSeconds) * time.Second) == nil
 	} else {
 		return true
 	}
@@ -169,15 +209,32 @@ func (instance *Execution) checkRestartRequestedAndClean(target *service.Service
 	return result
 }
 
+func (instance *Execution) registerStopRequestsFor(executions ... *service.Execution) {
+	instance.doWLock()
+	defer instance.doWUnlock()
+	for _, execution := range executions {
+		instance.stopRequests[execution.Service()] = true
+		delete(instance.restartRequests, execution.Service())
+	}
+}
+
 func (instance *Execution) StopAll() {
 	for _, execution := range instance.allExecutions() {
-		instance.Stop(execution.Service())
+		if execution.Service().Config().Type == service.Master {
+			// Hint: Stop of the master should also trigger the shutdown of all other services.
+			// This is the reason why we only shutdown the master at this point.
+			instance.Stop(execution.Service())
+		}
 	}
 	instance.wg.Wait()
 }
 
 func (instance *Execution) Restart(target *service.Service) error {
 	instance.doRLock()
+	if stopRequested, ok := instance.stopRequests[target]; ok && stopRequested {
+		instance.doRUnlock()
+		return service.ServiceAlreadyStoppedError{Name: target.Name()}
+	}
 	execution, ok := instance.executions[target]
 	if !ok {
 		instance.doRUnlock()
@@ -197,6 +254,7 @@ func (instance *Execution) Stop(target *service.Service) error {
 		return service.ServiceDownError{Name: target.Name()}
 	}
 	instance.doRUnlock()
+	instance.registerStopRequestsFor(execution)
 	execution.Stop()
 	return nil
 }
@@ -209,6 +267,7 @@ func (instance *Execution) Kill(target *service.Service) error {
 		return service.ServiceDownError{Name: target.Name()}
 	}
 	instance.doRUnlock()
+	instance.registerStopRequestsFor(execution)
 	execution.Kill()
 	return nil
 }

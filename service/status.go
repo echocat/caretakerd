@@ -11,13 +11,15 @@ import (
 type Status int
 
 const (
-	Down    = Status(0)
-	Running = Status(1)
-	Stopped = Status(2)
-	Killed  = Status(3)
+	New     = Status(0)
+	Down    = Status(1)
+	Running = Status(2)
+	Stopped = Status(3)
+	Killed  = Status(4)
 )
 
 var AllStatus = []Status{
+	New,
 	Down,
 	Running,
 	Stopped,
@@ -26,6 +28,8 @@ var AllStatus = []Status{
 
 func (instance Status) String() string {
 	switch instance {
+	case New:
+		return "new"
 	case Down:
 		return "down"
 	case Running:

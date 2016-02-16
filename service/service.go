@@ -30,7 +30,7 @@ func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *keySt
 	if err != nil {
 		return nil, errors.New("Could not create access for service '%v'.", name).CausedBy(err)
 	}
-	log, err := logger.NewLogger(conf.Logger, name, syncGroup.NewSyncGroup())
+	log, err := logger.NewLogger(conf.Logger, name, syncGroup)
 	if err != nil {
 		return nil, errors.New("Could not create logger for service '%v'.", name).CausedBy(err)
 	}

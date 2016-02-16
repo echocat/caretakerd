@@ -15,3 +15,11 @@ type ServiceAlreadyRunningError struct {
 func (instance ServiceAlreadyRunningError) Error() string {
 	return "Service '" + instance.Name + "' already running."
 }
+
+type ServiceAlreadyStoppedError struct {
+	Name string
+}
+
+func (instance ServiceAlreadyStoppedError) Error() string {
+	return "Service '" + instance.Name + "' already stopped."
+}

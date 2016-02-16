@@ -39,7 +39,7 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 		service:   instance,
 		logger:    instance.logger,
 		cmd:       cmd,
-		status:    Down,
+		status:    New,
 		lock:      lock,
 		condition: condition,
 		access:    a,
@@ -165,30 +165,37 @@ type StoppedOrKilledError struct {
 func (instance *Execution) runBare() (ExitCode, error, Status) {
 	cmd := (*instance).cmd
 	var waitStatus syscall.WaitStatus
-	instance.doSetRunningState()
-	defer instance.doSetDownState()
-	if err := cmd.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			waitStatus = exitError.Sys().(syscall.WaitStatus)
-			exitSignal := waitStatus.Signal()
-			if exitSignal > 0 {
-				return ExitCode(int(exitSignal) + 128), nil, instance.status
+	if instance.doTrySetRunningState() {
+		defer instance.doSetDownState()
+		if err := cmd.Run(); err != nil {
+			if exitError, ok := err.(*exec.ExitError); ok {
+				waitStatus = exitError.Sys().(syscall.WaitStatus)
+				exitSignal := waitStatus.Signal()
+				if exitSignal > 0 {
+					return ExitCode(int(exitSignal) + 128), nil, instance.status
+				} else {
+					return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+				}
 			} else {
-				return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+				return ExitCode(0), UnrecoverableError{error: err}, instance.status
 			}
 		} else {
-			return ExitCode(0), UnrecoverableError{error: err}, instance.status
+			waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
+			return ExitCode(waitStatus.ExitStatus()), nil, instance.status
 		}
 	} else {
-		waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
-		return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+		return ExitCode(0), UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}, instance.status
 	}
 }
 
-func (instance *Execution) doSetRunningState() {
+func (instance *Execution) doTrySetRunningState() bool {
 	instance.doLock()
 	defer instance.doUnlock()
-	(*instance).status = Running
+	if (*instance).status == New {
+		(*instance).status = Running
+		return true
+	}
+	return false
 }
 
 func (instance *Execution) doSetDownState() {
@@ -331,3 +338,12 @@ func (instance *Execution) Status() Status {
 func (instance Execution) Service() *Service {
 	return instance.service
 }
+
+func (instance Execution) String() string {
+	return instance.service.String()
+}
+
+func (instance *Execution) SyncGroup() *sync.SyncGroup {
+	return instance.syncGroup
+}
+
