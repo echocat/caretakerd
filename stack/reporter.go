@@ -29,22 +29,28 @@ func ErrorMessageFor(what error) string {
 	current = what
 	for i := 0; current != nil; i++ {
 		if m, ok := current.(MessageEnabled); ok {
-			message += m.Message()
+			message += messageFor(i, m.Message())
 		} else if m, ok := current.(ErrorEnabled); ok {
-			message += m.Error()
+			message += messageFor(i, m.Error())
 		} else {
-			message += fmt.Sprintf("%v", current)
+			message += messageFor(i, fmt.Sprintf("%v", current))
 		}
 		if m, ok := current.(CauseEnabled); ok {
 			current = m.Cause()
 		} else {
 			break
 		}
-		if i >= 0 {
-			message += " Caused by: "
-		}
 	}
 	return message
+}
+
+func messageFor(i int, message string) string {
+	result := ""
+	if i > 0 {
+		result = "\n\tCaused by: "
+	}
+	result += message
+	return result
 }
 
 func StringOf(what interface{}, framesToSkip int) string {

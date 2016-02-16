@@ -61,6 +61,7 @@ func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
 		Action: func(context *cli.Context) {
 			runDaemon(*conf.instance, context.Args())
 		},
+		OnUsageError: onUsageErrorFor(name),
 	})
 
 }

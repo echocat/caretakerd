@@ -163,6 +163,7 @@ func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Cli
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetConfig()
 		}),
+		OnUsageError: onUsageErrorFor("config"),
 	}
 }
 
@@ -176,6 +177,7 @@ func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetControlConfig()
 		}),
+		OnUsageError: onUsageErrorFor("controlConfig"),
 	}
 }
 
@@ -189,6 +191,7 @@ func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.C
 		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
 			return client.GetServices()
 		}),
+		OnUsageError: onUsageErrorFor("services"),
 	}
 }
 
@@ -202,6 +205,7 @@ func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Cl
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetService(name)
 		}),
+		OnUsageError: onUsageErrorFor("service"),
 	}
 }
 
@@ -215,6 +219,7 @@ func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServiceConfig(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceConfig"),
 	}
 }
 
@@ -229,6 +234,7 @@ func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *cli
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServiceStatus(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceStatus"),
 	}
 }
 
@@ -243,6 +249,7 @@ func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client
 		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
 			return client.GetServicePid(name)
 		}),
+		OnUsageError: onUsageErrorFor("servicePid"),
 	}
 }
 
@@ -257,6 +264,7 @@ func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *clie
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.StartService(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceStart"),
 	}
 }
 
@@ -271,6 +279,7 @@ func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *cl
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.RestartService(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceRestart"),
 	}
 }
 
@@ -285,6 +294,7 @@ func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.StopService(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceStop"),
 	}
 }
 
@@ -299,6 +309,7 @@ func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
 			return client.KillService(name)
 		}),
+		OnUsageError: onUsageErrorFor("serviceKill"),
 	}
 }
 
@@ -320,6 +331,7 @@ func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *cli
 			}
 			return client.SignalService(name, sig)
 		}),
+		OnUsageError: onUsageErrorFor("serviceSignal"),
 	}
 }
 

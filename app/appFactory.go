@@ -69,6 +69,15 @@ func newAppFor(executableType ExecutableType) *cli.App {
 	app := cli.NewApp()
 	app.Version = caretakerd.VERSION
 	app.Commands = []cli.Command{}
+	app.OnUsageError =  func(context *cli.Context, err error, isSubcommand bool) error {
+		fmt.Fprintf(app.Writer, "Error: %v\n\n", err)
+		if isSubcommand {
+			cli.ShowSubcommandHelp(context)
+		} else {
+			cli.ShowAppHelp(context)
+		}
+		return err
+	}
 	app.Flags = []cli.Flag{
 		cli.GenericFlag{
 			Name:   "config,c",
@@ -164,4 +173,12 @@ func ensureConfig(daemonChecks bool, target *ConfigWrapper) error {
 	}
 	target = newConf
 	return nil
+}
+
+func onUsageErrorFor(commandName string) func(context *cli.Context, err error) error {
+	return func(context *cli.Context, err error) error {
+		fmt.Fprintf(context.App.Writer, "Error: %v\n\n", err)
+		cli.ShowCommandHelp(context, commandName)
+		return err
+	}
 }
