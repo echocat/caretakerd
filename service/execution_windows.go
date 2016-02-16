@@ -19,7 +19,6 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 }
 
 func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
-	values.RecordSendSignal(what)
 	if what == values.TERM {
 		sendSpecialSignal(process, syscall.CTRL_BREAK_EVENT)
 	} else if what == values.INT {
@@ -50,4 +49,11 @@ func sendSpecialSignal(process *os.Process, what uintptr) {
 		panics.New("Could not set terminate to process %v.", process).CausedBy(e).Throw()
 	}
 	p.Call(what, uintptr(process.Pid))
+}
+
+func (instance *Service) createSysProcAttr() *syscall.SysProcAttr {
+	// Prevent that a created process receives signals for caretakerd
+	return &syscall.SysProcAttr{
+		CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP,
+	}
 }

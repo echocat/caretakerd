@@ -10,7 +10,7 @@ type Interruptable interface {
 }
 
 type SyncGroup struct {
-	interruptables map   [  Interruptable   ]int
+	interruptables map[Interruptable]int
 	lock           *sync.Mutex
 }
 

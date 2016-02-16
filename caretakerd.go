@@ -153,9 +153,7 @@ func (i *Caretakerd) terminationNotificationHandler() {
 		if s == NOOP {
 			break
 		}
-		if !IsHandlingOfSignalIgnoreable(s) {
-			i.Stop()
-		}
+		i.Stop()
 	}
 }
 

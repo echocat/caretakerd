@@ -43,7 +43,14 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 }
 
 func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
-	values.RecordSendSignal(what)
 	process.Signal(syscall.Signal(what))
 	return nil
+}
+
+func (instance *Service) createSysProcAttr() *syscall.SysProcAttr {
+	// Prevent that a created process receives signals for caretakerd
+	return &syscall.SysProcAttr{
+		Setpgid: true,
+		Pgid: 0,
+	}
 }

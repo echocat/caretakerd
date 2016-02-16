@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 )
 
 // @inline
@@ -213,27 +212,4 @@ func (i *Signal) UnmarshalJSON(b []byte) error {
 func (i Signal) Validate() error {
 	_, err := i.CheckedString()
 	return err
-}
-
-const (
-	lastSendSignalThreshold = 500 * time.Millisecond
-)
-
-var (
-	lastSendSignals = map[Signal]time.Time{}
-)
-
-func IsHandlingOfSignalIgnoreable(what Signal) bool {
-	timeout, ok := lastSendSignals[what]
-	return ok && timeout.After(time.Now())
-}
-
-func RecordSendSignal(what Signal) {
-	lastSendSignals[what] = time.Now().Add(lastSendSignalThreshold)
-	if what == INT {
-		lastSendSignals[TERM] = time.Now().Add(lastSendSignalThreshold)
-	}
-	if what == TERM {
-		lastSendSignals[INT] = time.Now().Add(lastSendSignalThreshold)
-	}
 }

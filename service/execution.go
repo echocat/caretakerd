@@ -81,6 +81,7 @@ func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
 	cmd.Stdin = logger.Stdin()
+	cmd.SysProcAttr = instance.createSysProcAttr()
 	if !config.Directory.IsTrimmedEmpty() {
 		cmd.Dir = instance.expandValue(ai, config.Directory.String())
 	}
