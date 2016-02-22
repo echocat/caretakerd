@@ -23,8 +23,12 @@ func attachArgsToMasterIfPossible(args []string, to *caretakerd.Config) {
 }
 
 func ensureDaemonConfig(context *cli.Context) error {
+	err := ensureConfig(true)
+	if err != nil {
+		return err
+	}
 	attachArgsToMasterIfPossible(context.Args(), conf.Instance())
-	return ensureConfig(true, conf)
+	return nil
 }
 
 func runDaemon(conf caretakerd.Config, args []string) {

@@ -101,7 +101,7 @@ func serviceSpecificTriggerAction(context *cli.Context, client *client.Client, a
 }
 
 func baseControlEnsure(context *cli.Context) error {
-	return ensureConfig(false, conf)
+	return ensureConfig(false)
 }
 
 func ensureNoControlArgument(context *cli.Context) error {

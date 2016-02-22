@@ -28,8 +28,10 @@ type Execution struct {
 }
 
 func NewExecution(executable Executable) *Execution {
+	defaultExitCode := ExitCode(-1)
 	return &Execution{
 		executable:      executable,
+		masterExitCode:  &defaultExitCode,
 		executions:      map[*service.Service]*service.Execution{},
 		restartRequests: map[*service.Service]bool{},
 		stopRequests:    map[*service.Service]bool{},
@@ -64,7 +66,7 @@ func (instance *Execution) Run() (ExitCode, error) {
 		instance.stopOthers()
 	}
 	instance.wg.Wait()
-	return *instance.masterExitCode, instance.masterError
+	return *(*instance).masterExitCode, (*instance).masterError
 }
 
 func (instance *Execution) GetCountOfActiveExecutions() int {

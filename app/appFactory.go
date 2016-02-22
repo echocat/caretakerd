@@ -150,18 +150,18 @@ func (instance ExecutableType) String() string {
 	return caretakerd.BASE_NAME
 }
 
-func ensureConfig(daemonChecks bool, target *ConfigWrapper) error {
-	if target.explicitSet {
-		return target.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
+func ensureConfig(daemonChecks bool) error {
+	if conf.explicitSet {
+		return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
 	}
 	newConf := NewConfigWrapper()
-	err := newConf.Set(defaults.ConfigFilename().String())
+	err := newConf.Set(newConf.String())
 	if err != nil {
 		if _, ok := err.(caretakerd.ConfigDoesNotExistError); ok {
 			if daemonChecks {
-				return errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", defaults.ConfigFilename())
+				return errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", newConf.String())
 			} else {
-				return target.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
+				return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
 			}
 		} else {
 			return err
@@ -171,7 +171,7 @@ func ensureConfig(daemonChecks bool, target *ConfigWrapper) error {
 	if err != nil {
 		return err
 	}
-	target = newConf
+	conf = newConf
 	return nil
 }
 
