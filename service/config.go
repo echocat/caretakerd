@@ -210,12 +210,15 @@ func (i Config) WithCommand(command ...String) Config {
 func (i *Config) init() {
 	(*i).Logger = logger.NewConfig()
 	(*i).Command = []String{}
+	(*i).PreCommands = [][]String{}
+	(*i).PostCommands = [][]String{}
 	(*i).Type = AutoStart
 	(*i).CronExpression = NewCronExpression()
 	(*i).StartDelayInSeconds = NonNegativeInteger(0)
 	(*i).RestartDelayInSeconds = NonNegativeInteger(5)
 	(*i).SuccessExitCodes = ExitCodes{ExitCode(0)}
 	(*i).StopSignal = defaultStopSignal()
+	(*i).StopCommand = []String{}
 	(*i).StopWaitInSeconds = NonNegativeInteger(30)
 	(*i).User = String("")
 	(*i).Environment = Environments{}
