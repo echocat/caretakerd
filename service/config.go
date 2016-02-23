@@ -19,7 +19,7 @@ type Config struct {
 
 	// @default []
 	//
-	// The command the service process has to start with.
+	// The command the service process has to start with. The called command have to be run in foreground - or in other words: Should not daemonize.
 	//
 	// > **Hint**: If there is no command line provided this service cannot be started and caretakerd will
 	// > fail.
@@ -63,6 +63,45 @@ type Config struct {
 	// ```
 	Command               []String           `json:"command" yaml:"command,flow"`
 
+	// @default []
+	//
+	// Commands to be executed before execution of the actual {@ref #Command command}.
+	//
+	// If one of these commands fails also the whole service is marked as failed. The actual
+	// {@ref #Command command} will not be invoked and the {@ref #AutoRestart autoRestart} handling will be initiated.
+	//
+	// Only exit codes of value ``0`` will be accepted as success.
+	//
+	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	//
+	// Example:
+	// ```yaml
+	// preCommands:
+	// - ["-", "program.sh", "prepare"]        # Ignore if fails
+	// - ["program.sh", "prepareAndDoNotFail"] # Do not ignore if fails
+	// command: ["program.sh", "run"]
+	// ```
+	PreCommands           [][]String         `json:"preCommands" yaml:"preCommands,flow"`
+
+	// @default []
+	//
+	// Commands to be executed after execution of the actual {@ref #Command command}.
+	//
+	// Every result of these commands are ignored and will not force another beauvoir - except: an error log entry in log files.
+	//
+	// Only exit codes of value ``0`` will be accepted as success.
+	//
+	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	//
+	// Example:
+	// ```yaml
+	// command: ["program.sh", "run"]
+	// postCommands:
+	// - ["-", "program.sh", "cleanUp"]        # Ignore if fails
+	// - ["program.sh", "cleanUpAndDoNotFail"] # Log if fails
+	// ```
+	PostCommands          [][]String         `json:"postCommands" yaml:"postCommands,flow"`
+
 	// @default ""
 	//
 	// If configured this will trigger the service at this specific times. If not the service will
@@ -92,6 +131,18 @@ type Config struct {
 	// Signal which will be send to the service when a stop is requested.
 	// You can use the signal number here and also names like ``"TERM"`` or ``"KILL"``.
 	StopSignal            Signal             `json:"stopSignal" yaml:"stopSignal"`
+
+	// @default []
+	//
+	// Command to be execute to stop the service.
+	//
+	// From the moment on this command is called the {@ref #StopWaitInSeconds stopWaitInSeconds} are running.
+	// It is not important when this stopCommand ends or what is the exit code.
+	// If this command is executed and the service does not end within the configured {@ref #StopWaitInSeconds stopWaitInSeconds}
+	// the service will be killed.
+	//
+	// If this property is configured {@ref #StopSignal stopSignal} will not be evaluated.
+	StopCommand           []String           `json:"stopCommand" yaml:"stopCommand,flow"`
 
 	// @default 30
 	//
