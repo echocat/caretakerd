@@ -32,7 +32,7 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 		return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)
 	}
 	syncGroup := instance.syncGroup.NewSyncGroup()
-	cmd := instance.generateCmd(a)
+	cmd := generateServiceBasedCmd(instance, a, (*instance).config.Command)
 	lock := syncGroup.NewMutex()
 	condition := syncGroup.NewCondition(lock)
 	return &Execution{
@@ -63,27 +63,25 @@ func (instance *Service) expandValue(ai *access.Access, in string) string {
 	})
 }
 
-func (instance *Service) getRunArgumentsFor(ai *access.Access) []string {
+func getServiceBasedRunArgumentsFor(s *Service, ai *access.Access, command []String) []string {
 	args := []string{}
-	config := (*instance).config
-	command := config.Command
 	for i := 1; i < len(command); i++ {
-		args = append(args, instance.expandValue(ai, command[i].String()))
+		args = append(args, s.expandValue(ai, command[i].String()))
 	}
 	return args
 }
 
-func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
-	logger := (*instance).logger
-	config := (*instance).config
-	executable := instance.expandValue(ai, config.Command[0].String())
-	cmd := exec.Command(executable, instance.getRunArgumentsFor(ai)...)
+func generateServiceBasedCmd(s *Service, ai *access.Access, command []String) *exec.Cmd {
+	logger := (*s).logger
+	config := (*s).config
+	executable := s.expandValue(ai, command[0].String())
+	cmd := exec.Command(executable, getServiceBasedRunArgumentsFor(s, ai, command)...)
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
 	cmd.Stdin = logger.Stdin()
-	cmd.SysProcAttr = instance.createSysProcAttr()
+	cmd.SysProcAttr = s.createSysProcAttr()
 	if !config.Directory.IsTrimmedEmpty() {
-		cmd.Dir = instance.expandValue(ai, config.Directory.String())
+		cmd.Dir = s.expandValue(ai, config.Directory.String())
 	}
 	for key, value := range config.Environment {
 		cmd.Env = append(cmd.Env, key+"="+value)
@@ -96,22 +94,32 @@ func (instance *Service) generateCmd(ai *access.Access) *exec.Cmd {
 	if config.InheritEnvironment {
 		cmd.Env = append(cmd.Env, os.Environ()...)
 	}
-	serviceHandleUsersFor(instance, cmd)
+	serviceHandleUsersFor(s, cmd)
 	return cmd
 }
 
-func (instance *Execution) CommandLine() string {
-	service := (*instance).service
+func (instance *Execution) generateCmd(command []String) *exec.Cmd {
+	return generateServiceBasedCmd(instance.service, instance.access, command)
+}
+
+func (instance *Execution) extractCommandProperties(command []String) (cleanCommand []String, handleErrors bool) {
+	if len(command) > 0 && command[0] == "-" {
+		return command[1:], false
+	} else {
+		return command, true
+	}
+}
+
+func (instance *Execution) commandLineOf(cmd *exec.Cmd) string {
 	result := ""
-	for i, arg := range (*service).config.Command {
-		argAsString := arg.String()
+	for i, arg := range cmd.Args {
 		if i != 0 {
 			result += " "
 		}
-		if strings.Contains(argAsString, "\"") || strings.Contains(argAsString, "\\") || strings.Contains(argAsString, " ") {
-			result += strconv.Quote(argAsString)
+		if strings.Contains(arg, "\"") || strings.Contains(arg, "\\") || strings.Contains(arg, " ") {
+			result += strconv.Quote(arg)
 		} else {
-			result += argAsString
+			result += arg
 		}
 	}
 	return result
@@ -130,12 +138,57 @@ func (instance *Execution) handleBeforeRun() error {
 	return nil
 }
 
+func (instance *Execution) preExecution() (ExitCode, error) {
+	preCommands := instance.service.config.PreCommands
+	for _, preCommand := range preCommands {
+		command, handleErrors := instance.extractCommandProperties(preCommand)
+		if len(command) > 0 {
+			cmd := instance.generateCmd(command)
+			instance.logger.Log(logger.Debug, "Execute pre command: %s", instance.commandLineOf(cmd))
+			exitCode, err := instance.runCommand(cmd)
+			if handleErrors {
+				if err != nil {
+					instance.logger.LogProblem(err, logger.Error, "Pre command failed.")
+					return exitCode, err
+				} else if exitCode != 0 {
+					instance.logger.Log(logger.Error, "Pre command failed. Exit with unexpected exit code: %d", exitCode)
+					return exitCode, err
+				}
+			}
+		}
+	}
+	return ExitCode(0), nil
+}
+
+func (instance *Execution) postExecution() {
+	postCommands := instance.service.config.PostCommands
+	for _, preCommand := range postCommands {
+		command, handleErrors := instance.extractCommandProperties(preCommand)
+		if len(command) > 0 {
+			cmd := instance.generateCmd(command)
+			instance.logger.Log(logger.Debug, "Execute post command: %s", instance.commandLineOf(cmd))
+			exitCode, err := instance.runCommand(cmd)
+			if handleErrors {
+				if err != nil {
+					instance.logger.LogProblem(err, logger.Warning, "Post command failed.")
+				} else if exitCode != 0 {
+					instance.logger.Log(logger.Warning, "Post command failed. Exit with unexpected exit code: %d", exitCode)
+				}
+			}
+		}
+	}
+}
+
 func (instance *Execution) Run() (ExitCode, error) {
 	err := instance.handleBeforeRun()
 	if err != nil {
 		return ExitCode(1), err
 	}
-	instance.logger.Log(logger.Debug, "Start service '%s' with command: %s", instance.Name(), instance.CommandLine())
+	exitCode, err := instance.preExecution()
+	if err != nil || exitCode != 0 {
+		return exitCode, err
+	}
+	instance.logger.Log(logger.Debug, "Start service '%s' with command: %s", instance.Name(), instance.commandLineOf(instance.cmd))
 	exitCode, err, lastState := instance.runBare()
 	if lastState == Killed {
 		err = StoppedOrKilledError{error: errors.New("Process was killed.")}
@@ -151,6 +204,7 @@ func (instance *Execution) Run() (ExitCode, error) {
 		instance.logger.Log(logger.Error, "Service '%s' ended with unexpected code: %d", instance.Name(), exitCode)
 		err = errors.New("Unexpected error code %d generated by service '%s'", exitCode, instance.Name())
 	}
+	instance.postExecution()
 	return exitCode, err
 }
 
@@ -162,27 +216,31 @@ type StoppedOrKilledError struct {
 	error
 }
 
-func (instance *Execution) runBare() (ExitCode, error, Status) {
-	cmd := (*instance).cmd
+func (instance *Execution) runCommand(cmd *exec.Cmd) (ExitCode, error) {
 	var waitStatus syscall.WaitStatus
-	if instance.doTrySetRunningState() {
-		defer instance.doSetDownState()
-		if err := cmd.Run(); err != nil {
-			if exitError, ok := err.(*exec.ExitError); ok {
-				waitStatus = exitError.Sys().(syscall.WaitStatus)
-				exitSignal := waitStatus.Signal()
-				if exitSignal > 0 {
-					return ExitCode(int(exitSignal) + 128), nil, instance.status
-				} else {
-					return ExitCode(waitStatus.ExitStatus()), nil, instance.status
-				}
+	if err := cmd.Run(); err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			waitStatus = exitError.Sys().(syscall.WaitStatus)
+			exitSignal := waitStatus.Signal()
+			if exitSignal > 0 {
+				return ExitCode(int(exitSignal) + 128), nil
 			} else {
-				return ExitCode(0), UnrecoverableError{error: err}, instance.status
+				return ExitCode(waitStatus.ExitStatus()), nil
 			}
 		} else {
-			waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
-			return ExitCode(waitStatus.ExitStatus()), nil, instance.status
+			return ExitCode(0), UnrecoverableError{error: err}
 		}
+	} else {
+		waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
+		return ExitCode(waitStatus.ExitStatus()), nil
+	}
+}
+
+func (instance *Execution) runBare() (ExitCode, error, Status) {
+	if instance.doTrySetRunningState() {
+		defer instance.doSetDownState()
+		exitCode, err := instance.runCommand((*instance).cmd)
+		return exitCode, err, instance.status
 	} else {
 		return ExitCode(0), UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}, instance.status
 	}
@@ -251,7 +309,22 @@ func (instance *Execution) Stop() {
 
 func (instance *Execution) sendStop() {
 	if instance.status != Killed && instance.status != Stopped && instance.setStateTo(Stopped) {
-		instance.sendSignal((*instance).service.config.StopSignal)
+		c := (*instance).service.config
+		stopCommand, handleErrors := instance.extractCommandProperties(c.StopCommand)
+		if len(stopCommand) > 0 {
+			cmd := instance.generateCmd(stopCommand)
+			instance.logger.Log(logger.Debug, "Execute stop command: %s", instance.commandLineOf(cmd))
+			exitCode, err := instance.runCommand(cmd)
+			if handleErrors {
+				if err != nil {
+					instance.logger.LogProblem(err, logger.Warning, "Stop command failed.")
+				} else if exitCode != 0 {
+					instance.logger.Log(logger.Warning, "Stop command failed. Exit with unexpected exit code: %d", exitCode)
+				}
+			}
+		} else {
+			instance.sendSignal(c.StopSignal)
+		}
 	}
 }
 

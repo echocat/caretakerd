@@ -9,8 +9,15 @@ services:
         king:
             type: master
             command: ["sleep","15"]
-            stopWaitInSeconds: 15
+            stopWaitInSeconds: 1
             successExitCodes: [0,1]
+            preCommands:
+            - ["-", "sleep", "--moo"]
+            - ["echo", "pre2"]
+            postCommands:
+            - ["echo", "post1"]
+            - ["echo", "post2"]
+            stopCommand: ["sleep", "1"]
             logger:
                 filename: "console"
                 level: debug

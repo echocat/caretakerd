@@ -87,7 +87,7 @@ type Config struct {
 	//
 	// Commands to be executed after execution of the actual {@ref #Command command}.
 	//
-	// Every result of these commands are ignored and will not force another beauvoir - except: an error log entry in log files.
+	// Every result of these commands are ignored and will not force another beauvoir - except: an error is logged.
 	//
 	// Only exit codes of value ``0`` will be accepted as success.
 	//
@@ -141,7 +141,11 @@ type Config struct {
 	// If this command is executed and the service does not end within the configured {@ref #StopWaitInSeconds stopWaitInSeconds}
 	// the service will be killed.
 	//
-	// If this property is configured {@ref #StopSignal stopSignal} will not be evaluated.
+	// Only exit codes of value ``0`` will be accepted as success. Other codes are logged as error.
+	//
+	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	//
+	// > **Hint:** If this property is configured {@ref #StopSignal stopSignal} will not be evaluated.
 	StopCommand           []String           `json:"stopCommand" yaml:"stopCommand,flow"`
 
 	// @default 30
