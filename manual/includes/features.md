@@ -16,7 +16,7 @@
 * **Builtin watchdog**<br>
   If a service crashes, caretakerd will [restart](#configuration.dataType.service.Service.autoRestart) it for you.
   
-* **[Custom logging](configuration.dataType.logger.Logger)**<br>
+* **[Custom logging](#configuration.dataType.logger.Logger)**<br>
   You can log how you want. It is possible to log to [log files](#configuration.dataType.logger.Logger.filename)
   per service, to just one log file for all services or also direct to [console](#configuration.dataType.logger.Logger.filename).
   Also log rotate based on [max file size](#configuration.dataType.logger.Logger.maxSizeInMb) and [age of](#configuration.dataType.logger.Logger.maxAgeInDays)
