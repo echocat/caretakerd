@@ -6,7 +6,7 @@
     <artifactId>caretakerd</artifactId>
     <groupId>org.echocat</groupId>
     <version>0.1.5-SNAPSHOT</version>
-    <description>caretakerd is a minimal process supervisor build for easy use with no dependencies.</description>
+    <description>caretakerd is build for to be a minimal process supervisor, with no dependencies, optimized for containerization (such as Docker) and simple to configure.</description>
     <url>https://caretakerd.echocat.org</url>
 
     <properties>

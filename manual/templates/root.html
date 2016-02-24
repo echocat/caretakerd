@@ -31,16 +31,18 @@
 
     <h2 id="topics">Topics</h2>
     <ul class="toc" vocab="http://schema.org/" typeof="BreadcrumbList">
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#gettingStarted"><span property="name">Getting started</span></a><meta property="position" content="1"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#downloads"><span property="name">Downloads</span></a><meta property="position" content="2"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#commands"><span property="name">Commands</span></a><meta property="position" content="3"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#configuration"><span property="name">Configuration</span></a><meta property="position" content="4"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#dataTypes"><span property="name">Data Types</span></a><meta property="position" content="5"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#support"><span property="name">Support</span></a><meta property="position" content="6"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#contributing"><span property="name">Contributing</span></a><meta property="position" content="7"></li>
-        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#license"><span property="name">License</span></a><meta property="position" content="8"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#features"><span property="name">Features</span></a><meta property="position" content="1"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#gettingStarted"><span property="name">Getting started</span></a><meta property="position" content="2"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#downloads"><span property="name">Downloads</span></a><meta property="position" content="3"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#commands"><span property="name">Commands</span></a><meta property="position" content="4"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#configuration"><span property="name">Configuration</span></a><meta property="position" content="5"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#dataTypes"><span property="name">Data Types</span></a><meta property="position" content="6"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#support"><span property="name">Support</span></a><meta property="position" content="7"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#contributing"><span property="name">Contributing</span></a><meta property="position" content="8"></li>
+        <li property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" href="#license"><span property="name">License</span></a><meta property="position" content="9"></li>
     </ul>
 
+    {{includeMarkdown "features" 2 "" .}}
     {{includeMarkdown "gettingStarted" 2 "" .}}
     {{includeMarkdown "downloads" 2 "" .}}
     {{include "commands" .}}
