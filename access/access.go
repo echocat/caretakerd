@@ -50,13 +50,13 @@ func newNoneInstance(name string) (*Access, error) {
 }
 
 func newTrustedInstance(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
-	if len(ks.Ca()) == 0 {
+	if len(ks.CA()) == 0 {
 		return nil, errors.New("If there is valid caFile configured %v access could not work.", Trusted)
 	}
 	var cert *x509.Certificate
 	if !conf.PemFile.IsTrimmedEmpty() {
 		var err error
-		cert, err = ks.LoadCertificateFromFile(conf.PemFile.String())
+		cert, err = keyStore.LoadCertificateFromFile(conf.PemFile.String())
 		if err != nil {
 			return nil, errors.New("Could not load certificate from pemFile %v of service %v.", conf.PemFile, name)
 		}

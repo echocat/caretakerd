@@ -16,6 +16,7 @@ import (
 	"time"
 )
 
+// KeyStore represents a keystore that holds certificates, CAs and private keys.
 type KeyStore struct {
 	enabled    bool
 	config     Config
@@ -25,6 +26,7 @@ type KeyStore struct {
 	privateKey interface{}
 }
 
+// NewKeyStore create an new instance of KeyStore.
 func NewKeyStore(enabled bool, conf Config) (*KeyStore, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -48,12 +50,12 @@ func NewKeyStore(enabled bool, conf Config) (*KeyStore, error) {
 }
 
 func generatePrivateKey(conf Config) (privateKey interface{}, privateKeyBytes []byte, publicKey interface{}, err error) {
-	plainAlgorithm := conf.GetKeyArgument("algorithm")
+	plainAlgorithm := conf.GetHintsArgument("algorithm")
 	if len(plainAlgorithm) > 0 && strings.ToLower(plainAlgorithm) != "rsa" {
 		return nil, []byte{}, nil, errors.New("Unsupported algorithm: %s", plainAlgorithm)
 	}
 	bits := 1024
-	plainBits := conf.GetKeyArgument("bits")
+	plainBits := conf.GetHintsArgument("bits")
 	if len(plainBits) > 0 {
 		if bits, err = strconv.Atoi(plainBits); err != nil || bits <= 0 {
 			return nil, []byte{}, nil, errors.New("Unsupported algorithm bits: %s", plainBits)
@@ -208,11 +210,10 @@ func loadCertificatesFrom(p []byte) ([]*x509.Certificate, error) {
 				candidates, err := x509.ParseCertificates(block.Bytes)
 				if err != nil {
 					return nil, errors.New("Could not parse certificates.").CausedBy(err)
-				} else {
-					for _, candidate := range candidates {
-						if candidate.IsCA {
-							result = append(result, candidate)
-						}
+				}
+				for _, candidate := range candidates {
+					if candidate.IsCA {
+						result = append(result, candidate)
 					}
 				}
 			}
@@ -231,9 +232,8 @@ func loadPrivateKeyFrom(p []byte) (interface{}, error) {
 				privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 				if err != nil {
 					return nil, errors.New("Could not parse privateKey.").CausedBy(err)
-				} else {
-					return privateKey, nil
 				}
+				return privateKey, nil
 			}
 		}
 	}
@@ -249,7 +249,8 @@ func newSerialNumber() *big.Int {
 	return serialNumber
 }
 
-func (instance KeyStore) LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
+// LoadCertificateFromFile loads a certificate from given filename and return it.
+func LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
 	fileContent, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.New("Could not read certificate from %v.", filename).CausedBy(err)
@@ -289,6 +290,8 @@ func (instance KeyStore) generateClientCertificate(name string, publicKey interf
 	return derBytes, nil
 }
 
+// GeneratePem generates a new PEM with config of current KeyStore instance and return it.
+// This PEM will be stored at the KeyStore instance by this method.
 func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
 	if !instance.enabled {
 		return []byte{}, nil, errors.New("KeyStore is not enabled.")
@@ -315,27 +318,34 @@ func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, er
 	return pemBytes, cert, nil
 }
 
-func (instance KeyStore) Pem() []byte {
+// PEM returns the containing PEM instance of this KeyStore.
+// If there is no PEM the result is empty.
+func (instance KeyStore) PEM() []byte {
 	return instance.pem
 }
 
-func (instance KeyStore) Ca() []*x509.Certificate {
+// CA returns all containing CAs of this KeyStore.
+func (instance KeyStore) CA() []*x509.Certificate {
 	return instance.ca
 }
 
+// Type returns the Type of this KeyStore.
 func (instance KeyStore) Type() Type {
 	return instance.config.Type
 }
 
+// Config returns the Config instance this KeyStore was created with.
 func (instance KeyStore) Config() Config {
 	return instance.config
 }
 
+// IsCA returns true if the containing certificate could use to create new certificates.
 func (instance KeyStore) IsCA() bool {
 	cert := instance.cert
 	return cert != nil && cert.IsCA
 }
 
+// IsEnabled returns true if this KeyStore is configured and usable.
 func (instance KeyStore) IsEnabled() bool {
 	return instance.enabled
 }

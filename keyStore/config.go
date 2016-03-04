@@ -2,16 +2,16 @@ package keyStore
 
 import (
 	"github.com/echocat/caretakerd/errors"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"strconv"
 	"strings"
 )
 
 var defaults = map[string]interface{}{
 	"Type":    Generated,
-	"PemFile": String(""),
-	"Hints":   String("algorithm:`rsa` bits:`1024`"),
-	"CaFile":  String(""),
+	"PemFile": values.String(""),
+	"Hints":   values.String("algorithm:`rsa` bits:`1024`"),
+	"CaFile":  values.String(""),
 }
 
 // # Description
@@ -31,7 +31,7 @@ type Config struct {
 	//
 	// This property is only evaluated and required if {@ref #Type type} is set to
 	// {@ref .Type#FromFile fromFile}.
-	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
+	PemFile values.String `json:"pemFile,omitempty" yaml:"pemFile"`
 
 	// @default "algorithm:`rsa` bits:`1024`"
 	//
@@ -40,17 +40,18 @@ type Config struct {
 	//
 	// * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
 	// * ``bits``: Number of bits to create a new key with.
-	Hints String `json:"hints,omitempty" yaml:"hints"`
+	Hints values.String `json:"hints,omitempty" yaml:"hints"`
 
 	// @default ""
 	//
 	// File where trusted certificates are stored in. This have to be in PEM format.
-	CaFile String `json:"caFile,omitempty" yaml:"caFile"`
+	CaFile values.String `json:"caFile,omitempty" yaml:"caFile"`
 }
 
+// NewConfig creates a new instance of Config.
 func NewConfig() Config {
 	result := Config{}
-	SetDefaultsTo(defaults, &result)
+	values.SetDefaultsTo(defaults, &result)
 	return result
 }
 
@@ -61,10 +62,10 @@ func (instance Config) Validate() error {
 		err = instance.validateRequireStringOrNotValue(instance.PemFile, "pemFile", instance.Type.IsTakingFilename)
 	}
 	if err == nil {
-		err = instance.validateStringOnlyAllowedValue(instance.CaFile, "caFile", instance.Type.IsConsumingCaFile)
+		err = instance.validateStringOnlyAllowedValue(instance.CaFile, "caFile", instance.Type.IsConsumingCAFile)
 	}
 	if err == nil {
-		algorithm := instance.GetKeyArgument("algorithm")
+		algorithm := instance.GetHintsArgument("algorithm")
 		if len(algorithm) > 0 && strings.ToLower(algorithm) != "rsa" {
 			err = errors.New("Unsupported algorithm: %s", algorithm)
 		}
@@ -72,7 +73,7 @@ func (instance Config) Validate() error {
 	return err
 }
 
-func (instance Config) validateRequireStringOrNotValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateRequireStringOrNotValue(value values.String, fieldName string, isAllowedMethod func() bool) error {
 	if isAllowedMethod() {
 		if value.IsEmpty() {
 			return errors.New("There is no %s set for type %v.", fieldName, instance.Type)
@@ -85,14 +86,16 @@ func (instance Config) validateRequireStringOrNotValue(value String, fieldName s
 	return nil
 }
 
-func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateStringOnlyAllowedValue(value values.String, fieldName string, isAllowedMethod func() bool) error {
 	if !isAllowedMethod() && !value.IsEmpty() {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }
 
-func (instance Config) GetKeyArgument(key string) string {
+// GetHintsArgument returns hints argument content for the given key.
+// If there is no hint for this key and empty string is returned.
+func (instance Config) GetHintsArgument(key string) string {
 	arguments := instance.Hints
 	for arguments != "" {
 		i := 0

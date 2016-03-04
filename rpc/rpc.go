@@ -157,13 +157,13 @@ func (instance *Rpc) Run() {
 func (instance *Rpc) secure(in net.Listener) net.Listener {
 	out := in
 	sec := instance.caretakerd.KeyStore()
-	keyPair, err := tls.X509KeyPair(sec.Pem(), sec.Pem())
+	keyPair, err := tls.X509KeyPair(sec.PEM(), sec.PEM())
 	if err != nil {
 		panics.New("Could not load pem of caretakerd.").CausedBy(err).Throw()
 	}
 
 	rootCas := x509.NewCertPool()
-	for _, cert := range sec.Ca() {
+	for _, cert := range sec.CA() {
 		rootCas.AddCert(cert)
 	}
 

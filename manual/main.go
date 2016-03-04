@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-var LOGGER, _ = logger.NewLogger(logger.Config{
+var log, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
 	Filename: "console",
 	Pattern:  "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] %m%n%P{%m}",
@@ -18,7 +18,7 @@ var LOGGER, _ = logger.NewLogger(logger.Config{
 
 func panicHandler() {
 	if r := recover(); r != nil {
-		LOGGER.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
+		log.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
 		os.Exit(2)
 	}
 }
@@ -38,8 +38,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	LOGGER.Log(logger.Info, "Root package: %v", project.RootPackage)
-	LOGGER.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
+	log.Log(logger.Info, "Root package: %v", project.RootPackage)
+	log.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
 
 	definitions, err := ParseDefinitions(project)
 	if err != nil {

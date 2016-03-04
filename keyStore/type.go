@@ -29,6 +29,7 @@ const (
 	FromEnvironment Type = 2
 )
 
+// AllTypes contains all possible variants of Type.
 var AllTypes = []Type{
 	Generated,
 	FromFile,
@@ -68,16 +69,15 @@ func (instance *Type) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal keyStore type: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllTypes {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal keyStore type: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllTypes {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal keyStore type: " + value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
@@ -112,15 +112,18 @@ func (instance *Type) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
+// IsTakingFilename returns true if the KeyStore instance created with this type is created from file.
 func (instance Type) IsTakingFilename() bool {
 	return instance == FromFile
 }
 
+// IsGenerating returns true if the KeyStore instance created with this type will be generated.
 func (instance Type) IsGenerating() bool {
 	return instance == Generated
 }
 
-func (instance Type) IsConsumingCaFile() bool {
+// IsConsumingCAFile returns true if the KeyStore instance created with this type can consumes a CA bundle file.
+func (instance Type) IsConsumingCAFile() bool {
 	return instance == FromFile || instance == FromEnvironment
 }
 
