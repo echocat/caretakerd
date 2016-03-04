@@ -1,15 +1,18 @@
 package rpc
 
 import (
-	. "github.com/echocat/caretakerd/defaults"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/defaults"
+	"github.com/echocat/caretakerd/values"
 )
 
-var defaults = map[string]interface{}{
-	"Enabled": Boolean(false),
-	"Listen":  ListenAddress(),
+var defaultValues = map[string]interface{}{
+	"Enabled": values.Boolean(false),
+	"Listen":  defaults.ListenAddress(),
 }
 
+// # Description
+//
+// Defines how caretakerd could be accessed remotely.
 type Config struct {
 	// @default false
 	//
@@ -22,16 +25,17 @@ type Config struct {
 	// >
 	// > * {@ref github.com/echocat/caretakerd/control.Config#Access Control.access} for caretakerctl
 	// > * {@ref github.com/echocat/caretakerd/service.Config#Access Services.access} for services
-	Enabled Boolean `json:"enabled" yaml:"enabled"`
+	Enabled values.Boolean `json:"enabled" yaml:"enabled"`
 
 	// @default "tcp://localhost:57955"
 	//
 	// Address where caretakerd RPC interface is listen to.
 	//
 	// For details of possible values see {@ref github.com/echocat/caretakerd/values.SocketAddress}.
-	Listen SocketAddress `json:"listen" yaml:"listen"`
+	Listen values.SocketAddress `json:"listen" yaml:"listen"`
 }
 
+// NewConfig creates a new instance of Config.
 func NewConfig() Config {
 	result := Config{}
 	result.init()
@@ -39,7 +43,7 @@ func NewConfig() Config {
 }
 
 func (instance *Config) init() {
-	SetDefaultsTo(defaults, instance)
+	values.SetDefaultsTo(defaultValues, instance)
 }
 
 // BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.

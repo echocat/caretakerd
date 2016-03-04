@@ -116,7 +116,7 @@ func (instance *Caretakerd) ConfigObject() interface{} {
 // Run starts every services and requird resources of caretakerd.
 // This method is blocking.
 func (instance *Caretakerd) Run() (values.ExitCode, error) {
-	var r *rpc.Rpc
+	var r *rpc.RPC
 	defer func() {
 		instance.uninstallTerminationNotificationHandler()
 		if r != nil {
@@ -126,7 +126,7 @@ func (instance *Caretakerd) Run() (values.ExitCode, error) {
 
 	execution := NewExecution(instance)
 	if instance.config.RPC.Enabled == values.Boolean(true) {
-		r = rpc.NewRpc(instance.config.RPC, execution, instance, instance.logger)
+		r = rpc.NewRPC(instance.config.RPC, execution, instance, instance.logger)
 		r.Start()
 	}
 	instance.installTerminationNotificationHandler()

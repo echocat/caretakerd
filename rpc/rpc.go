@@ -10,7 +10,7 @@ import (
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/service"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"github.com/emicklei/go-restful"
 	"log"
 	"net"
@@ -19,6 +19,7 @@ import (
 	"strings"
 )
 
+// Caretakerd represents a caretakerd instance.
 type Caretakerd interface {
 	Control() *control.Control
 	Services() *service.Services
@@ -27,6 +28,7 @@ type Caretakerd interface {
 	ConfigObject() interface{}
 }
 
+// Execution represents a caretakerd execution instance.
 type Execution interface {
 	GetFor(s *service.Service) (*service.Execution, bool)
 	Information() map[string]service.Information
@@ -35,20 +37,23 @@ type Execution interface {
 	Restart(*service.Service) error
 	Stop(*service.Service) error
 	Kill(*service.Service) error
-	Signal(*service.Service, Signal) error
+	Signal(*service.Service, values.Signal) error
 }
 
-type ListenerStopped struct{}
+// ListenerStoppedError occurs if the network listener is already stopped.
+type ListenerStoppedError struct{}
 
-func (i ListenerStopped) Error() string {
+func (i ListenerStoppedError) Error() string {
 	return "stopped"
 }
 
+// StoppableListener is a reimplementation of net.TCPListener which is graceful stoppable.
 type StoppableListener struct {
 	*net.TCPListener
 	stop chan int
 }
 
+// NewStoppableListener creates a new instance of StoppableListener and encapsulate the given Listener.
 func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 	tcpL, ok := l.(*net.TCPListener)
 	if !ok {
@@ -61,11 +66,13 @@ func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 	return result, nil
 }
 
+// Accept returns new connection if a remote client connects to the server.
+// This method is blocking.
 func (sl *StoppableListener) Accept() (net.Conn, error) {
 	for {
 		newConn, err := sl.TCPListener.Accept()
 		if isClosedError(err) {
-			return nil, ListenerStopped{}
+			return nil, ListenerStoppedError{}
 		}
 		return newConn, err
 	}
@@ -82,7 +89,8 @@ func isClosedError(what error) bool {
 	}
 }
 
-type Rpc struct {
+// RPC holds all listeners and other resources of the RPC mechanism.
+type RPC struct {
 	conf       Config
 	execution  Execution
 	caretakerd Caretakerd
@@ -90,8 +98,9 @@ type Rpc struct {
 	logger     *logger.Logger
 }
 
-func NewRpc(conf Config, execution Execution, executable Caretakerd, log *logger.Logger) *Rpc {
-	rpc := Rpc{
+// NewRPC creates a new instance of RPC.
+func NewRPC(conf Config, execution Execution, executable Caretakerd, log *logger.Logger) *RPC {
+	rpc := RPC{
 		conf:       conf,
 		execution:  execution,
 		caretakerd: executable,
@@ -100,11 +109,15 @@ func NewRpc(conf Config, execution Execution, executable Caretakerd, log *logger
 	return &rpc
 }
 
-func (instance *Rpc) Start() {
+// Start starts the RPC instance in background.
+// This means: This method is not blocking.
+func (instance *RPC) Start() {
 	go instance.Run()
 }
 
-func (instance *Rpc) Run() {
+// Run starts the RPC instance in foreground.
+// This means: This method is blocking.
+func (instance *RPC) Run() {
 	defer panics.DefaultPanicHandler()
 	container := restful.NewContainer()
 
@@ -148,13 +161,13 @@ func (instance *Rpc) Run() {
 	}()
 	(*instance).listener = sl
 	if err := server.Serve(instance.secure(sl)); err != nil {
-		if _, ok := err.(ListenerStopped); !ok {
+		if _, ok := err.(ListenerStoppedError); !ok {
 			panics.New("Could not listen.").CausedBy(err2).Throw()
 		}
 	}
 }
 
-func (instance *Rpc) secure(in net.Listener) net.Listener {
+func (instance *RPC) secure(in net.Listener) net.Listener {
 	out := in
 	sec := instance.caretakerd.KeyStore()
 	keyPair, err := tls.X509KeyPair(sec.PEM(), sec.PEM())
@@ -178,14 +191,16 @@ func (instance *Rpc) secure(in net.Listener) net.Listener {
 	return out
 }
 
-func (instance *Rpc) Stop() {
+// Stop stops the current RPC instance if running.
+// This method is blocking.
+func (instance *RPC) Stop() {
 	listener := (*instance).listener
 	if listener != nil {
 		listener.Close()
 	}
 }
 
-func (instance *Rpc) checkPermission(request *restful.Request, permissionChecker func(access.Access) bool) bool {
+func (instance *RPC) checkPermission(request *restful.Request, permissionChecker func(access.Access) bool) bool {
 	if request != nil {
 		hr := request.Request
 		if hr != nil {
@@ -210,19 +225,19 @@ func (instance *Rpc) checkPermission(request *restful.Request, permissionChecker
 	return false
 }
 
-func (instance *Rpc) hasReadPermission(request *restful.Request) bool {
+func (instance *RPC) hasReadPermission(request *restful.Request) bool {
 	return instance.checkPermission(request, func(a access.Access) bool {
 		return a.HasReadPermission()
 	})
 }
 
-func (instance *Rpc) hasWritePermission(request *restful.Request) bool {
+func (instance *RPC) hasWritePermission(request *restful.Request) bool {
 	return instance.checkPermission(request, func(a access.Access) bool {
 		return a.HasWritePermission()
 	})
 }
 
-func (instance *Rpc) onReadPermission(request *restful.Request, response *restful.Response, doThis func()) {
+func (instance *RPC) onReadPermission(request *restful.Request, response *restful.Response, doThis func()) {
 	if instance.hasReadPermission(request) {
 		doThis()
 	} else {
@@ -230,7 +245,7 @@ func (instance *Rpc) onReadPermission(request *restful.Request, response *restfu
 	}
 }
 
-func (instance *Rpc) onWritePermission(request *restful.Request, response *restful.Response, doThis func()) {
+func (instance *RPC) onWritePermission(request *restful.Request, response *restful.Response, doThis func()) {
 	if instance.hasWritePermission(request) {
 		doThis()
 	} else {
@@ -238,26 +253,26 @@ func (instance *Rpc) onWritePermission(request *restful.Request, response *restf
 	}
 }
 
-func (instance *Rpc) config(request *restful.Request, response *restful.Response) {
+func (instance *RPC) config(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		response.WriteEntity(instance.caretakerd.ConfigObject())
 	})
 }
 
-func (instance *Rpc) controlConfig(request *restful.Request, response *restful.Response) {
+func (instance *RPC) controlConfig(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		response.WriteEntity(instance.caretakerd.Control().ConfigObject())
 	})
 }
 
-func (instance *Rpc) services(request *restful.Request, response *restful.Response) {
+func (instance *RPC) services(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		information := instance.execution.Information()
 		response.WriteEntity(information)
 	})
 }
 
-func (instance *Rpc) service(request *restful.Request, response *restful.Response) {
+func (instance *RPC) service(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		serviceName := request.PathParameter("serviceName")
 		services := instance.caretakerd.Services()
@@ -270,7 +285,7 @@ func (instance *Rpc) service(request *restful.Request, response *restful.Respons
 	})
 }
 
-func (instance *Rpc) serviceConfig(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceConfig(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		instance.doWithService(request, response, func(service *service.Service) {
 			response.WriteEntity(service.Config())
@@ -278,7 +293,7 @@ func (instance *Rpc) serviceConfig(request *restful.Request, response *restful.R
 	})
 }
 
-func (instance *Rpc) serviceStatus(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceStatus(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		instance.doWithExecution(request, response, func(execution *service.Execution) {
 			if execution != nil {
@@ -290,7 +305,7 @@ func (instance *Rpc) serviceStatus(request *restful.Request, response *restful.R
 	})
 }
 
-func (instance *Rpc) servicePid(request *restful.Request, response *restful.Response) {
+func (instance *RPC) servicePid(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		instance.doWithExecution(request, response, func(execution *service.Execution) {
 			if execution != nil {
@@ -302,7 +317,7 @@ func (instance *Rpc) servicePid(request *restful.Request, response *restful.Resp
 	})
 }
 
-func (instance *Rpc) serviceRestart(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceRestart(request *restful.Request, response *restful.Response) {
 	instance.onWritePermission(request, response, func() {
 		instance.doWithService(request, response, func(service *service.Service) {
 			err := instance.execution.Restart(service)
@@ -315,7 +330,7 @@ func (instance *Rpc) serviceRestart(request *restful.Request, response *restful.
 	})
 }
 
-func (instance *Rpc) serviceStart(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceStart(request *restful.Request, response *restful.Response) {
 	instance.onWritePermission(request, response, func() {
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Start(sc)
@@ -330,7 +345,7 @@ func (instance *Rpc) serviceStart(request *restful.Request, response *restful.Re
 	})
 }
 
-func (instance *Rpc) serviceStop(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceStop(request *restful.Request, response *restful.Response) {
 	instance.onWritePermission(request, response, func() {
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Stop(sc)
@@ -345,7 +360,7 @@ func (instance *Rpc) serviceStop(request *restful.Request, response *restful.Res
 	})
 }
 
-func (instance *Rpc) serviceKill(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceKill(request *restful.Request, response *restful.Response) {
 	instance.onWritePermission(request, response, func() {
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Kill(sc)
@@ -360,11 +375,12 @@ func (instance *Rpc) serviceKill(request *restful.Request, response *restful.Res
 	})
 }
 
+// SignalBody is a response structure.
 type SignalBody struct {
-	Signal Signal `json:"signal"`
+	Signal values.Signal `json:"signal"`
 }
 
-func (instance *Rpc) serviceSignal(request *restful.Request, response *restful.Response) {
+func (instance *RPC) serviceSignal(request *restful.Request, response *restful.Response) {
 	instance.onWritePermission(request, response, func() {
 		instance.doWithService(request, response, func(sc *service.Service) {
 			sb := SignalBody{}
@@ -385,7 +401,7 @@ func (instance *Rpc) serviceSignal(request *restful.Request, response *restful.R
 	})
 }
 
-func (instance *Rpc) doWithService(request *restful.Request, response *restful.Response, what func(service *service.Service)) {
+func (instance *RPC) doWithService(request *restful.Request, response *restful.Response, what func(service *service.Service)) {
 	serviceName := request.PathParameter("serviceName")
 	services := instance.caretakerd.Services()
 	if service, ok := services.Get(serviceName); ok {
@@ -395,7 +411,7 @@ func (instance *Rpc) doWithService(request *restful.Request, response *restful.R
 	}
 }
 
-func (instance *Rpc) doWithExecution(request *restful.Request, response *restful.Response, what func(execution *service.Execution)) {
+func (instance *RPC) doWithExecution(request *restful.Request, response *restful.Response, what func(execution *service.Execution)) {
 	instance.doWithService(request, response, func(s *service.Service) {
 		if e, ok := instance.execution.GetFor(s); ok {
 			what(e)
