@@ -2,4 +2,5 @@
 
 package system
 
-const PATH_SEPARATOR = "\\"
+// PathSeparator is the path separator of the current platform.
+const PathSeparator = "\\"

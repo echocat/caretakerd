@@ -185,20 +185,20 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 			Compiler: runtime.Compiler,
 		},
 	}
-	exclude := project.SrcRootPath + system.PATH_SEPARATOR + "target"
+	exclude := project.SrcRootPath + system.PathSeparator + "target"
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
 			if strings.HasPrefix(info.Name(), ".") {
 				// Ignore dot files and directories
 				return nil
-			} else if path == exclude || strings.HasPrefix(path, exclude+system.PATH_SEPARATOR) {
+			} else if path == exclude || strings.HasPrefix(path, exclude+system.PathSeparator) {
 				// Do not try to build target directory
 				return nil
 			} else if path == project.SrcRootPath {
 				return et.parsePackageToDefinitions(project.RootPackage, definitions)
-			} else if strings.HasPrefix(path, project.GoSrcPath+system.PATH_SEPARATOR) {
+			} else if strings.HasPrefix(path, project.GoSrcPath+system.PathSeparator) {
 				subPath := path[len(project.GoSrcPath)+1:]
-				targetPackage := strings.Replace(subPath, system.PATH_SEPARATOR, "/", -1)
+				targetPackage := strings.Replace(subPath, system.PathSeparator, "/", -1)
 				err := et.parsePackageToDefinitions(targetPackage, definitions)
 				if _, ok := err.(*build.NoGoError); ok {
 					return nil
