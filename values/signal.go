@@ -47,44 +47,53 @@ const (
 	XFSZ   = Signal(0x19)
 )
 
-// AllSignals contains all possible variants of Signal.
-var AllSignals = []Signal{
-	NOOP,
-	ABRT,
-	ALRM,
-	BUS,
-	CHLD,
-	CONT,
-	FPE,
-	HUP,
-	ILL,
-	INT,
-	IO,
-	KILL,
-	PIPE,
-	PROF,
-	PWR,
-	QUIT,
-	SEGV,
-	STKFLT,
-	STOP,
-	SYS,
-	TERM,
-	TRAP,
-	TSTP,
-	TTIN,
-	TTOU,
-	URG,
-	USR1,
-	USR2,
-	VTALRM,
-	WINCH,
-	XCPU,
-	XFSZ,
+// SignalToName contains all possible variants of Signal and their name
+var SignalToName = map[Signal]string{
+	NOOP:   "NOOP",
+	ABRT:   "ABRT",
+	ALRM:   "ALRM",
+	BUS:    "BUS",
+	CHLD:   "CHLD",
+	CONT:   "CONT",
+	FPE:    "FPE",
+	HUP:    "HUP",
+	ILL:    "ILL",
+	INT:    "INT",
+	IO:     "IO",
+	KILL:   "KILL",
+	PIPE:   "PIPE",
+	PROF:   "PROF",
+	PWR:    "PWR",
+	QUIT:   "QUIT",
+	SEGV:   "SEGV",
+	STKFLT: "STKFLT",
+	STOP:   "STOP",
+	SYS:    "SYS",
+	TERM:   "TERM",
+	TRAP:   "TRAP",
+	TSTP:   "TSTP",
+	TTIN:   "TTIN",
+	TTOU:   "TTOU",
+	URG:    "URG",
+	USR1:   "USR1",
+	USR2:   "USR2",
+	VTALRM: "VTALRM",
+	WINCH:  "WINCH",
+	XCPU:   "XCPU",
+	XFSZ:   "XFSZ",
 }
 
-func (i Signal) String() string {
-	result, err := i.CheckedString()
+// SignalToName contains all possible variants of Signal names and their values
+var NameToSignal = map[string]Signal{}
+
+func init() {
+	for value, name := range SignalToName {
+		NameToSignal[name] = value
+	}
+}
+
+func (instance Signal) String() string {
+	result, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
@@ -93,116 +102,53 @@ func (i Signal) String() string {
 
 // CheckedString is like String but return also an optional error if there are some
 // validation errors.
-func (i Signal) CheckedString() (string, error) {
-	switch i {
-	case NOOP:
-		return "NOOP", nil
-	case ABRT:
-		return "ABRT", nil
-	case ALRM:
-		return "ALRM", nil
-	case BUS:
-		return "BUS", nil
-	case CHLD:
-		return "CHLD", nil
-	case CONT:
-		return "CONT", nil
-	case FPE:
-		return "FPE", nil
-	case HUP:
-		return "HUP", nil
-	case ILL:
-		return "ILL", nil
-	case INT:
-		return "INT", nil
-	case IO:
-		return "IO", nil
-	case KILL:
-		return "KILL", nil
-	case PIPE:
-		return "PIPE", nil
-	case PROF:
-		return "PROF", nil
-	case PWR:
-		return "PWR", nil
-	case QUIT:
-		return "QUIT", nil
-	case SEGV:
-		return "SEGV", nil
-	case STKFLT:
-		return "STKFLT", nil
-	case STOP:
-		return "STOP", nil
-	case SYS:
-		return "SYS", nil
-	case TERM:
-		return "TERM", nil
-	case TRAP:
-		return "TRAP", nil
-	case TSTP:
-		return "TSTP", nil
-	case TTIN:
-		return "TTIN", nil
-	case TTOU:
-		return "TTOU", nil
-	case URG:
-		return "URG", nil
-	case USR1:
-		return "USR1", nil
-	case USR2:
-		return "USR2", nil
-	case VTALRM:
-		return "VTALRM", nil
-	case WINCH:
-		return "WINCH", nil
-	case XCPU:
-		return "XCPU", nil
-	case XFSZ:
-		return "XFSZ", nil
+func (instance Signal) CheckedString() (string, error) {
+	if name, ok := SignalToName[instance]; ok {
+		return name, nil
 	}
-	return "", errors.New("Illegal signal: %d", i)
+	return "", errors.New("Illegal signal: %d", instance)
 }
 
 // Set the given string to current object from a string.
 // Return an error object if there are some problems while transforming the string.
-func (i *Signal) Set(value string) error {
+func (instance *Signal) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
-		for _, candidate := range AllSignals {
-			if int(candidate) == valueAsInt {
-				(*i) = candidate
-				return nil
-			}
+		candidate := Signal(valueAsInt)
+		if _, ok := SignalToName[candidate]; ok {
+			(*instance) = candidate
+			return nil
 		}
 		return errors.New("Illegal signal: " + value)
 	}
-	lowerValue := strings.ToUpper(value)
-	for _, candidate := range AllSignals {
-		candidateAsString := strings.ToUpper(candidate.String())
-		if candidateAsString == lowerValue || "sig"+candidateAsString == lowerValue {
-			(*i) = candidate
-			return nil
-		}
+	valueAsUpperCase := strings.ToUpper(value)
+	if candidate, ok := NameToSignal[valueAsUpperCase]; ok {
+		(*instance) = candidate
+		return nil
+	}
+	if candidate, ok := NameToSignal["SIG"+valueAsUpperCase]; ok {
+		(*instance) = candidate
+		return nil
 	}
 	return errors.New("Illegal signal: " + value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
-func (i Signal) MarshalYAML() (interface{}, error) {
-	return i.CheckedString()
+func (instance Signal) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
 // UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
-func (i *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (instance *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
 // MarshalJSON is used until json marshalling. Do not call directly.
-func (i Signal) MarshalJSON() ([]byte, error) {
-	s, err := i.CheckedString()
+func (instance Signal) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -210,16 +156,16 @@ func (i Signal) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON is used until json unmarshalling. Do not call directly.
-func (i *Signal) UnmarshalJSON(b []byte) error {
+func (instance *Signal) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (i Signal) Validate() error {
-	_, err := i.CheckedString()
+func (instance Signal) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }
