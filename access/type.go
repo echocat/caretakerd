@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Type represents the type how the access of a service/node to caretakerd will be trusted/validated.
 type Type int
 
 const (
@@ -29,6 +30,7 @@ const (
 	GenerateToFile Type = 3
 )
 
+// AllTypes contains all possible variants of Type.
 var AllTypes = []Type{
 	None,
 	Trusted,
@@ -71,16 +73,15 @@ func (instance *Type) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal access type: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllTypes {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal access type: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllTypes {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal access type: " + value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
@@ -115,22 +116,27 @@ func (instance *Type) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
+// IsTakingFilename returns true if this Type indicates that it accepts a filename.
 func (instance Type) IsTakingFilename() bool {
 	return instance == GenerateToFile
 }
 
+// IsTakingFilePermission returns true if this Type indicates that it accepts a file permission.
 func (instance Type) IsTakingFilePermission() bool {
 	return instance == GenerateToFile
 }
 
+// IsTakingFileUser returns true if this Type indicates that it accepts a file user.
 func (instance Type) IsTakingFileUser() bool {
 	return instance == GenerateToFile
 }
 
-func (instance Type) IsTakingGroup() bool {
+// IsTakingFileGroup returns true if this Type indicates that it accepts a file group.
+func (instance Type) IsTakingFileGroup() bool {
 	return instance == GenerateToFile
 }
 
+// IsGenerating returns true if this Type indicates that it will create a key.
 func (instance Type) IsGenerating() bool {
 	return instance == GenerateToFile || instance == GenerateToEnvironment
 }

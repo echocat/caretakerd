@@ -5,11 +5,13 @@ import (
 	"reflect"
 )
 
+// FlagWrapper wraps generic command line flags.
 type FlagWrapper struct {
 	value       cli.Generic
 	explicitSet bool
 }
 
+// NewFlagWrapper creates a new instance of FlagWrapper
 func NewFlagWrapper(initialValue cli.Generic) *FlagWrapper {
 	return &FlagWrapper{
 		value:       initialValue,
@@ -32,14 +34,18 @@ func (instance *FlagWrapper) Set(value string) error {
 	return nil
 }
 
+// IsExplicitSet returns true if someone called the Set(string) method before.
 func (instance FlagWrapper) IsExplicitSet() bool {
 	return instance.explicitSet
 }
 
+// Value returns the wrapped generic command line flag.
 func (instance FlagWrapper) Value() cli.Generic {
 	return instance.value
 }
 
+// AssignIfExplicitSet will assign the wrapped value to given object
+// if it was explicit set before.
 func (instance FlagWrapper) AssignIfExplicitSet(to interface{}) {
 	if instance.explicitSet {
 		v := reflect.ValueOf(instance.value)

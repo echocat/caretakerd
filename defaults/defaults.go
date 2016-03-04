@@ -6,10 +6,15 @@ import (
 	"runtime"
 )
 
+// Defaults holds default values for a specific platform.
 type Defaults struct {
-	ListenAddress       values.SocketAddress
+	// ListenAddress is the address caretakerd will listen per default to.
+	ListenAddress values.SocketAddress
+	// AuthFileKeyFilename is the filename caretakerd will store by default
+	// the key for caretakerctl/control process to it.
 	AuthFileKeyFilename values.String
-	ConfigFilename      values.String
+	// ConfigFilename is the default location where caretakerd searches for its config file (yaml).
+	ConfigFilename values.String
 }
 
 var listenAddress = values.SocketAddress{
@@ -41,6 +46,8 @@ var allDefaults = map[string]Defaults{
 	},
 }
 
+// GetDefaults returns the caretakerd defaults for the current instance.
+// This will be influenced by GOOS environment variable.
 func GetDefaults() Defaults {
 	goos := os.Getenv("GOOS")
 	if goos != "" {
@@ -49,21 +56,28 @@ func GetDefaults() Defaults {
 	return GetDefaultsFor(runtime.GOOS)
 }
 
-func GetDefaultsFor(name string) Defaults {
-	if defaults, ok := allDefaults[name]; ok {
+// GetDefaultsFor returns the caretakerd defaults for given platform.
+func GetDefaultsFor(platform string) Defaults {
+	if defaults, ok := allDefaults[platform]; ok {
 		return defaults
 	}
-	panic("Unsupported os: " + name)
+	panic("Unsupported os: " + platform)
 }
 
+// ListenAddress returns the ListenAddress for the current platform.
+// This will be influenced by GOOS environment variable.
 func ListenAddress() values.SocketAddress {
 	return GetDefaults().ListenAddress
 }
 
+// AuthFileKeyFilename returns the AuthFileKeyFilename for the current platform.
+// This will be influenced by GOOS environment variable.
 func AuthFileKeyFilename() values.String {
 	return GetDefaults().AuthFileKeyFilename
 }
 
+// ConfigFilename returns the ConfigFilename for the current platform.
+// This will be influenced by GOOS environment variable.
 func ConfigFilename() values.String {
 	return GetDefaults().ConfigFilename
 }

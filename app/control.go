@@ -6,20 +6,21 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/client"
 	"github.com/echocat/caretakerd/stack"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"os"
 	"strings"
 )
 
-type DirectError struct {
+// UsageError represents an error if control process of caretakerd is used in the wrong way.
+type UsageError struct {
 	error string
 }
 
-func (instance DirectError) Error() string {
+func (instance UsageError) Error() string {
 	return instance.error
 }
 
-func actionWrapper(clientFactory *client.ClientFactory, command func(context *cli.Context, client *client.Client) error) func(context *cli.Context) {
+func actionWrapper(clientFactory *client.Factory, command func(context *cli.Context, client *client.Client) error) func(context *cli.Context) {
 	return func(context *cli.Context) {
 		cli, err := clientFactory.NewClient()
 		if err != nil {
@@ -27,7 +28,7 @@ func actionWrapper(clientFactory *client.ClientFactory, command func(context *cl
 			os.Exit(1)
 		}
 		err = command(context, cli)
-		if de, ok := err.(DirectError); ok {
+		if de, ok := err.(UsageError); ok {
 			fmt.Fprintln(os.Stderr, de.Error())
 			os.Exit(1)
 		} else if _, ok := err.(client.ConflictError); ok {
@@ -45,13 +46,13 @@ func actionWrapper(clientFactory *client.ClientFactory, command func(context *cl
 	}
 }
 
-func handleJsonResponse(response interface{}, err error) error {
+func handleJSONResponse(response interface{}, err error) error {
 	if err != nil {
 		return err
 	}
 	if s, ok := response.(string); ok {
 		fmt.Fprintln(os.Stdout, s)
-	} else if i, ok := response.(Integer); ok {
+	} else if i, ok := response.(values.Integer); ok {
 		fmt.Fprintln(os.Stdout, i)
 	} else {
 		jConf, err := json.MarshalIndent(response, "", "   ")
@@ -63,7 +64,7 @@ func handleJsonResponse(response interface{}, err error) error {
 	return nil
 }
 
-func globalSpecificGetActionWrapper(clientFactory *client.ClientFactory, action func(client *client.Client) (interface{}, error)) func(context *cli.Context) {
+func globalSpecificGetActionWrapper(clientFactory *client.Factory, action func(client *client.Client) (interface{}, error)) func(context *cli.Context) {
 	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
 		return globalSpecificGetAction(context, client, action)
 	})
@@ -71,10 +72,10 @@ func globalSpecificGetActionWrapper(clientFactory *client.ClientFactory, action 
 
 func globalSpecificGetAction(context *cli.Context, client *client.Client, action func(client *client.Client) (interface{}, error)) error {
 	response, err := action(client)
-	return handleJsonResponse(response, err)
+	return handleJSONResponse(response, err)
 }
 
-func serviceSpecificGetActionWrapper(clientFactory *client.ClientFactory, action func(name string, client *client.Client) (interface{}, error)) func(context *cli.Context) {
+func serviceSpecificGetActionWrapper(clientFactory *client.Factory, action func(name string, client *client.Client) (interface{}, error)) func(context *cli.Context) {
 	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
 		return serviceSpecificGetAction(context, client, action)
 	})
@@ -83,13 +84,13 @@ func serviceSpecificGetActionWrapper(clientFactory *client.ClientFactory, action
 func serviceSpecificGetAction(context *cli.Context, client *client.Client, action func(name string, client *client.Client) (interface{}, error)) error {
 	args := context.Args()
 	if len(args) != 1 {
-		return DirectError{error: fmt.Sprintf("Illegal number of arguments (%d) for command %v", len(args), context.Command.Name)}
+		return UsageError{error: fmt.Sprintf("Illegal number of arguments (%d) for command %v", len(args), context.Command.Name)}
 	}
 	response, err := action(args[0], client)
-	return handleJsonResponse(response, err)
+	return handleJSONResponse(response, err)
 }
 
-func serviceSpecificTriggerActionWrapper(clientFactory *client.ClientFactory, action func(name string, client *client.Client) error) func(context *cli.Context) {
+func serviceSpecificTriggerActionWrapper(clientFactory *client.Factory, action func(name string, client *client.Client) error) func(context *cli.Context) {
 	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
 		return serviceSpecificTriggerAction(context, client, action)
 	})
@@ -110,7 +111,7 @@ func ensureNoControlArgument(context *cli.Context) error {
 		return err
 	}
 	if len(context.Args()) != 0 {
-		return DirectError{error: "There is only no argument allowed."}
+		return UsageError{error: "There is only no argument allowed."}
 	}
 	return nil
 }
@@ -122,10 +123,10 @@ func ensureServiceNameArgument(context *cli.Context) error {
 	}
 	args := context.Args()
 	if (len(args) <= 0) || (len(strings.TrimSpace(args[0])) == 0) {
-		return DirectError{error: "There is no service name provided."}
+		return UsageError{error: "There is no service name provided."}
 	}
 	if len(args) > 1 {
-		return DirectError{error: "There is only one argument allowed."}
+		return UsageError{error: "There is only one argument allowed."}
 	}
 	return nil
 }
@@ -137,23 +138,23 @@ func ensureServiceNameAndSignalArgument(context *cli.Context) error {
 	}
 	args := context.Args()
 	if (len(args) <= 0) || (len(strings.TrimSpace(args[0])) == 0) {
-		return DirectError{error: "There is no service name provided."}
+		return UsageError{error: "There is no service name provided."}
 	}
 	if (len(args) <= 1) || (len(strings.TrimSpace(args[1])) == 0) {
-		return DirectError{error: "There is no signal provided."}
+		return UsageError{error: "There is no signal provided."}
 	}
-	var sig Signal
+	var sig values.Signal
 	err = sig.Set(args[1])
 	if err != nil {
-		return DirectError{error: err.Error()}
+		return UsageError{error: err.Error()}
 	}
 	if len(args) > 2 {
-		return DirectError{error: "There are only two arguments allowed."}
+		return UsageError{error: "There are only two arguments allowed."}
 	}
 	return nil
 }
 
-func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "config",
 		Flags:     commonClientFlags,
@@ -167,7 +168,7 @@ func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Cli
 	}
 }
 
-func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "controlConfig",
 		Flags:     commonClientFlags,
@@ -181,7 +182,7 @@ func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 	}
 }
 
-func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "services",
 		Flags:     commonClientFlags,
@@ -195,7 +196,7 @@ func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.C
 	}
 }
 
-func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "service",
 		Flags:     commonClientFlags,
@@ -209,7 +210,7 @@ func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Cl
 	}
 }
 
-func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceConfig",
 		Flags:     commonClientFlags,
@@ -223,7 +224,7 @@ func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *cli
 	}
 }
 
-func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceStatus",
 		Flags:     commonClientFlags,
@@ -238,7 +239,7 @@ func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *cli
 	}
 }
 
-func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "servicePid",
 		Flags:     commonClientFlags,
@@ -253,7 +254,7 @@ func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client
 	}
 }
 
-func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceStart",
 		Flags:     commonClientFlags,
@@ -268,7 +269,7 @@ func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *clie
 	}
 }
 
-func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceRestart",
 		Flags:     commonClientFlags,
@@ -283,7 +284,7 @@ func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *cl
 	}
 }
 
-func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceStop",
 		Flags:     commonClientFlags,
@@ -298,7 +299,7 @@ func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 	}
 }
 
-func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceKill",
 		Flags:     commonClientFlags,
@@ -313,7 +314,7 @@ func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *clien
 	}
 }
 
-func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.ClientFactory) cli.Command {
+func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
 	return cli.Command{
 		Name:      "serviceSignal",
 		Flags:     commonClientFlags,
@@ -324,10 +325,10 @@ func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *cli
 		Action: actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
 			args := context.Args()
 			name := args[0]
-			var sig Signal
+			var sig values.Signal
 			err := sig.Set(args[1])
 			if err != nil {
-				return DirectError{error: err.Error()}
+				return UsageError{error: err.Error()}
 			}
 			return client.SignalService(name, sig)
 		}),
@@ -336,7 +337,7 @@ func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *cli
 }
 
 func registerControlCommandsAt(app *cli.App) {
-	clientFactory := client.NewClientFactory(conf.Instance())
+	clientFactory := client.NewFactory(conf.Instance())
 
 	commonClientFlags := []cli.Flag{}
 

@@ -10,6 +10,7 @@ import (
 
 var filePermissionOctPattern = regexp.MustCompile("^(\\d?)(\\d)(\\d)(\\d)$")
 
+// FilePermission represents a operating system file permission.
 // @inline
 type FilePermission os.FileMode
 
@@ -25,10 +26,9 @@ func (instance *FilePermission) Set(value string) error {
 		if err != nil {
 			return err
 		}
-	} else {
-		return errors.New("Illegal file permission format: %v", value)
+		return nil
 	}
-	return nil
+	return errors.New("Illegal file permission format: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
@@ -62,18 +62,20 @@ func (instance *FilePermission) UnmarshalJSON(b []byte) error {
 // Validate do validate action on this object and return an error object if any.
 func (instance FilePermission) Validate() {}
 
+// ThisOrDefault returns this instance if not empty. Otherwise default FilePermission will be returned.
 func (instance FilePermission) ThisOrDefault() FilePermission {
 	if uint32(instance) == 0 {
 		return DefaultFilePermission()
-	} else {
-		return instance
 	}
+	return instance
 }
 
+// AsFileMode returns this instance as os.FileMode instance.
 func (instance FilePermission) AsFileMode() os.FileMode {
 	return os.FileMode(instance)
 }
 
+// DefaultFilePermission returns the default FilePermission instance.
 func DefaultFilePermission() FilePermission {
 	return defaultFilePermission
 }

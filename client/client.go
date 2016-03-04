@@ -7,7 +7,7 @@ import (
 	"github.com/echocat/caretakerd/control"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/service"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"gopkg.in/jmcvetta/napping.v3"
 	"io/ioutil"
 	"net"
@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+// AccessDeniedError represents an error that occurs if someone tries to access a
+// resource that he is not allowed to access.
 type AccessDeniedError struct {
 	url string
 }
@@ -24,6 +26,8 @@ func (instance AccessDeniedError) Error() string {
 	return "Access to " + instance.url + " is denied."
 }
 
+// ConflictError represents an error that occurs if someone tries to do an action
+// on an entity that is in a different state.
 type ConflictError struct {
 	error string
 }
@@ -32,31 +36,38 @@ func (instance ConflictError) Error() string {
 	return instance.error
 }
 
+// ServiceNotFoundError represents an error that occurs if someone tries to access a
+// service that does not exists.
 type ServiceNotFoundError struct{}
 
 func (instance ServiceNotFoundError) Error() string {
 	return "Service not found."
 }
 
-type ClientFactory struct {
+// Factory is used to create new instances of the caretakerd Client.
+type Factory struct {
 	config *caretakerd.Config
 }
 
-func NewClientFactory(config *caretakerd.Config) *ClientFactory {
-	return &ClientFactory{
+// NewFactory creates a new instance of Factory.
+func NewFactory(config *caretakerd.Config) *Factory {
+	return &Factory{
 		config: config,
 	}
 }
 
-func (instance *ClientFactory) NewClient() (*Client, error) {
+// NewClient creates a new Client.
+func (instance *Factory) NewClient() (*Client, error) {
 	return NewClient(instance.config)
 }
 
+// Client is used to access caretakerd remotely.
 type Client struct {
-	address SocketAddress
+	address values.SocketAddress
 	session *napping.Session
 }
 
+// NewClient creates a new instance of Client with the given config.
 func NewClient(config *caretakerd.Config) (*Client, error) {
 	session, err := sessionFor(config)
 	if err != nil {
@@ -95,7 +106,7 @@ func transportFor(config *caretakerd.Config) (*http.Transport, error) {
 	}
 	return &http.Transport{
 		DialTLS: func(network, addr string) (net.Conn, error) {
-			return dialTlsWithOwnChecks(config, tlsConfig)
+			return dialTLSWithOwnChecks(config, tlsConfig)
 		},
 		TLSClientConfig: tlsConfig,
 	}, nil
@@ -117,7 +128,7 @@ func tlsConfigFor(config *caretakerd.Config) (*tls.Config, error) {
 	}, nil
 }
 
-func parseCertificatesInFile(filename String) ([]tls.Certificate, error) {
+func parseCertificatesInFile(filename values.String) ([]tls.Certificate, error) {
 	fileContent, err := ioutil.ReadFile(filename.String())
 	if err != nil {
 		return nil, errors.New("Could not read pem file '%v'.", filename).CausedBy(err)
@@ -147,7 +158,7 @@ func certPoolFor(certificates []tls.Certificate) (*x509.CertPool, error) {
 	return result, nil
 }
 
-func dialTlsWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net.Conn, error) {
+func dialTLSWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net.Conn, error) {
 	var err error
 	var tlsConn *tls.Conn
 
@@ -186,6 +197,7 @@ func dialTlsWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net
 	return tlsConn, err
 }
 
+// GetConfig returns the config of the remote caretakerd instance.
 func (instance *Client) GetConfig() (caretakerd.Config, error) {
 	target := caretakerd.Config{}
 	err := instance.get("config", &target)
@@ -195,6 +207,7 @@ func (instance *Client) GetConfig() (caretakerd.Config, error) {
 	return target, nil
 }
 
+// GetControlConfig returns the control config of the remote caretakerd instance.
 func (instance *Client) GetControlConfig() (control.Config, error) {
 	target := control.Config{}
 	err := instance.get("control/config", &target)
@@ -204,6 +217,7 @@ func (instance *Client) GetControlConfig() (control.Config, error) {
 	return target, nil
 }
 
+// GetServices returns all services of the remote caretakerd instance.
 func (instance *Client) GetServices() (map[string]service.Information, error) {
 	target := map[string]service.Information{}
 	err := instance.get("services", &target)
@@ -213,6 +227,7 @@ func (instance *Client) GetServices() (map[string]service.Information, error) {
 	return target, nil
 }
 
+// GetService returns the given service (by name) of the remote caretakerd instance.
 func (instance *Client) GetService(name string) (service.Information, error) {
 	target := service.Information{}
 	err := instance.get("service/"+name, &target)
@@ -222,6 +237,7 @@ func (instance *Client) GetService(name string) (service.Information, error) {
 	return target, nil
 }
 
+// GetServiceConfig returns the given service config (by name) of the remote caretakerd instance.
 func (instance *Client) GetServiceConfig(name string) (service.Config, error) {
 	target := service.Config{}
 	err := instance.get("service/"+name+"/config", &target)
@@ -231,6 +247,7 @@ func (instance *Client) GetServiceConfig(name string) (service.Config, error) {
 	return target, nil
 }
 
+// GetServiceStatus returns the given service status (by name) of the remote caretakerd instance.
 func (instance *Client) GetServiceStatus(name string) (service.Status, error) {
 	var target service.Status
 	plainTarget, err := instance.getPlain("service/" + name + "/status")
@@ -244,8 +261,9 @@ func (instance *Client) GetServiceStatus(name string) (service.Status, error) {
 	return target, nil
 }
 
-func (instance *Client) GetServicePid(name string) (Integer, error) {
-	var target Integer
+// GetServicePid returns the given service PID (by name) of the remote caretakerd instance.
+func (instance *Client) GetServicePid(name string) (values.Integer, error) {
+	var target values.Integer
 	plainTarget, err := instance.getPlain("service/" + name + "/pid")
 	if err != nil {
 		return target, err
@@ -257,6 +275,7 @@ func (instance *Client) GetServicePid(name string) (Integer, error) {
 	return target, nil
 }
 
+// StartService starts the given service (by name) of the remote caretakerd instance.
 func (instance *Client) StartService(name string) error {
 	err := instance.post("service/"+name+"/start", nil)
 	if _, ok := err.(ConflictError); ok {
@@ -265,10 +284,12 @@ func (instance *Client) StartService(name string) error {
 	return err
 }
 
+// RestartService restarts the given service (by name) of the remote caretakerd instance.
 func (instance *Client) RestartService(name string) error {
 	return instance.post("service/"+name+"/restart", nil)
 }
 
+// StopService stops the given service (by name) of the remote caretakerd instance.
 func (instance *Client) StopService(name string) error {
 	err := instance.post("service/"+name+"/stop", nil)
 	if _, ok := err.(ConflictError); ok {
@@ -277,6 +298,7 @@ func (instance *Client) StopService(name string) error {
 	return err
 }
 
+// KillService kills the given service (by name) of the remote caretakerd instance.
 func (instance *Client) KillService(name string) error {
 	err := instance.post("service/"+name+"/kill", nil)
 	if _, ok := err.(ConflictError); ok {
@@ -285,7 +307,8 @@ func (instance *Client) KillService(name string) error {
 	return err
 }
 
-func (instance *Client) SignalService(name string, s Signal) error {
+// SignalService sends the given signal to the given service (by name) of the remote caretakerd instance.
+func (instance *Client) SignalService(name string, s values.Signal) error {
 	payload := map[string]string{
 		"signal": s.String(),
 	}

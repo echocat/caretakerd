@@ -16,6 +16,7 @@ type Config struct {
 	Access access.Config `json:"access" yaml:"access,omitempty"`
 }
 
+// NewConfig creates a new instance of Config
 func NewConfig() Config {
 	result := Config{}
 	result.init()

@@ -31,6 +31,7 @@ GLOBAL OPTIONS:
 `
 }
 
+// NewApps will create new instances of command line parser (cli.App) for every ExecutableType.
 func NewApps() map[ExecutableType]*cli.App {
 	result := map[ExecutableType]*cli.App{}
 	for _, executableType := range AllExecutableTypes {
@@ -39,6 +40,7 @@ func NewApps() map[ExecutableType]*cli.App {
 	return result
 }
 
+// NewAppFor will create new instance of command line parser (cli.App) for given executableType.
 func NewAppFor(executableType ExecutableType) *cli.App {
 	app := newAppFor(executableType)
 	registerCommandsFor(executableType, app)
@@ -126,14 +128,20 @@ func registerCommandsFor(executableType ExecutableType, at *cli.App) {
 	}
 }
 
+// ExecutableType represents a type of the caretakerd executable.
 type ExecutableType int
 
 const (
-	Daemon  ExecutableType = 0
+	// Daemon indicates that this executable is the caretaker daemon itself.
+	Daemon ExecutableType = 0
+	// Control indicates that this executable is the caretaker control binary.
 	Control ExecutableType = 1
+	// Generic indicates that this executable is the caretaker binary which combines
+	// daemon and control binary together.
 	Generic ExecutableType = 2
 )
 
+// AllExecutableTypes contains all possible variants of ExecutableType.
 var AllExecutableTypes = []ExecutableType{
 	Daemon,
 	Control,
@@ -160,12 +168,10 @@ func ensureConfig(daemonChecks bool) error {
 		if _, ok := err.(caretakerd.ConfigDoesNotExistError); ok {
 			if daemonChecks {
 				return errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", newConf.String())
-			} else {
-				return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
 			}
-		} else {
-			return err
+			return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
 		}
+		return err
 	}
 	err = newConf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Permission represents the permission a service/node have to caretakerd.
 type Permission int
 
 const (
@@ -25,6 +26,7 @@ const (
 	ReadWrite Permission = 2
 )
 
+// AllPermissions contains all possible variants of Permission.
 var AllPermissions = []Permission{
 	Forbidden,
 	ReadOnly,
@@ -68,16 +70,15 @@ func (instance *Permission) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal permission: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllPermissions {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal permission: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllPermissions {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal permission: " + value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
