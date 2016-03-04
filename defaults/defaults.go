@@ -24,17 +24,17 @@ const unixConfigFilename = values.String("/etc/caretakerd.yaml")
 const windowsConfigFilename = values.String("C:\\ProgramData\\caretakerd\\config.yaml")
 
 var allDefaults = map[string]Defaults{
-	"linux": Defaults{
+	"linux": {
 		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: unixAuthFileKeyFilename,
 		ConfigFilename:      unixConfigFilename,
 	},
-	"windows": Defaults{
+	"windows": {
 		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: windowsAuthFileKeyFilename,
 		ConfigFilename:      windowsConfigFilename,
 	},
-	"darwin": Defaults{
+	"darwin": {
 		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: unixAuthFileKeyFilename,
 		ConfigFilename:      unixConfigFilename,

@@ -40,7 +40,7 @@ func finalizeSyncGroup(sg *SyncGroup) {
 }
 
 func (sg *SyncGroup) Interrupt() {
-	for interruptable, _ := range sg.interruptables {
+	for interruptable := range sg.interruptables {
 		interruptable.Interrupt()
 	}
 }
