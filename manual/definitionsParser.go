@@ -1,21 +1,21 @@
 package main
 
 import (
-	"go/parser"
-	"go/token"
-	"regexp"
-	"go/ast"
-	"go/types"
-	"go/build"
-	"runtime"
-	"path/filepath"
 	"fmt"
-	"strings"
-	"reflect"
-	"os"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/system"
+	"go/ast"
+	"go/build"
+	"go/parser"
+	"go/token"
+	"go/types"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"runtime"
+	"strings"
 )
 
 var extractIdPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
@@ -144,10 +144,10 @@ func (instance *extractionTask) parsePackage(packageName string) (*parsedPackage
 			result.sourceFiles[sourceFilename] = sourceFile
 		}
 		typesConfig := types.Config{
-			Importer: instance,
-			FakeImportC: true,
+			Importer:                 instance,
+			FakeImportC:              true,
 			DisableUnusedImportCheck: true,
-			IgnoreFuncBodies: true,
+			IgnoreFuncBodies:         true,
 		}
 		pkg, err := typesConfig.Check(packageName, result.fileSet, sourceFiles, instance.info)
 		if err != nil {
@@ -181,10 +181,10 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 		},
 		project: project,
 		context: &build.Context{
-			GOARCH: runtime.GOARCH,
-			GOOS: runtime.GOOS,
-			GOROOT: GOROOT,
-			GOPATH: GOPATH,
+			GOARCH:   runtime.GOARCH,
+			GOOS:     runtime.GOOS,
+			GOROOT:   GOROOT,
+			GOPATH:   GOPATH,
 			Compiler: runtime.Compiler,
 		},
 	}
@@ -194,13 +194,13 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 			if strings.HasPrefix(info.Name(), ".") {
 				// Ignore dot files and directories
 				return nil
-			} else if path == exclude || strings.HasPrefix(path, exclude + system.PATH_SEPARATOR) {
+			} else if path == exclude || strings.HasPrefix(path, exclude+system.PATH_SEPARATOR) {
 				// Do not try to build target directory
 				return nil
 			} else if path == project.SrcRootPath {
 				return et.parsePackageToDefinitions(project.RootPackage, definitions)
-			} else if strings.HasPrefix(path, project.GoSrcPath + system.PATH_SEPARATOR) {
-				subPath := path[len(project.GoSrcPath) + 1:]
+			} else if strings.HasPrefix(path, project.GoSrcPath+system.PATH_SEPARATOR) {
+				subPath := path[len(project.GoSrcPath)+1:]
 				targetPackage := strings.Replace(subPath, system.PATH_SEPARATOR, "/", -1)
 				err := et.parsePackageToDefinitions(targetPackage, definitions)
 				if _, ok := err.(*build.NoGoError); ok {
@@ -274,7 +274,7 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 													cScope := scope.Lookup(cScopeName)
 													if cScope.Pos() == cSpec.Pos() {
 														if eConst, ok := cScope.(*types.Const); ok {
-															if eConst.Type().String() == pp.pkg.Path() + "." + name {
+															if eConst.Type().String() == pp.pkg.Path()+"."+name {
 																elementComment, err := pp.commentTextFor(eConst)
 																if err != nil {
 																	return err

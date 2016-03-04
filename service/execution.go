@@ -353,7 +353,7 @@ func (instance *Execution) sendKill() {
 }
 
 func (instance *Execution) Signal(what Signal) error {
-	if err := instance.doLock() ; err != nil {
+	if err := instance.doLock(); err != nil {
 		return err
 	}
 	defer instance.doUnlock()
@@ -434,4 +434,3 @@ func (instance Execution) String() string {
 func (instance *Execution) SyncGroup() *sync.SyncGroup {
 	return instance.syncGroup
 }
-

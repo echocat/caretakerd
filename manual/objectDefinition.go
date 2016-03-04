@@ -32,8 +32,8 @@ func (instance *ObjectDefinition) AddChild(child Definition) {
 
 func newObjectDefinition(id IdType, comment string) *ObjectDefinition {
 	return &ObjectDefinition{
-		id: id,
-		comment: comment,
+		id:       id,
+		comment:  comment,
 		children: []Definition{},
 	}
 }
@@ -41,4 +41,3 @@ func newObjectDefinition(id IdType, comment string) *ObjectDefinition {
 func (instance ObjectDefinition) String() string {
 	return FormatDefinition(&instance)
 }
-

@@ -15,8 +15,8 @@ type PickedDefinitions struct {
 
 func PickDefinitionsFrom(source *Definitions, rootElementId IdType) (*PickedDefinitions, error) {
 	pd := &PickedDefinitions{
-		Source: source,
-		NameToDefinition: map[string]Definition{},
+		Source:              source,
+		NameToDefinition:    map[string]Definition{},
 		NameToInlinedMarker: map[string]WithInlinedMarker{},
 		TopLevelDefinitions: []Definition{},
 	}
@@ -103,4 +103,3 @@ func (instance definitions) Swap(i, j int) {
 func (instance definitions) Less(i, j int) bool {
 	return instance[i].Id().String() < instance[j].Id().String()
 }
-

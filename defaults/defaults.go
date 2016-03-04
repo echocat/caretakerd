@@ -2,8 +2,8 @@ package defaults
 
 import (
 	"github.com/echocat/caretakerd/values"
-	"runtime"
 	"os"
+	"runtime"
 )
 
 type Defaults struct {
@@ -25,19 +25,19 @@ const windowsConfigFilename = values.String("C:\\ProgramData\\caretakerd\\config
 
 var allDefaults = map[string]Defaults{
 	"linux": Defaults{
-		ListenAddress: listenAddress,
+		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: unixAuthFileKeyFilename,
-		ConfigFilename: unixConfigFilename,
+		ConfigFilename:      unixConfigFilename,
 	},
 	"windows": Defaults{
-		ListenAddress: listenAddress,
+		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: windowsAuthFileKeyFilename,
-		ConfigFilename: windowsConfigFilename,
+		ConfigFilename:      windowsConfigFilename,
 	},
 	"darwin": Defaults{
-		ListenAddress: listenAddress,
+		ListenAddress:       listenAddress,
 		AuthFileKeyFilename: unixAuthFileKeyFilename,
-		ConfigFilename: unixConfigFilename,
+		ConfigFilename:      unixConfigFilename,
 	},
 }
 

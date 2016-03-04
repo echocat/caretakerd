@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
-	"os"
-	"github.com/echocat/caretakerd/app"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -76,7 +76,7 @@ func main() {
 	if err := os.MkdirAll(directory, 0755); err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(file, []byte(content),0655 ); err != nil {
+	if err := ioutil.WriteFile(file, []byte(content), 0655); err != nil {
 		panic(err)
 	}
 }

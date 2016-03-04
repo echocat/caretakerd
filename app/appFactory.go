@@ -1,12 +1,12 @@
 package app
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/errors"
 	"os"
-	"fmt"
 )
 
 var conf = NewConfigWrapper()
@@ -39,7 +39,7 @@ func NewApps() map[ExecutableType]*cli.App {
 	return result
 }
 
-func NewAppFor(executableType ExecutableType) *cli.App{
+func NewAppFor(executableType ExecutableType) *cli.App {
 	app := newAppFor(executableType)
 	registerCommandsFor(executableType, app)
 
@@ -69,7 +69,7 @@ func newAppFor(executableType ExecutableType) *cli.App {
 	app := cli.NewApp()
 	app.Version = caretakerd.VERSION
 	app.Commands = []cli.Command{}
-	app.OnUsageError =  func(context *cli.Context, err error, isSubcommand bool) error {
+	app.OnUsageError = func(context *cli.Context, err error, isSubcommand bool) error {
 		fmt.Fprintf(app.Writer, "Error: %v\n\n", err)
 		if isSubcommand {
 			cli.ShowSubcommandHelp(context)

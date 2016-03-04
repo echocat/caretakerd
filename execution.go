@@ -59,7 +59,7 @@ func (instance *Execution) Run() (ExitCode, error) {
 			masterStarted = true
 		}
 	}
-	if ! masterStarted {
+	if !masterStarted {
 		(*instance).masterError = errors.New("No master was started. There are no master configured?")
 	}
 	if (*instance).masterError != nil {
@@ -103,7 +103,7 @@ func (instance *Execution) drive(target *service.Execution) {
 	respectDelay := true
 	doRun := true
 	for run := 1; doRun && target != nil; run++ {
-		if ! instance.isAlreadyStopRequested(target) {
+		if !instance.isAlreadyStopRequested(target) {
 			if respectDelay {
 				if !instance.delayedStartIfNeeded(target, run) {
 					break
@@ -111,7 +111,7 @@ func (instance *Execution) drive(target *service.Execution) {
 			} else {
 				run = 1
 			}
-			if ! instance.isAlreadyStopRequested(target) {
+			if !instance.isAlreadyStopRequested(target) {
 				exitCode, err = target.Run()
 				doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
 				if doRun && !instance.isAlreadyStopRequested(target) {
@@ -197,7 +197,7 @@ func (instance *Execution) delayedStartIfNeededFor(target *service.Execution, de
 	s := target.Service()
 	if s.Config().StartDelayInSeconds > 0 {
 		s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
-		return target.SyncGroup().Sleep(time.Duration(delayInSeconds) * time.Second) == nil
+		return target.SyncGroup().Sleep(time.Duration(delayInSeconds)*time.Second) == nil
 	} else {
 		return true
 	}
@@ -211,7 +211,7 @@ func (instance *Execution) checkRestartRequestedAndClean(target *service.Service
 	return result
 }
 
-func (instance *Execution) registerStopRequestsFor(executions ... *service.Execution) {
+func (instance *Execution) registerStopRequestsFor(executions ...*service.Execution) {
 	instance.doWLock()
 	defer instance.doWUnlock()
 	for _, execution := range executions {

@@ -1,9 +1,9 @@
 package sync
 
 import (
+	"github.com/echocat/caretakerd/errors"
 	"runtime"
 	"time"
-"github.com/echocat/caretakerd/errors"
 )
 
 type Mutex struct {

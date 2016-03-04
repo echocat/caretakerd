@@ -12,7 +12,7 @@ type Definitions struct {
 
 func NewDefinitions(project Project) *Definitions {
 	return &Definitions{
-		project: project,
+		project:                project,
 		identifierToDefinition: map[string]Definition{},
 	}
 }
@@ -62,7 +62,7 @@ func (instance *Definitions) newIdWithParent(parent Definition, name string) IdT
 	parentIdentifier := parent.Id()
 	return instance.newIdentifier(
 		parentIdentifier.Package,
-		parentIdentifier.Name + "#" + name,
+		parentIdentifier.Name+"#"+name,
 	)
 }
 

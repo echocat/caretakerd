@@ -33,10 +33,10 @@ func (instance SimpleDefinition) IsTopLevel() bool {
 
 func newSimpleDefinition(id IdType, valueType Type, comment string, inlined bool) *SimpleDefinition {
 	return &SimpleDefinition{
-		id: id,
+		id:        id,
 		valueType: valueType,
-		comment: comment,
-		inlined: inlined,
+		comment:   comment,
+		inlined:   inlined,
 	}
 }
 

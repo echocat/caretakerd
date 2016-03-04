@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/panics"
 	"os"
-	"strings"
 	"regexp"
-	"github.com/echocat/caretakerd"
+	"strings"
 )
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BASE_NAME + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
@@ -34,4 +34,3 @@ func getExecutableType() app.ExecutableType {
 	}
 	return app.Generic
 }
-

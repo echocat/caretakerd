@@ -32,8 +32,8 @@ func (instance *EnumDefinition) AddChild(child Definition) {
 
 func newEnumDefinition(id IdType, comment string) *EnumDefinition {
 	return &EnumDefinition{
-		id: id,
-		comment: comment,
+		id:       id,
+		comment:  comment,
 		children: []Definition{},
 	}
 }
@@ -41,4 +41,3 @@ func newEnumDefinition(id IdType, comment string) *EnumDefinition {
 func (instance EnumDefinition) String() string {
 	return FormatDefinition(&instance)
 }
-

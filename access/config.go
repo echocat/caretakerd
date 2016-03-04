@@ -1,4 +1,5 @@
 package access
+package access
 
 import (
 	"github.com/echocat/caretakerd/errors"
@@ -11,14 +12,14 @@ type Config struct {
 	// Defines how this access will be ensured.
 	//
 	// For details see for possible values {@ref github.com/echocat/caretakerd/access.Type}.
-	Type              Type           `json:"type" yaml:"type"`
+	Type Type `json:"type" yaml:"type"`
 
 	// @default "readWrite" (for control/caretakerctl) "forbidden" (for services)
 	//
 	// Defines what the control/service can do with caretakerd.
 	//
 	// For details see for possible values {@ref github.com/echocat/caretakerd/access.Permission}.
-	Permission        Permission     `json:"permission" yaml:"permission"`
+	Permission Permission `json:"permission" yaml:"permission"`
 
 	// @default ""
 	//
@@ -30,7 +31,7 @@ type Config struct {
 	//
 	// > **Important:** In case of {@ref #Type type} = {@ref github.com/echocat/caretakerd/access.Type#GenerateToFile generateToFile}
 	// > this property is required.
-	PemFile           String         `json:"pemFile,omitempty" yaml:"pemFile"`
+	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
 
 	// @default 0600
 	//
@@ -41,7 +42,7 @@ type Config struct {
 	//
 	// If set this user owns the generated {@ref #PemFile pem file}.
 	// Otherwise it is owned by the user caretakerd is running with.
-	PemFileUser       String         `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
+	PemFileUser String `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
 }
 
 func NewNoneConfig() Config {

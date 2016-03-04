@@ -20,7 +20,7 @@ const (
 	// to start it.
 	//
 	// This service will be automatically stopped if the {@ref #Master master} was also stopped.
-	OnDemand  Type = 0
+	OnDemand Type = 0
 	// @id autoStart
 	//
 	// This services is automatically started by caretakerd.
@@ -34,7 +34,7 @@ const (
 	// > **Important:** There have to be exact one of all services specified as ``master``.
 	//
 	// Every other service will live and die together with the ``master``.
-	Master    Type = 2
+	Master Type = 2
 )
 
 var AllTypes = []Type{

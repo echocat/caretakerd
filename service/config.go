@@ -15,7 +15,7 @@ type Config struct {
 	//
 	// > **Important**: Exact one of the services have to be configured as
 	// > {@ref github.com/echocat/caretakerd/service.Type#Master master}.
-	Type                  Type               `json:"type" yaml:"type"`
+	Type Type `json:"type" yaml:"type"`
 
 	// @default []
 	//
@@ -61,7 +61,7 @@ type Config struct {
 	// $ caretakerd run "world!"
 	// Hello world!
 	// ```
-	Command               []String           `json:"command" yaml:"command,flow"`
+	Command []String `json:"command" yaml:"command,flow"`
 
 	// @default []
 	//
@@ -81,7 +81,7 @@ type Config struct {
 	// - ["program.sh", "prepareAndDoNotFail"] # Do not ignore if fails
 	// command: ["program.sh", "run"]
 	// ```
-	PreCommands           [][]String         `json:"preCommands" yaml:"preCommands,flow"`
+	PreCommands [][]String `json:"preCommands" yaml:"preCommands,flow"`
 
 	// @default []
 	//
@@ -100,7 +100,7 @@ type Config struct {
 	// - ["-", "program.sh", "cleanUp"]        # Ignore if fails
 	// - ["program.sh", "cleanUpAndDoNotFail"] # Log if fails
 	// ```
-	PostCommands          [][]String         `json:"postCommands" yaml:"postCommands,flow"`
+	PostCommands [][]String `json:"postCommands" yaml:"postCommands,flow"`
 
 	// @default ""
 	//
@@ -108,14 +108,14 @@ type Config struct {
 	// run as a normal process just once (except of the {@ref #AutoRestart autoRestart} handling).
 	//
 	// For details of possible values see {@ref github.com/echocat/caretakerd/service.CronExpression}.
-	CronExpression        CronExpression     `json:"cronExpression" yaml:"cronExpression"`
+	CronExpression CronExpression `json:"cronExpression" yaml:"cronExpression"`
 
 	// @default 0
 	//
 	// Wait before the service process will start the first time.
 	//
 	// > **Hint:** Every run triggered by {@ref #CronExpression cronExpression} will also wait for this delay.
-	StartDelayInSeconds   NonNegativeInteger `json:"startDelayInSeconds" yaml:"startDelayInSeconds"`
+	StartDelayInSeconds NonNegativeInteger `json:"startDelayInSeconds" yaml:"startDelayInSeconds"`
 
 	// @default [0]
 	//
@@ -124,13 +124,13 @@ type Config struct {
 	// Other values will trigger a auto restart if configured.
 	//
 	// See: {@ref #AutoRestart autoRestart}
-	SuccessExitCodes      ExitCodes          `json:"successExitCodes" yaml:"successExitCodes,flow"`
+	SuccessExitCodes ExitCodes `json:"successExitCodes" yaml:"successExitCodes,flow"`
 
 	// @default "TERM" (on Unix like systems) - "KILL" (on Windows)
 	//
 	// Signal which will be send to the service when a stop is requested.
 	// You can use the signal number here and also names like ``"TERM"`` or ``"KILL"``.
-	StopSignal            Signal             `json:"stopSignal" yaml:"stopSignal"`
+	StopSignal Signal `json:"stopSignal" yaml:"stopSignal"`
 
 	// @default []
 	//
@@ -146,32 +146,32 @@ type Config struct {
 	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
 	//
 	// > **Hint:** If this property is configured {@ref #StopSignal stopSignal} will not be evaluated.
-	StopCommand           []String           `json:"stopCommand" yaml:"stopCommand,flow"`
+	StopCommand []String `json:"stopCommand" yaml:"stopCommand,flow"`
 
 	// @default 30
 	//
 	// Timeout to wait before kill the service process after a stop is requested.
-	StopWaitInSeconds     NonNegativeInteger `json:"stopWaitInSeconds" yaml:"stopWaitInSeconds"`
+	StopWaitInSeconds NonNegativeInteger `json:"stopWaitInSeconds" yaml:"stopWaitInSeconds"`
 
 	// @default ""
 	//
 	// User under which the service process will be started.
-	User                  String             `json:"user" yaml:"user"`
+	User String `json:"user" yaml:"user"`
 
 	// @default []
 	//
 	// Environment variables to pass to the process.
-	Environment           Environments       `json:"environment" yaml:"environment"`
+	Environment Environments `json:"environment" yaml:"environment"`
 
 	// @default true
 	//
 	// Pass the environment variables started with caretakerd also to the service process.
-	InheritEnvironment    Boolean            `json:"inheritEnvironment" yaml:"inheritEnvironment"`
+	InheritEnvironment Boolean `json:"inheritEnvironment" yaml:"inheritEnvironment"`
 
 	// @default ""
 	//
 	// Working directory to start the service process in.
-	Directory             String             `json:"directory" yaml:"directory"`
+	Directory String `json:"directory" yaml:"directory"`
 
 	// @default onFailures
 	//
@@ -179,7 +179,7 @@ type Config struct {
 	// It depends mainly on the {@ref #SuccessExitCodes successExitCodes} property.
 	//
 	// For details of possible values see {@ref github.com/echocat/caretakerd/values.RestartType}.
-	AutoRestart           RestartType        `json:"autoRestart" yaml:"autoRestart"`
+	AutoRestart RestartType `json:"autoRestart" yaml:"autoRestart"`
 
 	// @default 5
 	//
@@ -192,12 +192,12 @@ type Config struct {
 	// and how to obtain the credentials for it.
 	//
 	// For details see {@ref github.com/echocat/caretakerd/access.Config}.
-	Access                access.Config      `json:"access" yaml:"access,omitempty"`
+	Access access.Config `json:"access" yaml:"access,omitempty"`
 
 	// Configures the logger for this specific service.
 	//
 	// For details see {@ref github.com/echocat/caretakerd/logger.Config}.
-	Logger                logger.Config      `json:"logger" yaml:"logger,omitempty"`
+	Logger logger.Config `json:"logger" yaml:"logger,omitempty"`
 }
 
 func NewConfig() Config {

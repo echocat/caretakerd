@@ -38,11 +38,11 @@ func (instance PropertyDefinition) DefaultValue() *string {
 
 func newPropertyDefinition(id IdType, key string, valueType Type, comment string, def *string) *PropertyDefinition {
 	return &PropertyDefinition{
-		id: id,
-		key: key,
+		id:        id,
+		key:       key,
 		valueType: valueType,
-		comment: comment,
-		def: def,
+		comment:   comment,
+		def:       def,
 	}
 }
 

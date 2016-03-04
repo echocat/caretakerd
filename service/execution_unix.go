@@ -51,6 +51,6 @@ func (instance *Service) createSysProcAttr() *syscall.SysProcAttr {
 	// Prevent that a created process receives signals for caretakerd
 	return &syscall.SysProcAttr{
 		Setpgid: true,
-		Pgid: 0,
+		Pgid:    0,
 	}
 }

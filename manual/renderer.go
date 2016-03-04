@@ -1,24 +1,24 @@
 package main
 
 import (
-	"html/template"
-	"io/ioutil"
-	"strings"
-	"path"
 	"bytes"
-	"regexp"
-	"path/filepath"
+	"github.com/codegangsta/cli"
+	"github.com/echocat/caretakerd"
+	"github.com/echocat/caretakerd/app"
+	"github.com/echocat/caretakerd/errors"
+	"github.com/russross/blackfriday"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/js"
 	"github.com/tdewolff/minify/html"
-	"github.com/russross/blackfriday"
-	"github.com/echocat/caretakerd/errors"
-	"github.com/codegangsta/cli"
-	"github.com/echocat/caretakerd/app"
-	"github.com/echocat/caretakerd"
+	"github.com/tdewolff/minify/js"
+	"html/template"
+	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 )
 
 var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
@@ -45,15 +45,15 @@ type Renderer struct {
 	MapTemplate                 *Template
 	DefinitionStructureTemplate *Template
 
-	Functions                   template.FuncMap
-	Project                     Project
-	PickedDefinitions           *PickedDefinitions
-	Apps                        map[app.ExecutableType]*cli.App
+	Functions         template.FuncMap
+	Project           Project
+	PickedDefinitions *PickedDefinitions
+	Apps              map[app.ExecutableType]*cli.App
 
-	Name                        string
-	Version                     string
-	Description                 string
-	Url                         string
+	Name        string
+	Version     string
+	Description string
+	Url         string
 }
 
 func (instance *Renderer) Execute() (template.HTML, error) {
@@ -76,7 +76,7 @@ func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.Add("text/html", &html.Minifier{
-		KeepWhitespace:  true,
+		KeepWhitespace: true,
 	})
 	m.AddFunc("text/javascript", js.Minify)
 	if err := m.Minify("text/html", compressed, uncompressedReader); err != nil {
@@ -87,13 +87,13 @@ func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 
 func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*cli.App) (*Renderer, error) {
 	renderer := &Renderer{
-		Project: project,
+		Project:           project,
 		PickedDefinitions: pickedDefinitions,
-		Apps: apps,
-		Name: caretakerd.DAEMON_NAME,
-		Version: caretakerd.VERSION,
-		Description: caretakerd.DESCRIPTION,
-		Url: caretakerd.URL,
+		Apps:              apps,
+		Name:              caretakerd.DAEMON_NAME,
+		Version:           caretakerd.VERSION,
+		Description:       caretakerd.DESCRIPTION,
+		Url:               caretakerd.URL,
 	}
 	renderer.Functions = newFunctionsFor(renderer)
 
@@ -128,9 +128,9 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 func newFunctionsFor(renderer *Renderer) template.FuncMap {
 	return template.FuncMap{
 		"transformIdType": renderer.transformIdType,
-		"getDisplayIdOf": renderer.getDisplayIdOf,
+		"getDisplayIdOf":  renderer.getDisplayIdOf,
 		"renderValueType": renderer.renderValueType,
-		"renderMarkdown": renderer.renderMarkdown,
+		"renderMarkdown":  renderer.renderMarkdown,
 		"toSimple": func(definition Definition) *SimpleDefinition {
 			if result, ok := definition.(*SimpleDefinition); ok {
 				return result
@@ -162,7 +162,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			return nil
 		},
 		"include": func(name string, data interface{}) (template.HTML, error) {
-			tmpl, err := parseTemplate(renderer.Project, "includes/" + name, renderer.Functions)
+			tmpl, err := parseTemplate(renderer.Project, "includes/"+name, renderer.Functions)
 			if err != nil {
 				return "", err
 			}
@@ -218,8 +218,8 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			content = renderer.replaceUsageEnvVarDisplaysIfNeeded(content)
 			return template.HTML(content)
 		},
-		"collectExamples": renderer.collectExamples,
-		"transformElementHtmlId": renderer.transformElementHtmlId,
+		"collectExamples":           renderer.collectExamples,
+		"transformElementHtmlId":    renderer.transformElementHtmlId,
 		"renderDefinitionStructure": renderer.renderDefinitionStructure,
 	}
 }
@@ -243,9 +243,9 @@ func (instance *Renderer) transformIdType(id IdType) string {
 	name := id.Name
 	suffix := ""
 	lastHash := strings.LastIndex(id.Name, "#")
-	if lastHash > 0 && len(id.Name) > lastHash + 1 {
+	if lastHash > 0 && len(id.Name) > lastHash+1 {
 		name = id.Name[:lastHash]
-		suffix = "." + id.Name[lastHash + 1:]
+		suffix = "." + id.Name[lastHash+1:]
 	}
 
 	if name == "Config" {
@@ -259,8 +259,8 @@ func (instance *Renderer) transformIdType(id IdType) string {
 		return name + suffix
 	}
 	p := id.Package
-	if strings.HasPrefix(id.Package, project.RootPackage + "/") {
-		p = p[len(project.RootPackage) + 1:]
+	if strings.HasPrefix(id.Package, project.RootPackage+"/") {
+		p = p[len(project.RootPackage)+1:]
 	}
 	return p + "." + name + suffix
 }
@@ -360,8 +360,8 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType, header
 			}
 			renderDefinitionProperty := RenderDefinitionProperty{
 				Definition: propertyDefinition,
-				Id: id,
-				Excerpt: excerpt,
+				Id:         id,
+				Excerpt:    excerpt,
 			}
 			if instance.isMapType(propertyDefinition.ValueType()) {
 				renderDefinitionProperty.MapKeyMarker = instance.singular(propertyDefinition.Key()) + " name"
@@ -370,17 +370,17 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType, header
 		}
 		indentContent := "<span class=\"tabIndent\"></span>"
 		indent := template.HTML(strings.Repeat(indentContent, level))
-		nextIndent := template.HTML(strings.Repeat(indentContent, level + 1))
+		nextIndent := template.HTML(strings.Repeat(indentContent, level+1))
 		object := map[string]interface{}{
-			"object": objectDefinition,
-			"properties": properties,
-			"level": level,
-			"nextLevel": level + 1,
-			"nextNextLevel": level + 2,
-			"indent": indent,
-			"nextIndent": nextIndent,
+			"object":          objectDefinition,
+			"properties":      properties,
+			"level":           level,
+			"nextLevel":       level + 1,
+			"nextNextLevel":   level + 2,
+			"indent":          indent,
+			"nextIndent":      nextIndent,
 			"headerTypeStart": headerTypeStart,
-			"headerIdPrefix": headerIdPrefix,
+			"headerIdPrefix":  headerIdPrefix,
 		}
 		html, err := instance.DefinitionStructureTemplate.Execute(object)
 		if err != nil {
@@ -402,7 +402,7 @@ func (instance *Renderer) renderMarkdown(of Describeable, headerTypeStart int, h
 func (instance *Renderer) renderMarkdownWithContext(markup string, context Describeable, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
 	var err error
 
-	markup = headerPrefixPattern.ReplaceAllString(markup, "$1" + strings.Repeat("#", headerTypeStart))
+	markup = headerPrefixPattern.ReplaceAllString(markup, "$1"+strings.Repeat("#", headerTypeStart))
 	markup = refPropertyPattern.ReplaceAllStringFunc(markup, func(inline string) string {
 		match := refPropertyPattern.FindStringSubmatch(inline)
 		ref := match[1]
@@ -431,10 +431,10 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 	if len(headerIdPrefix) > 0 {
 		prefix = headerIdPrefix + "."
 	}
-	renderer := blackfriday.HtmlRendererWithParameters(blackfriday.HTML_USE_XHTML |
-		blackfriday.HTML_USE_SMARTYPANTS |
-		blackfriday.HTML_SMARTYPANTS_FRACTIONS |
-		blackfriday.HTML_SMARTYPANTS_DASHES |
+	renderer := blackfriday.HtmlRendererWithParameters(blackfriday.HTML_USE_XHTML|
+		blackfriday.HTML_USE_SMARTYPANTS|
+		blackfriday.HTML_SMARTYPANTS_FRACTIONS|
+		blackfriday.HTML_SMARTYPANTS_DASHES|
 		blackfriday.HTML_SMARTYPANTS_LATEX_DASHES,
 		"",
 		"",
@@ -443,7 +443,7 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 		},
 	)
 	html := blackfriday.MarkdownOptions([]byte(markup), renderer, blackfriday.Options{
-		Extensions:  blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
+		Extensions: blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
 			blackfriday.EXTENSION_TABLES |
 			blackfriday.EXTENSION_FENCED_CODE |
 			blackfriday.EXTENSION_AUTOLINK |
@@ -467,13 +467,13 @@ func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
 		}
 		return IdType{
 			Package: contextId.Package,
-			Name: name,
+			Name:    name,
 		}
 	} else if context != nil && strings.HasPrefix(ref, ".") {
 		contextId := context.Id()
 		return IdType{
 			Package: contextId.Package,
-			Name: ref[1:],
+			Name:    ref[1:],
 		}
 	} else {
 		t := ParseType(ref)
@@ -505,9 +505,9 @@ func (instance *Renderer) collectExamples() ([]Example, error) {
 		}
 		content, title, id := instance.extractTitleFrom(string(bytes), exampleSource)
 		examples = append(examples, Example{
-			Id: "configuration.examples." + id,
-			Title: title,
-			CodeType: "yaml",
+			Id:          "configuration.examples." + id,
+			Title:       title,
+			CodeType:    "yaml",
 			CodeContent: content,
 		})
 	}
@@ -518,7 +518,7 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 	id := filepath.Base(filename)
 	ext := filepath.Ext(id)
 	if len(ext) > 0 {
-		id = id[:len(id) - len(ext)]
+		id = id[:len(id)-len(ext)]
 	}
 	match := titlePropertyPattern.FindStringSubmatch(source)
 	if match != nil && len(match) > 0 {
@@ -557,7 +557,7 @@ func (instance *Renderer) capitalize(what string) string {
 
 func (instance *Renderer) singular(what string) string {
 	if strings.HasPrefix(what, "s") {
-		return what[:len(what) - 1]
+		return what[:len(what)-1]
 	}
 	return what
 }

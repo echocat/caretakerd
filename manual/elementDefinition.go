@@ -33,14 +33,13 @@ func (instance ElementDefinition) IsTopLevel() bool {
 
 func newElementDefinition(id IdType, key string, valueType Type, comment string) *ElementDefinition {
 	return &ElementDefinition{
-		id: id,
-		key: key,
+		id:        id,
+		key:       key,
 		valueType: valueType,
-		comment: comment,
+		comment:   comment,
 	}
 }
 
 func (instance ElementDefinition) String() string {
 	return FormatDefinition(&instance)
 }
-

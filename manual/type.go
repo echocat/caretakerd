@@ -1,10 +1,10 @@
 package main
 
 import (
-	"strings"
 	"fmt"
 	"github.com/echocat/caretakerd/panics"
 	"reflect"
+	"strings"
 )
 
 type Type interface {
@@ -28,8 +28,8 @@ func (instance IdType) String() string {
 
 func NewIdType(packageName string, name string, primitive bool) IdType {
 	return IdType{
-		Package: packageName,
-		Name: name,
+		Package:   packageName,
+		Name:      name,
 		Primitive: primitive,
 	}
 }
@@ -45,7 +45,7 @@ func (instance MapType) String() string {
 
 func NewMapType(key Type, value Type) MapType {
 	return MapType{
-		Key: key,
+		Key:   key,
 		Value: value,
 	}
 }
@@ -90,7 +90,7 @@ func ParseType(plain string) Type {
 			}
 			if inBracketCount <= 0 {
 				key := ParseType(plain[4:i])
-				value := ParseType(plain[i + 1:])
+				value := ParseType(plain[i+1:])
 				return NewMapType(key, value)
 			}
 		}
@@ -103,11 +103,11 @@ func ParseType(plain string) Type {
 		return NewPointerType(value)
 	} else {
 		lastDot := strings.LastIndex(plain, ".")
-		if lastDot <= 0 || len(plain) <= lastDot + 1 {
+		if lastDot <= 0 || len(plain) <= lastDot+1 {
 			return NewIdType("", plain, true)
 		}
 		packageName := plain[:lastDot]
-		name := plain[lastDot + 1:]
+		name := plain[lastDot+1:]
 		return NewIdType(packageName, name, false)
 	}
 }
@@ -140,4 +140,3 @@ func ExtractValueIdType(t Type) IdType {
 	}
 	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
 }
-

@@ -22,6 +22,7 @@ const (
 	// Always restart the process. This means on success and on failures.
 	Always RestartType = 2
 )
+
 var AllRestartTypes = []RestartType{
 	Never,
 	OnFailures,

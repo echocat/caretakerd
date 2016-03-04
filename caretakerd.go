@@ -10,11 +10,11 @@ import (
 	"github.com/echocat/caretakerd/service"
 	usync "github.com/echocat/caretakerd/sync"
 	. "github.com/echocat/caretakerd/values"
+	"os"
 	osignal "os/signal"
 	"runtime"
 	"sync"
 	"syscall"
-	"os"
 )
 
 type Caretakerd struct {

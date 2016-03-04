@@ -23,12 +23,12 @@ func (instance Project) String() string {
 }
 
 func DeterminateProject(packageName string) (Project, error) {
-	result, err := determinateProjectIn(GOPATH + "/src", packageName)
+	result, err := determinateProjectIn(GOPATH+"/src", packageName)
 	if err != nil {
 		return Project{}, err
 	}
 	if result == nil {
-		result, err = determinateProjectIn(GOROOT + "/src", packageName)
+		result, err = determinateProjectIn(GOROOT+"/src", packageName)
 		if err != nil {
 			return Project{}, err
 		}
@@ -60,7 +60,7 @@ func determinateProjectIn(goSrcPath string, packageName string) (*Project, error
 			return nil, err
 		}
 	}
-	if ! fileInfo.IsDir() {
+	if !fileInfo.IsDir() {
 		return nil, nil
 	}
 	return &Project{
