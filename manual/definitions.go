@@ -5,11 +5,13 @@ import (
 	"fmt"
 )
 
+// Definitions contains all Definitions of a projects.
 type Definitions struct {
 	project                Project
 	identifierToDefinition map[string]Definition
 }
 
+// NewDefinitions creates a new instance of Definitions for the given project.
 func NewDefinitions(project Project) *Definitions {
 	return &Definitions{
 		project:                project,
@@ -17,6 +19,7 @@ func NewDefinitions(project Project) *Definitions {
 	}
 }
 
+// NewSimpleDefinition creates a new SimpleDefinition from the given parameters and append it to the current instance.
 func (instance *Definitions) NewSimpleDefinition(packageName string, name string, valueType Type, comment string, inlined bool) *SimpleDefinition {
 	identifier := instance.newIdentifier(packageName, name)
 	definition := newSimpleDefinition(identifier, valueType, comment, inlined)
@@ -24,6 +27,7 @@ func (instance *Definitions) NewSimpleDefinition(packageName string, name string
 	return definition
 }
 
+// NewObjectDefinition creates a new ObjectDefinition from the given parameters and append it to the current instance.
 func (instance *Definitions) NewObjectDefinition(packageName string, name string, comment string) *ObjectDefinition {
 	identifier := instance.newIdentifier(packageName, name)
 	definition := newObjectDefinition(identifier, comment)
@@ -31,6 +35,7 @@ func (instance *Definitions) NewObjectDefinition(packageName string, name string
 	return definition
 }
 
+// NewEnumDefinition creates a new EnumDefinition from the given parameters and append it to the current instance.
 func (instance *Definitions) NewEnumDefinition(packageName string, name string, comment string) *EnumDefinition {
 	identifier := instance.newIdentifier(packageName, name)
 	definition := newEnumDefinition(identifier, comment)
@@ -38,27 +43,29 @@ func (instance *Definitions) NewEnumDefinition(packageName string, name string, 
 	return definition
 }
 
+// NewPropertyDefinition creates a new PropertyDefinition from the given parameters and append it to the current instance.
 func (instance *Definitions) NewPropertyDefinition(parent *ObjectDefinition, name string, key string, valueType Type, comment string, def *string) *PropertyDefinition {
-	id := instance.newIdWithParent(parent, name)
+	id := instance.newIDWithParent(parent, name)
 	definition := newPropertyDefinition(id, key, valueType, comment, def)
 	parent.AddChild(definition)
 	instance.add(definition)
 	return definition
 }
 
+// NewElementDefinition creates a new ElementDefinition from the given parameters and append it to the current instance.
 func (instance *Definitions) NewElementDefinition(parent *EnumDefinition, name string, key string, valueType Type, comment string) *ElementDefinition {
-	identifier := instance.newIdWithParent(parent, name)
+	identifier := instance.newIDWithParent(parent, name)
 	definition := newElementDefinition(identifier, key, valueType, comment)
 	parent.AddChild(definition)
 	instance.add(definition)
 	return definition
 }
 
-func (instance *Definitions) newIdentifier(packageName string, name string) IdType {
-	return NewIdType(packageName, name, false)
+func (instance *Definitions) newIdentifier(packageName string, name string) IDType {
+	return NewIDType(packageName, name, false)
 }
 
-func (instance *Definitions) newIdWithParent(parent Definition, name string) IdType {
+func (instance *Definitions) newIDWithParent(parent Definition, name string) IDType {
 	parentIdentifier := parent.Id()
 	return instance.newIdentifier(
 		parentIdentifier.Package,
@@ -71,6 +78,7 @@ func (instance *Definitions) add(definition Definition) {
 	instance.identifierToDefinition[identifier.String()] = definition
 }
 
+// AllTopLevel returns all definitions that are at the top level and are no children of another Definition.
 func (instance *Definitions) AllTopLevel() []Definition {
 	result := []Definition{}
 	for _, definition := range instance.identifierToDefinition {
@@ -81,10 +89,12 @@ func (instance *Definitions) AllTopLevel() []Definition {
 	return result
 }
 
-func (instance *Definitions) GetBy(identifier IdType) Definition {
+// GetBy returns a Definition by the given identifier or nil if it does not exist.
+func (instance *Definitions) GetBy(identifier IDType) Definition {
 	return instance.GetByPlain(identifier.String())
 }
 
+// GetByPlain returns a Definition by the given identifier or nil if it does not exist.
 func (instance *Definitions) GetByPlain(identifier string) Definition {
 	return instance.identifierToDefinition[identifier]
 }

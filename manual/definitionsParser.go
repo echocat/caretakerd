@@ -18,12 +18,12 @@ import (
 	"strings"
 )
 
-var extractIdPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
+var extractIDPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
 var extractDefaultPropertyPattern = regexp.MustCompile("(?m)^\\s*@default\\s+(.*)\\s*(:?\r\n|\n)")
 var extractInlinePropertyPattern = regexp.MustCompile("(?m)^\\s*@inline\\s*(:?\r\n|\n)")
 var extractSerializedAsPropertyPattern = regexp.MustCompile("(?m)^\\s*@serializedAs\\s+(.*)\\s*(:?\r\n|\n)")
 
-type PosEnabled interface {
+type posEnabled interface {
 	Pos() token.Pos
 }
 
@@ -33,7 +33,7 @@ type parsedPackage struct {
 	fileSet     *token.FileSet
 }
 
-func (instance *parsedPackage) fileFor(object PosEnabled) (*ast.File, error) {
+func (instance *parsedPackage) fileFor(object posEnabled) (*ast.File, error) {
 	tokenFile := instance.fileSet.File(object.Pos())
 	if tokenFile == nil {
 		return nil, errors.New("Package %v does not contain object %v.", instance.pkg.Path(), object)
@@ -44,7 +44,7 @@ func (instance *parsedPackage) fileFor(object PosEnabled) (*ast.File, error) {
 	return nil, errors.New("Package %v does not contain file %v.", instance.pkg.Path(), tokenFile.Name())
 }
 
-func (instance *parsedPackage) commentTextFor(object PosEnabled) (string, error) {
+func (instance *parsedPackage) commentTextFor(object posEnabled) (string, error) {
 	comment, err := instance.commentFor(object)
 	if err != nil {
 		return "", err
@@ -55,7 +55,7 @@ func (instance *parsedPackage) commentTextFor(object PosEnabled) (string, error)
 	return "", nil
 }
 
-func (instance *parsedPackage) commentFor(object PosEnabled) (*ast.CommentGroup, error) {
+func (instance *parsedPackage) commentFor(object posEnabled) (*ast.CommentGroup, error) {
 	file, err := instance.fileFor(object)
 	object.Pos().IsValid()
 	if err != nil {
@@ -70,22 +70,18 @@ func (instance *parsedPackage) commentFor(object PosEnabled) (*ast.CommentGroup,
 						if sSpec.Comment == nil {
 							if sSpec.Doc == nil && len(genDecl.Specs) == 1 {
 								return genDecl.Doc, nil
-							} else {
-								return sSpec.Doc, nil
 							}
-						} else {
-							return sSpec.Comment, nil
+							return sSpec.Doc, nil
 						}
+						return sSpec.Comment, nil
 					} else if sSpec, ok := spec.(*ast.ValueSpec); ok {
 						if sSpec.Comment == nil {
 							if sSpec.Doc == nil && len(genDecl.Specs) == 1 {
 								return genDecl.Doc, nil
-							} else {
-								return sSpec.Doc, nil
 							}
-						} else {
-							return sSpec.Comment, nil
+							return sSpec.Doc, nil
 						}
+						return sSpec.Comment, nil
 					}
 				} else {
 					if sSpec, ok := spec.(*ast.TypeSpec); ok {
@@ -111,7 +107,7 @@ type extractionTask struct {
 	context                    *build.Context
 }
 
-func (instance *extractionTask) findDeclFor(object PosEnabled) (*ast.Decl, error) {
+func (instance *extractionTask) findDeclFor(object posEnabled) (*ast.Decl, error) {
 	return nil, nil
 }
 
@@ -126,9 +122,8 @@ func (instance *extractionTask) parsePackage(packageName string) (*parsedPackage
 		if err != nil {
 			if _, ok := err.(*build.NoGoError); ok {
 				return nil, nil
-			} else {
-				return nil, errors.New("Could not import package %v.", packageName).CausedBy(err)
 			}
+			return nil, errors.New("Could not import package %v.", packageName).CausedBy(err)
 		}
 		result = &parsedPackage{
 			sourceFiles: map[string]*ast.File{},
@@ -170,6 +165,8 @@ func (instance *extractionTask) Import(packageName string) (*types.Package, erro
 	return pp.pkg, nil
 }
 
+// ParseDefinitions parses every Definitions from the given project and return it.
+// If there is any error it will be returned and the Definitions are nil.
 func ParseDefinitions(project Project) (*Definitions, error) {
 	definitions := NewDefinitions(project)
 
@@ -205,15 +202,12 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 				err := et.parsePackageToDefinitions(targetPackage, definitions)
 				if _, ok := err.(*build.NoGoError); ok {
 					return nil
-				} else {
-					return err
 				}
-			} else {
-				panic(panics.New("Unexpected path: %v", path))
+				return err
 			}
-		} else {
-			return nil
+			panics.New("Unexpected path: %v", path).Throw()
 		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
@@ -229,13 +223,12 @@ func isBasic(what types.Type) bool {
 		return true
 	} else if _, ok := what.(*types.Slice); ok {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
-func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Definitions) error {
-	pp, err := et.parsePackage(pkg)
+func (instance *extractionTask) parsePackageToDefinitions(pkg string, definitions *Definitions) error {
+	pp, err := instance.parsePackage(pkg)
 	if err != nil {
 		return err
 	}
@@ -287,7 +280,7 @@ func (et *extractionTask) parsePackageToDefinitions(pkg string, definitions *Def
 																	enumDefinition = definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
 																}
 																typeIdentifier := ParseType(eConst.Type().String())
-																elementComment, id := extractIdFrom(elementComment, eConst.Name())
+																elementComment, id := extractIDFrom(elementComment, eConst.Name())
 																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, elementComment)
 															} else {
 																break
@@ -356,14 +349,13 @@ func fieldNameFor(name string, tag string) string {
 	return name
 }
 
-func extractIdFrom(comment string, fallbackId string) (string, string) {
-	matches := extractIdPropertyPattern.FindAllStringSubmatch(comment, -1)
+func extractIDFrom(comment string, fallbackID string) (string, string) {
+	matches := extractIDPropertyPattern.FindAllStringSubmatch(comment, -1)
 	if len(matches) > 0 {
 		id := strings.TrimSpace(matches[0][1])
-		return extractIdPropertyPattern.ReplaceAllString(comment, ""), id
-	} else {
-		return comment, fallbackId
+		return extractIDPropertyPattern.ReplaceAllString(comment, ""), id
 	}
+	return comment, fallbackID
 }
 
 func extractDefaultFrom(comment string) (string, *string) {
@@ -371,18 +363,16 @@ func extractDefaultFrom(comment string) (string, *string) {
 	if len(matches) > 0 {
 		defValue := strings.TrimSpace(matches[0][1])
 		return extractDefaultPropertyPattern.ReplaceAllString(comment, ""), &defValue
-	} else {
-		return comment, nil
 	}
+	return comment, nil
 }
 
 func extractInlinedFrom(comment string) (string, bool) {
 	matches := extractInlinePropertyPattern.FindAllStringSubmatch(comment, -1)
 	if len(matches) > 0 {
 		return extractInlinePropertyPattern.ReplaceAllString(comment, ""), true
-	} else {
-		return comment, false
 	}
+	return comment, false
 }
 
 func serializedAs(comment string) (string, Type) {
@@ -391,7 +381,6 @@ func serializedAs(comment string) (string, Type) {
 		plainType := strings.TrimSpace(matches[0][1])
 		t := ParseType(plainType)
 		return extractSerializedAsPropertyPattern.ReplaceAllString(comment, ""), t
-	} else {
-		return comment, nil
 	}
+	return comment, nil
 }

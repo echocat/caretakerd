@@ -7,17 +7,19 @@ import (
 	"strings"
 )
 
+// Type is a type definition in the source code.
 type Type interface {
 	String() string
 }
 
-type IdType struct {
+// IDType is a type definition in the source code which directly references a type by name/id.
+type IDType struct {
 	Package   string
 	Name      string
 	Primitive bool
 }
 
-func (instance IdType) String() string {
+func (instance IDType) String() string {
 	result := ""
 	if len(instance.Package) > 0 {
 		result += instance.Package + "."
@@ -26,14 +28,16 @@ func (instance IdType) String() string {
 	return result
 }
 
-func NewIdType(packageName string, name string, primitive bool) IdType {
-	return IdType{
+// NewIDType creates a new instance of IDType
+func NewIDType(packageName string, name string, primitive bool) IDType {
+	return IDType{
 		Package:   packageName,
 		Name:      name,
 		Primitive: primitive,
 	}
 }
 
+// MapType is a type definition in the source code which references map type that contains other types.
 type MapType struct {
 	Key   Type
 	Value Type
@@ -43,6 +47,7 @@ func (instance MapType) String() string {
 	return "map[" + instance.Key.String() + "]" + instance.Value.String()
 }
 
+// NewMapType creates a new instance of MapType
 func NewMapType(key Type, value Type) MapType {
 	return MapType{
 		Key:   key,
@@ -50,6 +55,7 @@ func NewMapType(key Type, value Type) MapType {
 	}
 }
 
+// ArrayType is a type definition in the source code which references array type that contains another type.
 type ArrayType struct {
 	Value Type
 }
@@ -58,12 +64,14 @@ func (instance ArrayType) String() string {
 	return "[]" + instance.Value.String()
 }
 
+// NewArrayType creates a new instance of ArrayType
 func NewArrayType(value Type) ArrayType {
 	return ArrayType{
 		Value: value,
 	}
 }
 
+// PointerType is a type definition in the source code which references pointer type that contains another type.
 type PointerType struct {
 	Value Type
 }
@@ -72,12 +80,14 @@ func (instance PointerType) String() string {
 	return "*" + instance.Value.String()
 }
 
+// NewPointerType creates a new instance of PointerType
 func NewPointerType(value Type) PointerType {
 	return PointerType{
 		Value: value,
 	}
 }
 
+// ParseType parses the given plain string and transform it to a Type.
 func ParseType(plain string) Type {
 	if strings.HasPrefix(plain, "map[") {
 		inBracketCount := 1
@@ -101,42 +111,43 @@ func ParseType(plain string) Type {
 	} else if strings.HasPrefix(plain, "*") {
 		value := ParseType(plain[1:])
 		return NewPointerType(value)
-	} else {
-		lastDot := strings.LastIndex(plain, ".")
-		if lastDot <= 0 || len(plain) <= lastDot+1 {
-			return NewIdType("", plain, true)
-		}
-		packageName := plain[:lastDot]
-		name := plain[lastDot+1:]
-		return NewIdType(packageName, name, false)
 	}
+	lastDot := strings.LastIndex(plain, ".")
+	if lastDot <= 0 || len(plain) <= lastDot+1 {
+		return NewIDType("", plain, true)
+	}
+	packageName := plain[:lastDot]
+	name := plain[lastDot+1:]
+	return NewIDType(packageName, name, false)
 }
 
-func ExtractAllIdTypesFrom(t Type) []IdType {
-	if idType, ok := t.(IdType); ok {
-		return []IdType{idType}
+// ExtractAllIDTypesFrom extracts all referenced ID types from given type as an array.
+func ExtractAllIDTypesFrom(t Type) []IDType {
+	if idType, ok := t.(IDType); ok {
+		return []IDType{idType}
 	} else if arrayType, ok := t.(ArrayType); ok {
-		return ExtractAllIdTypesFrom(arrayType.Value)
+		return ExtractAllIDTypesFrom(arrayType.Value)
 	} else if pointerType, ok := t.(PointerType); ok {
-		return ExtractAllIdTypesFrom(pointerType.Value)
+		return ExtractAllIDTypesFrom(pointerType.Value)
 	} else if mapType, ok := t.(MapType); ok {
-		result := []IdType{}
-		result = append(result, ExtractAllIdTypesFrom(mapType.Key)...)
-		result = append(result, ExtractAllIdTypesFrom(mapType.Value)...)
+		result := []IDType{}
+		result = append(result, ExtractAllIDTypesFrom(mapType.Key)...)
+		result = append(result, ExtractAllIDTypesFrom(mapType.Value)...)
 		return result
 	}
 	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
 }
 
-func ExtractValueIdType(t Type) IdType {
-	if idType, ok := t.(IdType); ok {
+// ExtractValueIDType extracts the value ID types from given type.
+func ExtractValueIDType(t Type) IDType {
+	if idType, ok := t.(IDType); ok {
 		return idType
 	} else if arrayType, ok := t.(ArrayType); ok {
-		return ExtractValueIdType(arrayType.Value)
+		return ExtractValueIDType(arrayType.Value)
 	} else if pointerType, ok := t.(PointerType); ok {
-		return ExtractValueIdType(pointerType.Value)
+		return ExtractValueIDType(pointerType.Value)
 	} else if mapType, ok := t.(MapType); ok {
-		return ExtractValueIdType(mapType.Value)
+		return ExtractValueIDType(mapType.Value)
 	}
 	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
 }

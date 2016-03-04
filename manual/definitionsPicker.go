@@ -5,56 +5,63 @@ import (
 	"sort"
 )
 
+// PickedDefinitions represents every Definition that are picked for rendering.
 type PickedDefinitions struct {
-	RootId              IdType
-	Source              *Definitions
-	NameToDefinition    map[string]Definition
-	NameToInlinedMarker map[string]WithInlinedMarker
+	// RootId is the ID of the root.
+	RootID IDType
+	// Source contains the original Definitions that are contained in this instance.
+	Source *Definitions
+	// IDToDefinition is a map of every ID of a Definition to its instance.
+	IDToDefinition map[string]Definition
+	// IDToInlinedMarker is a map of every ID of a Definition to its instance as WithInlinedMarker type.
+	IDToInlinedMarker map[string]WithInlinedMarker
+	// TopLevelDefinitions contains every Definitions that are at the top level and have no children.
 	TopLevelDefinitions []Definition
 }
 
-func PickDefinitionsFrom(source *Definitions, rootElementId IdType) (*PickedDefinitions, error) {
+// PickDefinitionsFrom picks every Definition to be displayed from the given Definitions.
+func PickDefinitionsFrom(source *Definitions, rootElementID IDType) (*PickedDefinitions, error) {
 	pd := &PickedDefinitions{
 		Source:              source,
-		NameToDefinition:    map[string]Definition{},
-		NameToInlinedMarker: map[string]WithInlinedMarker{},
+		IDToDefinition:      map[string]Definition{},
+		IDToInlinedMarker:   map[string]WithInlinedMarker{},
 		TopLevelDefinitions: []Definition{},
 	}
-	err := enrichWithElementAndItsChildren(pd, rootElementId)
+	err := enrichWithElementAndItsChildren(pd, rootElementID)
 	if err != nil {
 		return nil, err
 	}
 	defs := definitions{}
-	for _, definition := range pd.NameToDefinition {
+	for _, definition := range pd.IDToDefinition {
 		if inlinedMarker, ok := definition.(WithInlinedMarker); ok && inlinedMarker.Inlined() {
-			pd.NameToInlinedMarker[definition.Id().String()] = inlinedMarker
+			pd.IDToInlinedMarker[definition.Id().String()] = inlinedMarker
 		} else if definition.IsTopLevel() {
 			defs = append(defs, definition)
 		}
 	}
 	sort.Sort(defs)
 	pd.TopLevelDefinitions = defs
-	pd.RootId = rootElementId
+	pd.RootID = rootElementID
 	return pd, nil
 }
 
-func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementId IdType) error {
-	if pd.NameToDefinition[elementId.String()] != nil {
+func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementID IDType) error {
+	if pd.IDToDefinition[elementID.String()] != nil {
 		return nil
 	}
-	element, err := pd.GetSourceElementBy(elementId)
+	element, err := pd.GetSourceElementBy(elementID)
 	if err != nil {
 		return err
 	}
 	if element == nil {
 		return nil
 	}
-	pd.NameToDefinition[elementId.String()] = element
+	pd.IDToDefinition[elementID.String()] = element
 	if valueType, ok := element.(WithValueType); ok {
-		for _, idType := range ExtractAllIdTypesFrom(valueType.ValueType()) {
+		for _, idType := range ExtractAllIDTypesFrom(valueType.ValueType()) {
 			err := enrichWithElementAndItsChildren(pd, idType)
 			if err != nil {
-				return errors.New("Could not extract valueType '%v' of type '%s'.", idType, elementId).CausedBy(err)
+				return errors.New("Could not extract valueType '%v' of type '%s'.", idType, elementID).CausedBy(err)
 			}
 		}
 	}
@@ -62,7 +69,7 @@ func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementId IdType) er
 		for _, child := range children.Children() {
 			err := enrichWithElementAndItsChildren(pd, child.Id())
 			if err != nil {
-				return errors.New("Could not extract child '%v' of type '%s'.", child.Id(), elementId).CausedBy(err)
+				return errors.New("Could not extract child '%v' of type '%s'.", child.Id(), elementID).CausedBy(err)
 			}
 		}
 	}
@@ -70,20 +77,23 @@ func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementId IdType) er
 	return nil
 }
 
-func (instance *PickedDefinitions) GetSourceElementBy(id IdType) (Definition, error) {
+// GetSourceElementBy returns the original Definition for the given id.
+// nil is returned if this Definition is a primitive one or an error is returned if the Definition does not exist.
+func (instance *PickedDefinitions) GetSourceElementBy(id IDType) (Definition, error) {
 	if id.Primitive {
 		return nil, nil
 	}
 	result := instance.Source.GetBy(id)
 	if result == nil {
-		return nil, nil // TODO! Should we fail here or just ignore it??
-		//return nil, errors.New("Could not find expected element '%s'.", id)
+		return nil, errors.New("Could not find expected element '%s'.", id)
 	}
 	return result, nil
 }
 
-func (instance *PickedDefinitions) FindInlinedFor(id IdType) WithInlinedMarker {
-	result, ok := instance.NameToInlinedMarker[id.String()]
+// FindInlinedFor returns the original inlined Definition for given id.
+// nil is returned if this Definition does not exist.
+func (instance *PickedDefinitions) FindInlinedFor(id IDType) WithInlinedMarker {
+	result, ok := instance.IDToInlinedMarker[id.String()]
 	if ok {
 		return result
 	}

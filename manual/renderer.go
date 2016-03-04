@@ -33,7 +33,7 @@ var windowsEnvarPattern = regexp.MustCompile("(?m)%([a-zA-Z0-9_.]+)%")
 var otherEnvarPattern = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
 
 type Describeable interface {
-	Id() IdType
+	Id() IDType
 	Description() string
 }
 
@@ -236,7 +236,7 @@ func (instance *Renderer) replaceUsageEnvVarDisplaysIfNeeded(content string) str
 	}
 }
 
-func (instance *Renderer) transformIdType(id IdType) string {
+func (instance *Renderer) transformIdType(id IDType) string {
 	if len(id.Package) == 0 {
 		return id.Name
 	}
@@ -279,7 +279,7 @@ func (instance *Renderer) getDisplayIdOf(describeable Describeable) string {
 func (instance *Renderer) isMapType(t Type) bool {
 	if _, ok := t.(MapType); ok {
 		return true
-	} else if idType, ok := t.(IdType); ok {
+	} else if idType, ok := t.(IDType); ok {
 		inlined := instance.PickedDefinitions.FindInlinedFor(idType)
 		if inlined != nil && inlined.Inlined() {
 			return instance.isMapType(inlined.ValueType())
@@ -289,7 +289,7 @@ func (instance *Renderer) isMapType(t Type) bool {
 }
 
 func (instance *Renderer) renderValueType(t Type) (template.HTML, error) {
-	if idType, ok := t.(IdType); ok {
+	if idType, ok := t.(IDType); ok {
 		inlined := instance.PickedDefinitions.FindInlinedFor(idType)
 		if inlined != nil && inlined.Inlined() {
 			return instance.renderValueType(inlined.ValueType())
@@ -332,11 +332,11 @@ func (instance *Renderer) extractExcerptFrom(definition Definition, headerTypeSt
 type RenderDefinitionProperty struct {
 	Definition   *PropertyDefinition
 	MapKeyMarker string
-	Id           IdType
+	Id           IDType
 	Excerpt      template.HTML
 }
 
-func (instance *Renderer) renderDefinitionStructure(level int, id IdType, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
+func (instance *Renderer) renderDefinitionStructure(level int, id IDType, headerTypeStart int, headerIdPrefix string) (template.HTML, error) {
 	definition, err := instance.PickedDefinitions.GetSourceElementBy(id)
 	if err != nil {
 		return "", err
@@ -348,10 +348,10 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IdType, header
 		properties := []RenderDefinitionProperty{}
 		for _, child := range objectDefinition.Children() {
 			propertyDefinition := child.(*PropertyDefinition)
-			id := ExtractValueIdType(propertyDefinition.ValueType())
+			id := ExtractValueIDType(propertyDefinition.ValueType())
 			inlined := instance.PickedDefinitions.FindInlinedFor(id)
 			for inlined != nil && inlined.Inlined() {
-				id = ExtractValueIdType(inlined.ValueType())
+				id = ExtractValueIDType(inlined.ValueType())
 				inlined = instance.PickedDefinitions.FindInlinedFor(id)
 			}
 			excerpt, err := instance.extractExcerptFrom(propertyDefinition, headerTypeStart, headerIdPrefix)
@@ -457,7 +457,7 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 	return template.HTML(strings.TrimSpace(string(html))), nil
 }
 
-func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
+func (instance *Renderer) resolveRef(ref string, context Describeable) IDType {
 	if context != nil && strings.HasPrefix(ref, "#") {
 		name := ref[1:]
 		contextId := context.Id()
@@ -465,22 +465,22 @@ func (instance *Renderer) resolveRef(ref string, context Describeable) IdType {
 		if lastDotIfContextId > 0 {
 			name = contextId.Name[:lastDotIfContextId] + "#" + name
 		}
-		return IdType{
+		return IDType{
 			Package: contextId.Package,
 			Name:    name,
 		}
 	} else if context != nil && strings.HasPrefix(ref, ".") {
 		contextId := context.Id()
-		return IdType{
+		return IDType{
 			Package: contextId.Package,
 			Name:    ref[1:],
 		}
 	} else {
 		t := ParseType(ref)
-		if idType, ok := t.(IdType); ok {
+		if idType, ok := t.(IDType); ok {
 			return idType
 		} else {
-			return IdType{Name: ref}
+			return IDType{Name: ref}
 		}
 	}
 }

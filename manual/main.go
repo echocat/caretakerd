@@ -45,7 +45,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	pd, err := PickDefinitionsFrom(definitions, NewIdType(project.RootPackage, "Config", false))
+	pd, err := PickDefinitionsFrom(definitions, NewIDType(project.RootPackage, "Config", false))
 	if err != nil {
 		panic(err)
 	}
