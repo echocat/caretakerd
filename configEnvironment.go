@@ -4,7 +4,7 @@ import (
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/service"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"os"
 	"strings"
 )
@@ -68,23 +68,27 @@ var serviceSubEnvKeyToFunction = map[string]func(*service.Config, string, string
 	"ENVIRONMENT": handleEnvironmentEnv,
 }
 
+// Appendable indicates an instance where a string could be appended.
 type Appendable interface {
 	Append(value string) error
 }
 
+// Putable indicates an instance a kind of map where a value with a key could be putted to.
 type Putable interface {
 	Put(key string, value string) error
 }
 
-func (i Config) EnrichFromEnvironment() Config {
-	result := &i
+// EnrichFromEnvironment enrich the current Config instance with configuration from the environment
+// variables.
+func (instance Config) EnrichFromEnvironment() Config {
+	result := &instance
 	for _, plainEnviron := range os.Environ() {
 		environ := strings.SplitN(plainEnviron, "=", 2)
 		var err error
 		if len(environ) > 1 {
-			err = i.handleUnknownEnv(plainEnviron, environ[0], environ[1])
+			err = instance.handleUnknownEnv(plainEnviron, environ[0], environ[1])
 		} else {
-			err = i.handleUnknownEnv(plainEnviron, environ[0], "")
+			err = instance.handleUnknownEnv(plainEnviron, environ[0], "")
 		}
 		if err != nil {
 			panics.New("Could not handle environment variable '%s'. Got: %s", plainEnviron, err.Error()).CausedBy(err).Throw()
@@ -93,32 +97,31 @@ func (i Config) EnrichFromEnvironment() Config {
 	return *result
 }
 
-func (i *Config) handleUnknownEnv(full string, key string, value string) error {
+func (instance *Config) handleUnknownEnv(full string, key string, value string) error {
 	prefixLength := len(envPrefix)
 	var err error
 	if strings.HasPrefix(strings.ToUpper(key), envPrefix) && len(key) > prefixLength {
-		err = i.handleEnv(full, key[prefixLength:], value)
+		err = instance.handleEnv(full, key[prefixLength:], value)
 	} else {
 		err = nil
 	}
 	return err
 }
 
-func (i *Config) handleEnv(full string, key string, value string) error {
+func (instance *Config) handleEnv(full string, key string, value string) error {
 	if handler, ok := globalEnvKeyToHandler[key]; ok {
-		return handler(i, value)
-	} else {
-		parts := strings.SplitN(key, ".", 3)
-		var err error
-		if len(parts) == 2 {
-			err = i.handleServiceEnv(full, parts[0], parts[1], value)
-		} else if len(parts) == 3 {
-			err = i.handleServiceMapEnv(full, parts[0], parts[1], parts[2], value)
-		} else {
-			err = errors.New("Illegal environment variable found: '%s'. Unexpected number of '.' chracters.", full)
-		}
-		return err
+		return handler(instance, value)
 	}
+	parts := strings.SplitN(key, ".", 3)
+	var err error
+	if len(parts) == 2 {
+		err = instance.handleServiceEnv(full, parts[0], parts[1], value)
+	} else if len(parts) == 3 {
+		err = instance.handleServiceMapEnv(full, parts[0], parts[1], parts[2], value)
+	} else {
+		err = errors.New("Illegal environment variable found: '%s'. Unexpected number of '.' chracters.", full)
+	}
+	return err
 }
 
 func handleGlobalLogLevelEnv(conf *Config, value string) error {
@@ -218,30 +221,28 @@ func handleServiceInheritEnvironmentEnv(conf *service.Config, value string) erro
 	return conf.InheritEnvironment.Set(value)
 }
 
-func (i *Config) handleServiceEnv(full string, serviceName string, key string, value string) error {
+func (instance *Config) handleServiceEnv(full string, serviceName string, key string, value string) error {
 	targetKey := strings.ToUpper(key)
 	if handler, ok := serviceEnvKeyToFunction[targetKey]; ok {
-		return i.Services.Configure(serviceName, value, handler)
-	} else {
-		return errors.New("Unknown configuration type '%s' for service '%s'.", key, serviceName)
+		return instance.Services.Configure(serviceName, value, handler)
 	}
+	return errors.New("Unknown configuration type '%s' for service '%s'.", key, serviceName)
 }
 
 func handleEnvironmentEnv(conf *service.Config, key string, value string) error {
 	return conf.Environment.Put(key, value)
 }
 
-func (i *Config) handleServiceMapEnv(full string, serviceName string, key string, subKey string, value string) error {
+func (instance *Config) handleServiceMapEnv(full string, serviceName string, key string, subKey string, value string) error {
 	targetKey := strings.ToUpper(key)
 	if handler, ok := serviceSubEnvKeyToFunction[targetKey]; ok {
-		return i.Services.ConfigureSub(serviceName, subKey, value, handler)
-	} else {
-		return errors.New("Unknown configuration type '%s' for service '%s'.", key, serviceName)
+		return instance.Services.ConfigureSub(serviceName, subKey, value, handler)
 	}
+	return errors.New("Unknown configuration type '%s' for service '%s'.", key, serviceName)
 }
 
-func parseCmd(in string) []String {
-	result := []String{}
+func parseCmd(in string) []values.String {
+	result := []values.String{}
 	inEscape := false
 	inQuotes := false
 	buf := ""
@@ -259,7 +260,7 @@ func parseCmd(in string) []String {
 				buf += string(c)
 			}
 		} else if c == ' ' || c == '\t' || c == '\r' || c == '\n' {
-			result = append(result, String(buf))
+			result = append(result, values.String(buf))
 			buf = ""
 		} else if c == '"' {
 			inQuotes = true
@@ -268,7 +269,7 @@ func parseCmd(in string) []String {
 		}
 	}
 	if len(buf) > 0 {
-		result = append(result, String(buf))
+		result = append(result, values.String(buf))
 	}
 	return result
 }

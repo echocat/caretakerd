@@ -90,9 +90,9 @@ func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps 
 		Project:           project,
 		PickedDefinitions: pickedDefinitions,
 		Apps:              apps,
-		Name:              caretakerd.DAEMON_NAME,
-		Version:           caretakerd.VERSION,
-		Description:       caretakerd.DESCRIPTION,
+		Name:              caretakerd.DaemonName,
+		Version:           caretakerd.Version,
+		Description:       caretakerd.Description,
 		Url:               caretakerd.URL,
 	}
 	renderer.Functions = newFunctionsFor(renderer)

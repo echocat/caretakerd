@@ -42,46 +42,48 @@ type Config struct {
 	Services service.Configs `json:"services" yaml:"services,omitempty"`
 }
 
+// NewConfig create a new config instance.
 func NewConfig() Config {
 	result := Config{}
 	result.init()
 	return result
 }
 
-func (i Config) Validate() error {
-	err := i.KeyStore.Validate()
+// Validate return an error instance on every validation problem of the
+// config instance.
+func (instance Config) Validate() error {
+	err := instance.KeyStore.Validate()
 	if err == nil {
-		err = i.Rpc.Validate()
+		err = instance.Rpc.Validate()
 	}
 	if err == nil {
-		err = i.Control.Validate()
+		err = instance.Control.Validate()
 	}
 	if err == nil {
-		err = i.Logger.Validate()
+		err = instance.Logger.Validate()
 	}
 	if err == nil {
-		err = i.Services.Validate()
+		err = instance.Services.Validate()
 	}
 	return err
 }
 
-func (i Config) ValidateMaster() error {
-	return i.Services.ValidateMaster()
+// ValidateMaster return an error instance on every validation problem of the
+// master service config instance.
+func (instance Config) ValidateMaster() error {
+	return instance.Services.ValidateMaster()
 }
 
-func (i *Config) init() {
-	(*i).KeyStore = keyStore.NewConfig()
-	(*i).Rpc = rpc.NewConfig()
-	(*i).Control = control.NewConfig()
-	(*i).Logger = logger.NewConfig()
-	(*i).Services = service.NewConfigs()
+func (instance *Config) init() {
+	(*instance).KeyStore = keyStore.NewConfig()
+	(*instance).Rpc = rpc.NewConfig()
+	(*instance).Control = control.NewConfig()
+	(*instance).Logger = logger.NewConfig()
+	(*instance).Services = service.NewConfigs()
 }
 
-func (i *Config) BeforeUnmarshalYAML() error {
-	i.init()
+// BeforeUnmarshalYAML is used by yaml unmarcshalling. Do not call direct.
+func (instance *Config) BeforeUnmarshalYAML() error {
+	instance.init()
 	return nil
-}
-
-func (s *Config) Configure(value string, with func(conf *Config, value string) error) error {
-	return with(s, value)
 }

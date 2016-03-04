@@ -5,30 +5,35 @@ import (
 	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/service"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	ssync "sync"
 	"time"
 )
 
+// Executable indicates an object that could be executed.
 type Executable interface {
 	Services() *service.Services
 	KeyStore() *keyStore.KeyStore
 	Logger() *logger.Logger
 }
 
+// Execution is an instance of an execution of every service of caretakerd.
 type Execution struct {
 	executable      Executable
 	executions      map[*service.Service]*service.Execution
 	restartRequests map[*service.Service]bool
 	stopRequests    map[*service.Service]bool
-	masterExitCode  *ExitCode
+	masterExitCode  *values.ExitCode
 	masterError     error
 	lock            *ssync.RWMutex
 	wg              *ssync.WaitGroup
 }
 
+// NewExecution create a new Execution instance of caretakerd.
+//
+// Hint: A caretakerd Execution instance could only be called once.
 func NewExecution(executable Executable) *Execution {
-	defaultExitCode := ExitCode(-1)
+	defaultExitCode := values.ExitCode(-1)
 	return &Execution{
 		executable:      executable,
 		masterExitCode:  &defaultExitCode,
@@ -40,7 +45,9 @@ func NewExecution(executable Executable) *Execution {
 	}
 }
 
-func (instance *Execution) Run() (ExitCode, error) {
+// Run starts the caretakerd Execution and start also every service and required resource.
+// This method is blocking.
+func (instance *Execution) Run() (values.ExitCode, error) {
 	autoStartableServices := instance.executable.Services().GetAllAutoStartable()
 	// Start all not master services at first. Because this are the dependencies for the master...
 	for _, target := range autoStartableServices {
@@ -69,6 +76,7 @@ func (instance *Execution) Run() (ExitCode, error) {
 	return *(*instance).masterExitCode, (*instance).masterError
 }
 
+// GetCountOfActiveExecutions return number of active execution of services.
 func (instance *Execution) GetCountOfActiveExecutions() int {
 	instance.doRLock()
 	defer instance.doRUnlock()
@@ -82,14 +90,15 @@ func (instance *Execution) startAndLogProblemsIfNeeded(target *service.Service) 
 	}
 }
 
+// Start start the given service.
+// This method is not blocking.
 func (instance *Execution) Start(target *service.Service) error {
 	execution, err := instance.createAndRegisterNotExistingExecutionFor(target)
 	if err != nil {
 		if sare, ok := err.(service.ServiceAlreadyRunningError); ok {
 			return sare
-		} else {
-			return errors.New("Could not start service '%v'.", target).CausedBy(err)
 		}
+		return errors.New("Could not start service '%v'.", target).CausedBy(err)
 	}
 	instance.wg.Add(1)
 	go instance.drive(execution)
@@ -97,7 +106,7 @@ func (instance *Execution) Start(target *service.Service) error {
 }
 
 func (instance *Execution) drive(target *service.Execution) {
-	var exitCode ExitCode
+	var exitCode values.ExitCode
 	var err error
 	defer instance.doAfterExecution(target, exitCode, err)
 	respectDelay := true
@@ -148,7 +157,7 @@ func (instance *Execution) recreateExecution(target *service.Execution) (*servic
 	return newTarget, err
 }
 
-func (instance *Execution) checkAfterExecutionStates(target *service.Execution, exitCode ExitCode, err error) (doRestart bool, respectDelay bool) {
+func (instance *Execution) checkAfterExecutionStates(target *service.Execution, exitCode values.ExitCode, err error) (doRestart bool, respectDelay bool) {
 	if _, ok := err.(service.StoppedOrKilledError); ok {
 		doRestart = false
 	} else if _, ok := err.(service.UnrecoverableError); ok {
@@ -165,7 +174,7 @@ func (instance *Execution) checkAfterExecutionStates(target *service.Execution, 
 	return doRestart, respectDelay
 }
 
-func (instance *Execution) doAfterExecution(target *service.Execution, exitCode ExitCode, err error) {
+func (instance *Execution) doAfterExecution(target *service.Execution, exitCode values.ExitCode, err error) {
 	defer instance.doUnregisterExecution(target)
 	if target.Service().Config().Type == service.Master {
 		instance.masterExitCode = &exitCode
@@ -188,19 +197,17 @@ func (instance *Execution) delayedStartIfNeeded(target *service.Execution, curre
 	config := target.Service().Config()
 	if currentRun == 1 {
 		return instance.delayedStartIfNeededFor(target, config.StartDelayInSeconds, "Wait %d seconds before start...")
-	} else {
-		return instance.delayedStartIfNeededFor(target, config.RestartDelayInSeconds, "Wait %d seconds before restart...")
 	}
+	return instance.delayedStartIfNeededFor(target, config.RestartDelayInSeconds, "Wait %d seconds before restart...")
 }
 
-func (instance *Execution) delayedStartIfNeededFor(target *service.Execution, delayInSeconds NonNegativeInteger, messagePattern string) bool {
+func (instance *Execution) delayedStartIfNeededFor(target *service.Execution, delayInSeconds values.NonNegativeInteger, messagePattern string) bool {
 	s := target.Service()
 	if s.Config().StartDelayInSeconds > 0 {
 		s.Logger().Log(logger.Debug, messagePattern, delayInSeconds)
 		return target.SyncGroup().Sleep(time.Duration(delayInSeconds)*time.Second) == nil
-	} else {
-		return true
 	}
+	return true
 }
 
 func (instance *Execution) checkRestartRequestedAndClean(target *service.Service) bool {
@@ -220,6 +227,7 @@ func (instance *Execution) registerStopRequestsFor(executions ...*service.Execut
 	}
 }
 
+// StopAll stop all running serivces.
 func (instance *Execution) StopAll() {
 	for _, execution := range instance.allExecutions() {
 		if execution.Service().Config().Type == service.Master {
@@ -231,6 +239,7 @@ func (instance *Execution) StopAll() {
 	instance.wg.Wait()
 }
 
+// Restart stops and starts the given service.
 func (instance *Execution) Restart(target *service.Service) error {
 	instance.doRLock()
 	if stopRequested, ok := instance.stopRequests[target]; ok && stopRequested {
@@ -248,6 +257,7 @@ func (instance *Execution) Restart(target *service.Service) error {
 	return nil
 }
 
+// Stop stops the given service.
 func (instance *Execution) Stop(target *service.Service) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
@@ -261,6 +271,7 @@ func (instance *Execution) Stop(target *service.Service) error {
 	return nil
 }
 
+// Kill kills the given service.
 func (instance *Execution) Kill(target *service.Service) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
@@ -273,7 +284,8 @@ func (instance *Execution) Kill(target *service.Service) error {
 	return execution.Kill()
 }
 
-func (instance *Execution) Signal(target *service.Service, what Signal) error {
+// Signal sends the given signal to the given service.
+func (instance *Execution) Signal(target *service.Service, what values.Signal) error {
 	instance.doRLock()
 	execution, ok := instance.executions[target]
 	if !ok {
@@ -344,11 +356,15 @@ func (instance *Execution) doRUnlock() {
 	instance.lock.RUnlock()
 }
 
+// GetFor get the current active service exectuion for the given service.
+// Return false if there is no current matching execution.
 func (instance *Execution) GetFor(s *service.Service) (*service.Execution, bool) {
 	result, ok := instance.executions[s]
 	return result, ok
 }
 
+// Information return an information object that contain an information for every
+// configured service.
 func (instance *Execution) Information() map[string]service.Information {
 	result := map[string]service.Information{}
 	for _, service := range *instance.executable.Services() {
@@ -357,10 +373,10 @@ func (instance *Execution) Information() map[string]service.Information {
 	return result
 }
 
+// InformationFor return an information object for given service.
 func (instance *Execution) InformationFor(s *service.Service) service.Information {
 	if result, ok := instance.GetFor(s); ok {
 		return service.NewInformationForExecution(result)
-	} else {
-		return service.NewInformationForService(s)
 	}
+	return service.NewInformationForService(s)
 }

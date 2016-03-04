@@ -38,9 +38,9 @@ func runDaemon(conf caretakerd.Config, args []string) {
 		os.Exit(1)
 	}
 
-	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME+" successful loaded. Starting now services...")
+	instance.Logger().Log(logger.Debug, caretakerd.DaemonName+" successful loaded. Starting now services...")
 	exitCode, _ := instance.Run()
-	instance.Logger().Log(logger.Debug, caretakerd.DAEMON_NAME+" done.")
+	instance.Logger().Log(logger.Debug, caretakerd.DaemonName+" done.")
 
 	instance.Close()
 
@@ -60,7 +60,7 @@ func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
 		Name:            name,
 		SkipFlagParsing: true,
 		ArgsUsage:       "[<args pass to master service>...]",
-		Usage:           "Run " + caretakerd.DAEMON_NAME + " in forground.",
+		Usage:           "Run " + caretakerd.DaemonName + " in forground.",
 		Before:          ensureDaemonConfig,
 		Action: func(context *cli.Context) {
 			runDaemon(*conf.instance, context.Args())

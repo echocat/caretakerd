@@ -67,7 +67,7 @@ func newAppFor(executableType ExecutableType) *cli.App {
 	}
 
 	app := cli.NewApp()
-	app.Version = caretakerd.VERSION
+	app.Version = caretakerd.Version
 	app.Commands = []cli.Command{}
 	app.OnUsageError = func(context *cli.Context, err error, isSubcommand bool) error {
 		fmt.Fprintf(app.Writer, "Error: %v\n\n", err)
@@ -102,13 +102,13 @@ func newAppFor(executableType ExecutableType) *cli.App {
 
 	switch executableType {
 	case Daemon:
-		app.Name = caretakerd.DAEMON_NAME
+		app.Name = caretakerd.DaemonName
 		app.Usage = "Simple control daemon for processes."
 	case Control:
-		app.Name = caretakerd.CONTROL_NAME
-		app.Usage = "Remote control for " + caretakerd.DAEMON_NAME
+		app.Name = caretakerd.ControlName
+		app.Usage = "Remote control for " + caretakerd.DaemonName
 	default:
-		app.Name = caretakerd.BASE_NAME
+		app.Name = caretakerd.BaseName
 		app.Usage = "Simple control daemon for processes including remote control for itself."
 	}
 	return app
@@ -143,11 +143,11 @@ var AllExecutableTypes = []ExecutableType{
 func (instance ExecutableType) String() string {
 	switch instance {
 	case Daemon:
-		return caretakerd.DAEMON_NAME
+		return caretakerd.DaemonName
 	case Control:
-		return caretakerd.CONTROL_NAME
+		return caretakerd.ControlName
 	}
-	return caretakerd.BASE_NAME
+	return caretakerd.BaseName
 }
 
 func ensureConfig(daemonChecks bool) error {

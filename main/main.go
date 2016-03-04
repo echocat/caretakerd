@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BASE_NAME + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
+var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BaseName + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
 
 func main() {
 	defer panics.DefaultPanicHandler()

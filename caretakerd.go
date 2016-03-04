@@ -9,7 +9,7 @@ import (
 	"github.com/echocat/caretakerd/rpc"
 	"github.com/echocat/caretakerd/service"
 	usync "github.com/echocat/caretakerd/sync"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"os"
 	osignal "os/signal"
 	"runtime"
@@ -17,6 +17,7 @@ import (
 	"syscall"
 )
 
+// Caretakerd instance structure
 type Caretakerd struct {
 	config        Config
 	logger        *logger.Logger
@@ -34,6 +35,7 @@ func finalize(what *Caretakerd) {
 	what.Close()
 }
 
+// NewCaretakerd create a new Caretakerd instance from given config
 func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -70,10 +72,13 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	return &result, nil
 }
 
+// IsOpen return true if caretakerd is still open. This sould be false after Close() was called.
 func (instance Caretakerd) IsOpen() bool {
 	return instance.open
 }
 
+// Close close the caretakerd instance and free resoruces.
+// After call of this method it is not longer possible to use this instance.
 func (instance *Caretakerd) Close() {
 	defer func() {
 		instance.open = false
@@ -83,27 +88,34 @@ func (instance *Caretakerd) Close() {
 	instance.logger.Close()
 }
 
+// Logger return instantiated logger that belongs to this instance.
 func (instance Caretakerd) Logger() *logger.Logger {
 	return instance.logger
 }
 
+// Control return instantiated control that belongs to this instance.
 func (instance *Caretakerd) Control() *control.Control {
 	return instance.control
 }
 
+// Services return instantiated services that belongs to this instance.
 func (instance *Caretakerd) Services() *service.Services {
 	return instance.services
 }
 
+// KeyStore return instantiated keyStore that belongs to this instance.
 func (instance *Caretakerd) KeyStore() *keyStore.KeyStore {
 	return instance.keyStore
 }
 
+// ConfigObject return config this instances was created with.
 func (instance *Caretakerd) ConfigObject() interface{} {
 	return instance.config
 }
 
-func (instance *Caretakerd) Run() (ExitCode, error) {
+// Run starts every services and requird resources of caretakerd.
+// This method is blocking.
+func (instance *Caretakerd) Run() (values.ExitCode, error) {
 	var r *rpc.Rpc
 	defer func() {
 		instance.uninstallTerminationNotificationHandler()
@@ -113,7 +125,7 @@ func (instance *Caretakerd) Run() (ExitCode, error) {
 	}()
 
 	execution := NewExecution(instance)
-	if instance.config.Rpc.Enabled == Boolean(true) {
+	if instance.config.Rpc.Enabled == values.Boolean(true) {
 		r = rpc.NewRpc(instance.config.Rpc, execution, instance, instance.logger)
 		r.Start()
 	}
@@ -122,50 +134,52 @@ func (instance *Caretakerd) Run() (ExitCode, error) {
 	return execution.Run()
 }
 
-func (i *Caretakerd) Stop() {
+// Stop stops this instance (if running).
+// This method is blocking until every service and resource is stopped.
+func (instance *Caretakerd) Stop() {
 	defer func() {
-		i.execution = nil
+		instance.execution = nil
 	}()
-	execution := i.execution
+	execution := instance.execution
 	if execution != nil {
 		execution.StopAll()
 	}
-	i.syncGroup.Interrupt()
+	instance.syncGroup.Interrupt()
 }
 
-func (i *Caretakerd) installTerminationNotificationHandler() {
-	i.lock.Lock()
+func (instance *Caretakerd) installTerminationNotificationHandler() {
+	instance.lock.Lock()
 	defer func() {
-		i.lock.Unlock()
+		instance.lock.Unlock()
 	}()
-	if i.signalChannel == nil {
-		i.signalChannel = make(chan os.Signal, 1)
-		osignal.Notify(i.signalChannel, syscall.SIGINT, syscall.SIGTERM)
-		go i.terminationNotificationHandler()
+	if instance.signalChannel == nil {
+		instance.signalChannel = make(chan os.Signal, 1)
+		osignal.Notify(instance.signalChannel, syscall.SIGINT, syscall.SIGTERM)
+		go instance.terminationNotificationHandler()
 	}
 }
 
-func (i *Caretakerd) terminationNotificationHandler() {
+func (instance *Caretakerd) terminationNotificationHandler() {
 	defer panics.DefaultPanicHandler()
 	for {
-		osSignal, channelReady := <-i.signalChannel
+		osSignal, channelReady := <-instance.signalChannel
 		if channelReady {
-			signal := Signal(osSignal.(syscall.Signal))
-			i.Logger().Log(logger.Debug, "Received shudown signal: %v", signal)
-			i.Stop()
+			signal := values.Signal(osSignal.(syscall.Signal))
+			instance.Logger().Log(logger.Debug, "Received shudown signal: %v", signal)
+			instance.Stop()
 		} else {
 			break
 		}
 	}
 }
 
-func (i *Caretakerd) uninstallTerminationNotificationHandler() {
-	i.lock.Lock()
+func (instance *Caretakerd) uninstallTerminationNotificationHandler() {
+	instance.lock.Lock()
 	defer func() {
-		i.signalChannel = nil
-		i.lock.Unlock()
+		instance.signalChannel = nil
+		instance.lock.Unlock()
 	}()
-	if i.signalChannel != nil {
-		osignal.Stop(i.signalChannel)
+	if instance.signalChannel != nil {
+		osignal.Stop(instance.signalChannel)
 	}
 }
