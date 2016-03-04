@@ -9,8 +9,8 @@ type PropertyDefinition struct {
 	def       *string
 }
 
-// Id returns the ID of this Definition.
-func (instance PropertyDefinition) Id() IDType {
+// ID returns the ID of this Definition.
+func (instance PropertyDefinition) ID() IDType {
 	return instance.id
 }
 

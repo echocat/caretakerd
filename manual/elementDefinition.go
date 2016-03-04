@@ -8,8 +8,8 @@ type ElementDefinition struct {
 	comment   string
 }
 
-// Id returns the ID of this Definition.
-func (instance ElementDefinition) Id() IDType {
+// ID returns the ID of this Definition.
+func (instance ElementDefinition) ID() IDType {
 	return instance.id
 }
 

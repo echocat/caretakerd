@@ -8,7 +8,7 @@ import (
 
 // Definition represents a definition of an element or whatever that could be configured.
 type Definition interface {
-	Id() IDType
+	ID() IDType
 	Description() string
 	TypeName() string
 	IsTopLevel() bool
@@ -44,7 +44,7 @@ type WithInlinedMarker interface {
 // FormatDefinition formats a given definition to be printed for logging purposes.
 func FormatDefinition(definition Definition) string {
 	buf := new(bytes.Buffer)
-	fmt.Fprintf(buf, "%v %s", definition.Id(), definition.TypeName())
+	fmt.Fprintf(buf, "%v %s", definition.ID(), definition.TypeName())
 	if key, ok := definition.(WithKey); ok {
 		fmt.Fprintf(buf, ": %s", key.Key())
 		if valueType, ok := definition.(WithValueType); ok {

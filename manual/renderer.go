@@ -31,7 +31,7 @@ var otherEnvarPattern = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
 
 // Describeable represents an object that describes itself and has an ID.
 type Describeable interface {
-	Id() IDType
+	ID() IDType
 	Description() string
 }
 
@@ -268,7 +268,7 @@ func (instance *Renderer) transformIDType(id IDType) string {
 }
 
 func (instance *Renderer) getDisplayIDOf(describeable Describeable) string {
-	id := describeable.Id()
+	id := describeable.ID()
 	if withKey, ok := describeable.(WithKey); ok {
 		lastHash := strings.LastIndex(id.Name, "#")
 		if lastHash > 0 {
@@ -333,7 +333,7 @@ func (instance *Renderer) extractExcerptFrom(definition Definition, headerTypeSt
 type renderDefinitionProperty struct {
 	Definition   *PropertyDefinition
 	MapKeyMarker string
-	Id           IDType
+	ID           IDType
 	Excerpt      template.HTML
 }
 
@@ -361,7 +361,7 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IDType, header
 			}
 			renderDefinitionProperty := renderDefinitionProperty{
 				Definition: propertyDefinition,
-				Id:         id,
+				ID:         id,
 				Excerpt:    excerpt,
 			}
 			if instance.isMapType(propertyDefinition.ValueType()) {
@@ -459,7 +459,7 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 func (instance *Renderer) resolveRef(ref string, context Describeable) IDType {
 	if context != nil && strings.HasPrefix(ref, "#") {
 		name := ref[1:]
-		contextID := context.Id()
+		contextID := context.ID()
 		lastDotIfContextID := strings.LastIndex(contextID.Name, "#")
 		if lastDotIfContextID > 0 {
 			name = contextID.Name[:lastDotIfContextID] + "#" + name
@@ -469,7 +469,7 @@ func (instance *Renderer) resolveRef(ref string, context Describeable) IDType {
 			Name:    name,
 		}
 	} else if context != nil && strings.HasPrefix(ref, ".") {
-		contextID := context.Id()
+		contextID := context.ID()
 		return IDType{
 			Package: contextID.Package,
 			Name:    ref[1:],
@@ -484,7 +484,7 @@ func (instance *Renderer) resolveRef(ref string, context Describeable) IDType {
 }
 
 type example struct {
-	Id          string
+	ID          string
 	Title       string
 	CodeType    string
 	CodeContent string
@@ -503,7 +503,7 @@ func (instance *Renderer) collectExamples() ([]example, error) {
 		}
 		content, title, id := instance.extractTitleFrom(string(bytes), exampleSource)
 		examples = append(examples, example{
-			Id:          "configuration.examples." + id,
+			ID:          "configuration.examples." + id,
 			Title:       title,
 			CodeType:    "yaml",
 			CodeContent: content,

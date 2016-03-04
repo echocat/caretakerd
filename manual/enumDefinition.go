@@ -7,8 +7,8 @@ type EnumDefinition struct {
 	children []Definition
 }
 
-// Id returns the ID of this Definition.
-func (instance EnumDefinition) Id() IDType {
+// ID returns the ID of this Definition.
+func (instance EnumDefinition) ID() IDType {
 	return instance.id
 }
 

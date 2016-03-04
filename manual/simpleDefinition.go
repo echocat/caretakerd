@@ -8,8 +8,8 @@ type SimpleDefinition struct {
 	inlined   bool
 }
 
-// Id returns the ID of this Definition.
-func (instance SimpleDefinition) Id() IDType {
+// ID returns the ID of this Definition.
+func (instance SimpleDefinition) ID() IDType {
 	return instance.id
 }
 

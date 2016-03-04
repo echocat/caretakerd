@@ -66,7 +66,7 @@ func (instance *Definitions) newIdentifier(packageName string, name string) IDTy
 }
 
 func (instance *Definitions) newIDWithParent(parent Definition, name string) IDType {
-	parentIdentifier := parent.Id()
+	parentIdentifier := parent.ID()
 	return instance.newIdentifier(
 		parentIdentifier.Package,
 		parentIdentifier.Name+"#"+name,
@@ -74,7 +74,7 @@ func (instance *Definitions) newIDWithParent(parent Definition, name string) IDT
 }
 
 func (instance *Definitions) add(definition Definition) {
-	identifier := definition.Id()
+	identifier := definition.ID()
 	instance.identifierToDefinition[identifier.String()] = definition
 }
 

@@ -10,12 +10,12 @@
 {{$examples := collectExamples}}
 <ul class="sub-toc">
     {{range $example := $examples}}
-    <li class="configuration-example"><a href="#{{$example.Id}}">{{$example.Title}}</a></li>
+    <li class="configuration-example"><a href="#{{$example.ID}}">{{$example.Title}}</a></li>
     {{end}}
 </ul>
 
 {{range $example := $examples}}
-<h4 id="{{$example.Id}}">{{$example.Title}}</h4>
+<h4 id="{{$example.ID}}">{{$example.Title}}</h4>
 <pre class="configuration-example-code {{$example.CodeType}}"><code>{{$example.CodeContent}}</code></pre>
 {{end}}
 

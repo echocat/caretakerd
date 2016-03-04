@@ -34,7 +34,7 @@ func PickDefinitionsFrom(source *Definitions, rootElementID IDType) (*PickedDefi
 	defs := definitions{}
 	for _, definition := range pd.IDToDefinition {
 		if inlinedMarker, ok := definition.(WithInlinedMarker); ok && inlinedMarker.Inlined() {
-			pd.IDToInlinedMarker[definition.Id().String()] = inlinedMarker
+			pd.IDToInlinedMarker[definition.ID().String()] = inlinedMarker
 		} else if definition.IsTopLevel() {
 			defs = append(defs, definition)
 		}
@@ -67,9 +67,9 @@ func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementID IDType) er
 	}
 	if children, ok := element.(WithChildren); ok {
 		for _, child := range children.Children() {
-			err := enrichWithElementAndItsChildren(pd, child.Id())
+			err := enrichWithElementAndItsChildren(pd, child.ID())
 			if err != nil {
-				return errors.New("Could not extract child '%v' of type '%s'.", child.Id(), elementID).CausedBy(err)
+				return errors.New("Could not extract child '%v' of type '%s'.", child.ID(), elementID).CausedBy(err)
 			}
 		}
 	}
@@ -111,5 +111,5 @@ func (instance definitions) Swap(i, j int) {
 }
 
 func (instance definitions) Less(i, j int) bool {
-	return instance[i].Id().String() < instance[j].Id().String()
+	return instance[i].ID().String() < instance[j].ID().String()
 }

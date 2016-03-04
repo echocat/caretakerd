@@ -7,8 +7,8 @@ type ObjectDefinition struct {
 	children []Definition
 }
 
-// Id returns the ID of this Definition.
-func (instance ObjectDefinition) Id() IDType {
+// ID returns the ID of this Definition.
+func (instance ObjectDefinition) ID() IDType {
 	return instance.id
 }
 

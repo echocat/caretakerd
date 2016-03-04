@@ -11,7 +11,7 @@
     {{$simple := toSimple .}}
     {{$id := transformElementHtmlId .}}
 
-    <h3 class="dataType-spec" id="{{$id}}" internalReference="{{.Id}}">
+    <h3 class="dataType-spec" id="{{$id}}" internalReference="{{.ID}}">
         <code class="dataType-id">{{getDisplayIdOf .}}</code>
         {{if $simple}}
         <code class="dataType-kind">{{renderValueType $simple.ValueType}}</code>
@@ -31,7 +31,7 @@
         {{$property := toProperty .}}
         {{$propertyId := transformElementHtmlId $property}}
         <li class="dataType-property">
-            <h5 class="dataType-spec" id="{{$propertyId}}" internalReference="{{$property.Id}}">
+            <h5 class="dataType-spec" id="{{$propertyId}}" internalReference="{{$property.ID}}">
                 <code class="dataType-id">{{html $property.Key}}</code>
                 <code class="dataType-kind">{{renderValueType $property.ValueType}}</code>
                 {{if $property.DefaultValue}}
@@ -53,7 +53,7 @@
         {{$element := toElement .}}
         {{$elementId := transformElementHtmlId $element}}
         <li class="dataType-element">
-            <h5 class="dataType-spec" id="{{$elementId}}" internalReference="{{$element.Id}}">
+            <h5 class="dataType-spec" id="{{$elementId}}" internalReference="{{$element.ID}}">
                 <code class="dataType-id">{{html $element.Key}}</code>
             </h5>
 
