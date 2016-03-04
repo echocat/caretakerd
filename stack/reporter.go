@@ -7,22 +7,27 @@ import (
 	"reflect"
 )
 
+// MessageEnabled represents an object that has a Message.
 type MessageEnabled interface {
 	Message() string
 }
 
+// ErrorEnabled represents an object that has an Error message.
 type ErrorEnabled interface {
 	Error() string
 }
 
-type StackEnabled interface {
+// HasStack represents an object that has a Stack.
+type HasStack interface {
 	Stack() Stack
 }
 
+// CauseEnabled represents an object that could have a Cause.
 type CauseEnabled interface {
 	Cause() interface{}
 }
 
+// ErrorMessageFor creates an error message for given error.
 func ErrorMessageFor(what error) string {
 	message := ""
 	var current interface{}
@@ -53,12 +58,14 @@ func messageFor(i int, message string) string {
 	return result
 }
 
+// StringOf converts the given problem object (panic, error, ...) to a string which is readable.
 func StringOf(what interface{}, framesToSkip int) string {
 	buf := new(bytes.Buffer)
 	Print(what, buf, framesToSkip+1)
 	return buf.String()
 }
 
+// Print prints the given problem object (panic, error, ...) to a readable version to writer.
 func Print(what interface{}, to io.Writer, framesToSkip int) {
 	prefix := ""
 	var current interface{}
@@ -73,7 +80,7 @@ func Print(what interface{}, to io.Writer, framesToSkip int) {
 			message += fmt.Sprintf("%v", current)
 		}
 		fmt.Fprint(to, prefix, message, "\n")
-		if m, ok := current.(StackEnabled); ok {
+		if m, ok := current.(HasStack); ok {
 			fmt.Fprintf(to, "%v", m.Stack())
 		} else if i == 0 {
 			stack := CaptureStack(1 + framesToSkip)

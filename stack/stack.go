@@ -13,7 +13,8 @@ var (
 	runtimeGoexit   = string("runtime.goexit")
 )
 
-type StackElement struct {
+// Element represents an element from the whole stack trace.
+type Element struct {
 	File      string
 	ShortFile string
 	Line      int
@@ -22,11 +23,12 @@ type StackElement struct {
 	Pc        uintptr
 }
 
-func (i StackElement) String() string {
+func (i Element) String() string {
 	return fmt.Sprintf("%s.%s(%s:%d)", i.Package, i.Function, i.ShortFile, i.Line)
 }
 
-type Stack []StackElement
+// Stack represents the whole stack trace with a couple of Elements.
+type Stack []Element
 
 func (i Stack) String() string {
 	result := ""
@@ -36,6 +38,8 @@ func (i Stack) String() string {
 	return result
 }
 
+// CaptureStack creates a new stack capture of the current stack.
+// It is possible to cut off the returned stack with framesToSkip.
 func CaptureStack(framesToSkip int) Stack {
 	result := Stack{}
 	valid := true
@@ -46,7 +50,7 @@ func CaptureStack(framesToSkip int) Stack {
 			if fullFunctionName == runtimeMain || fullFunctionName == runtimeGoexit {
 				valid = false
 			} else {
-				result = append(result, StackElement{
+				result = append(result, Element{
 					File:      file,
 					ShortFile: filepath.Base(file),
 					Line:      line,
@@ -66,18 +70,16 @@ func functionNameOf(fullFunctionName string) string {
 	lastDot := strings.LastIndex(fullFunctionName, ".")
 	if lastDot >= 0 && lastDot+1 < len(fullFunctionName) {
 		return fullFunctionName[lastDot+1:]
-	} else {
-		return fullFunctionName
 	}
+	return fullFunctionName
 }
 
 func packageNameOf(fullFunctionName string) string {
 	lastDot := strings.LastIndex(fullFunctionName, ".")
 	if lastDot > 0 {
 		return fullFunctionName[:lastDot]
-	} else {
-		return ""
 	}
+	return ""
 }
 
 func fullFunctionNameOf(pc uintptr) string {
