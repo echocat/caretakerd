@@ -11,7 +11,7 @@ import (
 // Root configuration of caretakerd.
 type Config struct {
 	// Defines how the encryption of caretakerd works.
-	// This is especially important if {@ref #Rpc RPC} is used.
+	// This is especially important if {@ref #RPC RPC} is used.
 	//
 	// For details see {@ref github.com/echocat/caretakerd/keyStore.Config}.
 	KeyStore keyStore.Config `json:"keyStore" yaml:"keyStore,omitempty"`
@@ -22,7 +22,7 @@ type Config struct {
 	RPC rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
 
 	// Defines the access rights of caretakerctl to caretakerd.
-	// This requires {@ref #Rpc RPC} enabled.
+	// This requires {@ref #RPC RPC} enabled.
 	//
 	// For details see {@ref github.com/echocat/caretakerd/control.Config}.
 	Control control.Config `json:"control" yaml:"control,omitempty"`
