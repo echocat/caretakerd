@@ -9,6 +9,7 @@ import (
 	"reflect"
 )
 
+// Access represents an initiated access management for a service node of caretakerd.
 type Access struct {
 	name              string
 	t                 Type
@@ -18,6 +19,7 @@ type Access struct {
 	temporaryFilename *string
 }
 
+// NewAccess creates a new instance of Access by given Config.
 func NewAccess(conf Config, name string, ks *keyStore.KeyStore) (*Access, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -133,30 +135,41 @@ func generateFileForPem(conf Config, pem []byte) (string, error) {
 	return conf.PemFile.String(), nil
 }
 
+// Pem returns the contained with private and public key pair.
+// This could be empty.
 func (instance Access) Pem() []byte {
 	return instance.pem
 }
 
+// Type returns the Type of this access object.
 func (instance Access) Type() Type {
 	return instance.t
 }
 
+// Cleanup to cleanup tasks when this object is not longer required.
+// This could delete action of temporary files ...
 func (instance Access) Cleanup() {
 	if instance.temporaryFilename != nil {
 		os.Remove(*instance.temporaryFilename)
 	}
 }
 
+// HasReadPermission returns true if the service/node that this access instance belongs to
+// can execute read actions at caretakerd.
 func (instance Access) HasReadPermission() bool {
 	permission := instance.permission
 	return permission == ReadOnly || permission == ReadWrite
 }
 
+// HasWritePermission returns true if the service/node that this access instance belongs to
+// can execute write actions at caretakerd.
 func (instance Access) HasWritePermission() bool {
 	permission := instance.permission
 	return permission == ReadWrite
 }
 
+// IsCertValid returns true of the given Certificate is valid in combination
+// with this access instance.
 func (instance *Access) IsCertValid(cert *x509.Certificate) bool {
 	instanceCert := instance.cert
 	if instance.t == None {

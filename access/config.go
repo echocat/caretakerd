@@ -2,9 +2,10 @@ package access
 
 import (
 	"github.com/echocat/caretakerd/errors"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 )
 
+// Config for access to caretakerd.
 type Config struct {
 	// @default "generateToFile" (for control/caretakerctl) "none" (for services)
 	//
@@ -30,7 +31,7 @@ type Config struct {
 	//
 	// > **Important:** In case of {@ref #Type type} = {@ref github.com/echocat/caretakerd/access.Type#GenerateToFile generateToFile}
 	// > this property is required.
-	PemFile String `json:"pemFile,omitempty" yaml:"pemFile"`
+	PemFile values.String `json:"pemFile,omitempty" yaml:"pemFile"`
 
 	// @default 0600
 	//
@@ -41,15 +42,17 @@ type Config struct {
 	//
 	// If set this user owns the generated {@ref #PemFile pem file}.
 	// Otherwise it is owned by the user caretakerd is running with.
-	PemFileUser String `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
+	PemFileUser values.String `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
 }
 
+// NewNoneConfig create a new Config that grant no access to anything.
 func NewNoneConfig() Config {
 	return Config{
 		Type: None,
 	}
 }
 
+// NewTrustedConfig create a new Config with the given Permission based on Trusted rules.
 func NewTrustedConfig(permission Permission) Config {
 	return Config{
 		Type:       Trusted,
@@ -57,6 +60,8 @@ func NewTrustedConfig(permission Permission) Config {
 	}
 }
 
+// NewGenerateToEnvironmentConfig create a new Config with the given Permission based
+// and will force a creation of certificates to environment variables.
 func NewGenerateToEnvironmentConfig(permission Permission) Config {
 	return Config{
 		Type:       GenerateToEnvironment,
@@ -64,13 +69,15 @@ func NewGenerateToEnvironmentConfig(permission Permission) Config {
 	}
 }
 
-func NewGenerateToFileConfig(permission Permission, pemFile String) Config {
+// NewGenerateToFileConfig create a new Config with the given Permission based
+// and will force a creation of certificates to given pemFile.
+func NewGenerateToFileConfig(permission Permission, pemFile values.String) Config {
 	return Config{
 		Type:              GenerateToFile,
 		Permission:        permission,
-		PemFile:           String(pemFile),
+		PemFile:           values.String(pemFile),
 		PemFilePermission: DefaultFilePermission(),
-		PemFileUser:       String(""),
+		PemFileUser:       values.String(""),
 	}
 }
 
@@ -91,7 +98,7 @@ func (instance Config) Validate() error {
 	return err
 }
 
-func (instance Config) validateRequireStringValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateRequireStringValue(value values.String, fieldName string, isAllowedMethod func() bool) error {
 	if isAllowedMethod() {
 		if value.IsEmpty() {
 			return errors.New("There is no %s set for type %v.", fieldName, instance.Type)
@@ -100,7 +107,7 @@ func (instance Config) validateRequireStringValue(value String, fieldName string
 	return nil
 }
 
-func (instance Config) validateStringOnlyAllowedValue(value String, fieldName string, isAllowedMethod func() bool) error {
+func (instance Config) validateStringOnlyAllowedValue(value values.String, fieldName string, isAllowedMethod func() bool) error {
 	if !isAllowedMethod() && !value.IsEmpty() {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
