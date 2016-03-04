@@ -4,9 +4,12 @@ import (
 	"time"
 )
 
-func (sg *SyncGroup) Sleep(duration time.Duration) error {
-	signal := sg.NewSignal()
-	err := signal.Wait(duration)
+// Sleep sleeps for the given duration
+// but is interruptable by calling Interrupt() at the current SyncGroup.
+func (instance *Group) Sleep(duration time.Duration) error {
+	mutex := instance.NewMutex()
+	condition := instance.NewCondition(mutex)
+	err := condition.Wait(duration)
 	if _, ok := err.(TimeoutError); ok {
 		return nil
 	}

@@ -32,7 +32,7 @@ func ensureDaemonConfig(context *cli.Context) error {
 }
 
 func runDaemon(conf caretakerd.Config, args []string) {
-	instance, err := caretakerd.NewCaretakerd(conf, sync.NewSyncGroup())
+	instance, err := caretakerd.NewCaretakerd(conf, sync.NewGroup())
 	if err != nil {
 		stack.Print(err, os.Stderr, 0)
 		os.Exit(1)

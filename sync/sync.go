@@ -5,29 +5,35 @@ import (
 	"sync"
 )
 
+// Interruptable represents an object that could be interrupted.
 type Interruptable interface {
 	Interrupt()
 }
 
-type SyncGroup struct {
+// Group is a couple of tools (like sleep, locks, conditions, ...) that are grouped
+// together and could be interrupted by calling Interrupt() method.
+type Group struct {
 	interruptables map[Interruptable]int
 	lock           *sync.Mutex
 }
 
+// TimeoutError occurs if a timeout condition is reached.
 type TimeoutError struct{}
 
 func (instance TimeoutError) Error() string {
 	return "Timeout."
 }
 
+// InterruptedError occurs if someone has called Interrupt() method.
 type InterruptedError struct{}
 
 func (instance InterruptedError) Error() string {
 	return "Interrupted."
 }
 
-func NewSyncGroup() *SyncGroup {
-	result := &SyncGroup{
+// NewGroup creates a new SyncGroup instance.
+func NewGroup() *Group {
+	result := &Group{
 		interruptables: map[Interruptable]int{},
 		lock:           new(sync.Mutex),
 	}
@@ -35,44 +41,47 @@ func NewSyncGroup() *SyncGroup {
 	return result
 }
 
-func finalizeSyncGroup(sg *SyncGroup) {
-	sg.Interrupt()
+func finalizeSyncGroup(instance *Group) {
+	instance.Interrupt()
 }
 
-func (sg *SyncGroup) Interrupt() {
-	for interruptable := range sg.interruptables {
+// Interrupt interrupts every action on this SyncGroup.
+// After calling this method is instance is not longer usable anymore.
+func (instance *Group) Interrupt() {
+	for interruptable := range instance.interruptables {
 		interruptable.Interrupt()
 	}
 }
 
-func (sg SyncGroup) doUnlock() {
-	sg.lock.Unlock()
+func (instance Group) doUnlock() {
+	instance.lock.Unlock()
 }
 
-func (sg *SyncGroup) NewSyncGroup() *SyncGroup {
-	result := NewSyncGroup()
-	sg.append(result)
+// NewGroup creates a new sub instance of this instance.
+func (instance *Group) NewGroup() *Group {
+	result := NewGroup()
+	instance.append(result)
 	return result
 }
 
-func (sg *SyncGroup) append(what Interruptable) {
-	sg.lock.Lock()
-	defer sg.doUnlock()
-	if existing, ok := sg.interruptables[what]; ok {
-		sg.interruptables[what] = existing + 1
+func (instance *Group) append(what Interruptable) {
+	instance.lock.Lock()
+	defer instance.doUnlock()
+	if existing, ok := instance.interruptables[what]; ok {
+		instance.interruptables[what] = existing + 1
 	} else {
-		sg.interruptables[what] = 1
+		instance.interruptables[what] = 1
 	}
 }
 
-func (sg *SyncGroup) removeAndReturn(what Interruptable, result error) error {
-	sg.lock.Lock()
-	defer sg.doUnlock()
-	if existing, ok := sg.interruptables[what]; ok {
+func (instance *Group) removeAndReturn(what Interruptable, result error) error {
+	instance.lock.Lock()
+	defer instance.doUnlock()
+	if existing, ok := instance.interruptables[what]; ok {
 		if existing <= 1 {
-			delete(sg.interruptables, what)
+			delete(instance.interruptables, what)
 		} else {
-			sg.interruptables[what] = existing - 1
+			instance.interruptables[what] = existing - 1
 		}
 	}
 	return result

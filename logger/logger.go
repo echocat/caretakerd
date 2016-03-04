@@ -17,14 +17,14 @@ type Logger struct {
 	name              string
 	lock              *sync.Mutex
 	open              bool
-	syncGroup         *usync.SyncGroup
+	syncGroup         *usync.Group
 	output            *lumberjack.Logger
 	created           time.Time
 	writeSynchronizer *Writer
 }
 
 // NewLogger creates a new instance of Logger.
-func NewLogger(conf Config, name string, syncGroup *usync.SyncGroup) (*Logger, error) {
+func NewLogger(conf Config, name string, syncGroup *usync.Group) (*Logger, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, err

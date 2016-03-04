@@ -14,7 +14,7 @@ var log, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
 	Filename: "console",
 	Pattern:  "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] %m%n%P{%m}",
-}, "manual", sync.NewSyncGroup())
+}, "manual", sync.NewGroup())
 
 func panicHandler() {
 	if r := recover(); r != nil {

@@ -8,14 +8,14 @@ import (
 
 type Services map[string]*Service
 
-func NewServices(confs Configs, syncGroup *usync.SyncGroup, sec *keyStore.KeyStore) (*Services, error) {
+func NewServices(confs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Services, error) {
 	err := confs.Validate()
 	if err != nil {
 		return nil, err
 	}
 	result := Services{}
 	for name, conf := range confs {
-		newService, err := NewService(conf, name, syncGroup.NewSyncGroup(), sec)
+		newService, err := NewService(conf, name, syncGroup.NewGroup(), sec)
 		if err != nil {
 			return nil, err
 		}

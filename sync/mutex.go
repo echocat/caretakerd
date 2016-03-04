@@ -6,25 +6,30 @@ import (
 	"time"
 )
 
+// Mutex is a lock in a SyncGroup.
 type Mutex struct {
-	sg      *SyncGroup
+	sg      *Group
 	channel chan bool
 }
 
-func (sg *SyncGroup) NewMutex() *Mutex {
+// NewMutex creates a new instance of Mutex in the current SyncGroup.
+func (instance *Group) NewMutex() *Mutex {
 	result := &Mutex{
-		sg:      sg,
+		sg:      instance,
 		channel: make(chan bool, 1),
 	}
 	runtime.SetFinalizer(result, finalizeMutexInstance)
 	return result
 }
 
-func finalizeMutexInstance(s *Mutex) {
-	closeChannel(s.channel)
+func finalizeMutexInstance(mutex *Mutex) {
+	closeChannel(mutex.channel)
 }
 
-func (i *Mutex) Lock() error {
+// Lock locks the current thread to this mutex.
+// If this is not possible an error will be returned.
+// This method is blocking until locking is possible.
+func (instance *Mutex) Lock() error {
 	var err error
 	defer func() {
 		p := recover()
@@ -41,7 +46,7 @@ func (i *Mutex) Lock() error {
 		}
 	}()
 	select {
-	case i.channel <- true:
+	case instance.channel <- true:
 		return nil
 	default:
 		if err != nil {
@@ -51,26 +56,32 @@ func (i *Mutex) Lock() error {
 	}
 }
 
-func (i *Mutex) Unlock() {
+// Unlock unlocks the current thread from this Mutex.
+func (instance *Mutex) Unlock() {
 	select {
-	case <-i.channel:
+	case <-instance.channel:
 		return
 	}
 }
 
-func (i *Mutex) TryLock(timeout time.Duration) bool {
+// TryLock tries to locks the current thread to this mutex.
+// This method will wait for maximum of given duration to get the lock
+// - in this case true is returned.
+func (instance *Mutex) TryLock(timeout time.Duration) bool {
 	timer := time.NewTimer(timeout)
 	defer func() {
 		timer.Stop()
 	}()
 	select {
-	case i.channel <- true:
+	case instance.channel <- true:
 		return true
 	case <-timer.C:
 	}
 	return false
 }
 
-func (i *Mutex) Interrupt() {
-	closeChannel(i.channel)
+// Interrupt interrupts every possible current running Lock() and TryLock() method of this instance.
+// Nobody is able to call Lock() and TryLock() from this moment on anymore of this instance.
+func (instance *Mutex) Interrupt() {
+	closeChannel(instance.channel)
 }

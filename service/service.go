@@ -13,7 +13,7 @@ type Service struct {
 	config    Config
 	logger    *logger.Logger
 	name      string
-	syncGroup *usync.SyncGroup
+	syncGroup *usync.Group
 	access    *access.Access
 }
 
@@ -21,7 +21,7 @@ func finalize(what *Service) {
 	what.Close()
 }
 
-func NewService(conf Config, name string, syncGroup *usync.SyncGroup, sec *keyStore.KeyStore) (*Service, error) {
+func NewService(conf Config, name string, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Service, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, errors.New("Config of service '%v' is not valid.", name).CausedBy(err)

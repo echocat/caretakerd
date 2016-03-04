@@ -6,15 +6,17 @@ import (
 	"time"
 )
 
+// Condition could be used to wait for a synced change of something.
 type Condition struct {
-	sg      *SyncGroup
+	sg      *Group
 	channel chan bool
 	mutex   *Mutex
 }
 
-func (sg *SyncGroup) NewCondition(mutex *Mutex) *Condition {
+// NewCondition creates a new condition in the current SyncGroup with the given Mutex.
+func (instance *Group) NewCondition(mutex *Mutex) *Condition {
 	result := &Condition{
-		sg:      sg,
+		sg:      instance,
 		channel: make(chan bool),
 		mutex:   mutex,
 	}
@@ -22,36 +24,38 @@ func (sg *SyncGroup) NewCondition(mutex *Mutex) *Condition {
 	return result
 }
 
-func finalizeConditionInstance(s *Condition) {
-	closeChannel(s.channel)
+func finalizeConditionInstance(condition *Condition) {
+	closeChannel(condition.channel)
 }
 
-func (i *Condition) Wait(duration time.Duration) error {
-	sg := (*i).sg
-	sg.append(i)
-	i.doUnlock()
-	defer i.doLock()
+// Wait waits for someone that calls Send() or Broadcast() on this Condition instance for the given maximum duration.
+// If someone calls Interrupt() or there is no trigger received within the maximum duration an error will be returned.
+func (instance *Condition) Wait(duration time.Duration) error {
+	sg := (*instance).sg
+	sg.append(instance)
+	instance.doUnlock()
+	defer instance.doLock()
 	select {
 	case <-time.After(duration):
-		return sg.removeAndReturn(i, TimeoutError{})
-	case c := <-i.channel:
+		return sg.removeAndReturn(instance, TimeoutError{})
+	case c := <-instance.channel:
 		var result error
 		if !c {
 			result = InterruptedError{}
 		}
-		return sg.removeAndReturn(i, result)
+		return sg.removeAndReturn(instance, result)
 	}
 }
 
-func (i *Condition) doLock() error {
-	return i.mutex.Lock()
+func (instance *Condition) doLock() error {
+	return instance.mutex.Lock()
 }
 
-func (i *Condition) doUnlock() {
-	i.mutex.Unlock()
+func (instance *Condition) doUnlock() {
+	instance.mutex.Unlock()
 }
 
-func (i *Condition) send() (bool, error) {
+func (instance *Condition) send() (bool, error) {
 	var err error
 	defer func() {
 		p := recover()
@@ -69,7 +73,7 @@ func (i *Condition) send() (bool, error) {
 	}()
 	sent := true
 	select {
-	case i.channel <- true:
+	case instance.channel <- true:
 		sent = true
 	default:
 		sent = false
@@ -77,25 +81,34 @@ func (i *Condition) send() (bool, error) {
 	return sent, err
 }
 
-func (i *Condition) Send() error {
-	_, err := i.send()
+// Send sends ONE trigger to the condition.
+// If there are more then one listener only one of them will receive the trigger.
+// This method is not blocking.
+func (instance *Condition) Send() error {
+	_, err := instance.send()
 	return err
 }
 
-func (i *Condition) Broadcast() error {
+// Broadcast broadcast trigger to the condition.
+// If there are more then one listener every of them will receive the trigger.
+// This method is not blocking.
+func (instance *Condition) Broadcast() error {
 	var err error
 	doSend := true
 	for doSend {
-		doSend, err = i.send()
+		doSend, err = instance.send()
 	}
 	return err
 }
 
-func (i *Condition) Interrupt() {
-	closeChannel(i.channel)
-	i.mutex.Interrupt()
+// Interrupt interrupts every possible current running Wait() method of this instance.
+// Nobody is able to call Wait() from this moment on anymore of this instance.
+func (instance *Condition) Interrupt() {
+	closeChannel(instance.channel)
+	instance.mutex.Interrupt()
 }
 
-func (i *Condition) Mutex() *Mutex {
-	return i.mutex
+// Mutex returns the instance of this Condition.
+func (instance *Condition) Mutex() *Mutex {
+	return instance.mutex
 }

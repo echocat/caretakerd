@@ -23,7 +23,7 @@ type Execution struct {
 	lock      *sync.Mutex
 	condition *sync.Condition
 	access    *access.Access
-	syncGroup *sync.SyncGroup
+	syncGroup *sync.Group
 }
 
 func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error) {
@@ -31,7 +31,7 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 	if err != nil {
 		return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)
 	}
-	syncGroup := instance.syncGroup.NewSyncGroup()
+	syncGroup := instance.syncGroup.NewGroup()
 	cmd := generateServiceBasedCmd(instance, a, (*instance).config.Command)
 	lock := syncGroup.NewMutex()
 	condition := syncGroup.NewCondition(lock)
@@ -431,6 +431,6 @@ func (instance Execution) String() string {
 	return instance.service.String()
 }
 
-func (instance *Execution) SyncGroup() *sync.SyncGroup {
+func (instance *Execution) SyncGroup() *sync.Group {
 	return instance.syncGroup
 }

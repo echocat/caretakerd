@@ -24,7 +24,7 @@ type Caretakerd struct {
 	control       *control.Control
 	services      *service.Services
 	lock          *sync.Mutex
-	syncGroup     *usync.SyncGroup
+	syncGroup     *usync.Group
 	execution     *Execution
 	signalChannel chan os.Signal
 	open          bool
@@ -36,7 +36,7 @@ func finalize(what *Caretakerd) {
 }
 
 // NewCaretakerd create a new Caretakerd instance from given config
-func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error) {
+func NewCaretakerd(conf Config, syncGroup *usync.Group) (*Caretakerd, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 )
 
 func TestSleep_Interrupt(t *testing.T) {
-	sg := NewSyncGroup().NewSyncGroup()
+	sg := NewGroup().NewGroup()
 	start := time.Now()
 	go func() {
 		time.Sleep(10 * time.Millisecond)
