@@ -74,7 +74,7 @@ func NewClient(config *caretakerd.Config) (*Client, error) {
 		return nil, err
 	}
 	return &Client{
-		address: config.Rpc.Listen,
+		address: config.RPC.Listen,
 		session: session,
 	}, nil
 }
@@ -162,7 +162,7 @@ func dialTLSWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net
 	var err error
 	var tlsConn *tls.Conn
 
-	address := config.Rpc.Listen
+	address := config.RPC.Listen
 	tlsConn, err = tls.Dial(address.AsScheme(), address.AsAddress(), tlsConfig)
 	if err != nil {
 		return nil, err

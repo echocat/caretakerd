@@ -45,7 +45,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	if err != nil {
 		return nil, errors.New("Could not create logger for caretakerd.").CausedBy(err)
 	}
-	ks, err := keyStore.NewKeyStore(bool(conf.Rpc.Enabled), conf.KeyStore)
+	ks, err := keyStore.NewKeyStore(bool(conf.RPC.Enabled), conf.KeyStore)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +125,8 @@ func (instance *Caretakerd) Run() (values.ExitCode, error) {
 	}()
 
 	execution := NewExecution(instance)
-	if instance.config.Rpc.Enabled == values.Boolean(true) {
-		r = rpc.NewRpc(instance.config.Rpc, execution, instance, instance.logger)
+	if instance.config.RPC.Enabled == values.Boolean(true) {
+		r = rpc.NewRpc(instance.config.RPC, execution, instance, instance.logger)
 		r.Start()
 	}
 	instance.installTerminationNotificationHandler()

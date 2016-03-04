@@ -19,7 +19,7 @@ type Config struct {
 	// Defines how caretaker can controlled remotely.
 	//
 	// For details see {@ref github.com/echocat/caretakerd/rpc.Config}.
-	Rpc rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
+	RPC rpc.Config `json:"rpc" yaml:"rpc,omitempty"`
 
 	// Defines the access rights of caretakerctl to caretakerd.
 	// This requires {@ref #Rpc RPC} enabled.
@@ -53,7 +53,7 @@ func NewConfig() Config {
 func (instance Config) Validate() error {
 	err := instance.KeyStore.Validate()
 	if err == nil {
-		err = instance.Rpc.Validate()
+		err = instance.RPC.Validate()
 	}
 	if err == nil {
 		err = instance.Control.Validate()
@@ -75,7 +75,7 @@ func (instance Config) ValidateMaster() error {
 
 func (instance *Config) init() {
 	(*instance).KeyStore = keyStore.NewConfig()
-	(*instance).Rpc = rpc.NewConfig()
+	(*instance).RPC = rpc.NewConfig()
 	(*instance).Control = control.NewConfig()
 	(*instance).Logger = logger.NewConfig()
 	(*instance).Services = service.NewConfigs()

@@ -57,7 +57,7 @@ func (instance ConfigWrapper) IsExplicitSet() bool {
 // also call every validation method. If an error occurs this will be returned.
 // If there is no problem nil is retured.
 func (instance *ConfigWrapper) ConfigureAndValidate(listenAddress *FlagWrapper, pemFile *FlagWrapper, validateAlsoMaster bool) error {
-	listenAddress.AssignIfExplicitSet(&instance.instance.Rpc.Listen)
+	listenAddress.AssignIfExplicitSet(&instance.instance.RPC.Listen)
 	pemFile.AssignIfExplicitSet(&instance.instance.Control.Access.PemFile)
 	err := instance.instance.Validate()
 	if err != nil {
