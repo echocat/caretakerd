@@ -41,7 +41,6 @@ func (i *Condition) Wait(duration time.Duration) error {
 		}
 		return sg.removeAndReturn(i, result)
 	}
-	return sg.removeAndReturn(i, InterruptedError{})
 }
 
 func (i *Condition) doLock() error {

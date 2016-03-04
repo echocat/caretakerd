@@ -44,9 +44,11 @@ func (i *Mutex) Lock() error {
 	case i.channel <- true:
 		return nil
 	default:
+		if err != nil {
+			return err
+		}
 		return errors.New("Lock interrupted.")
 	}
-	return err
 }
 
 func (i *Mutex) Unlock() {
@@ -54,7 +56,6 @@ func (i *Mutex) Unlock() {
 	case <-i.channel:
 		return
 	}
-	return
 }
 
 func (i *Mutex) TryLock(timeout time.Duration) bool {

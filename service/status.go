@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/panics"
 	"strconv"
 	"strings"
 )
@@ -29,21 +28,31 @@ var AllStatus = []Status{
 }
 
 func (instance Status) String() string {
+	s, err := instance.CheckedString()
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
+func (instance Status) CheckedString() (string, error) {
 	switch instance {
 	case New:
-		return "new"
+		return "new", nil
 	case Down:
-		return "down"
+		return "down", nil
 	case Running:
-		return "running"
+		return "running", nil
 	case Stopped:
-		return "stopped"
+		return "stopped", nil
 	case Killed:
-		return "killed"
+		return "killed", nil
 	case Unknown:
-		return "unknown"
+		return "unknown", nil
 	}
-	panic(panics.New("Illegal status: %d", instance))
+	return "", errors.New("Illegal status: %d", instance)
 }
 
 // Set the given string to current object from a string.
@@ -84,8 +93,9 @@ func (instance *Status) UnmarshalJSON(b []byte) error {
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (instance Status) Validate() {
-	instance.String()
+func (instance Status) Validate() error {
+	_, err := instance.CheckedString()
+	return err
 }
 
 func (instance Status) IsGoDownRequest() bool {

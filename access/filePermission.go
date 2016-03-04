@@ -60,9 +60,7 @@ func (instance *FilePermission) UnmarshalJSON(b []byte) error {
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (instance FilePermission) Validate() {
-	instance.String()
-}
+func (instance FilePermission) Validate() {}
 
 func (instance FilePermission) ThisOrDefault() FilePermission {
 	if uint32(instance) == 0 {

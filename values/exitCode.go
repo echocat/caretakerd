@@ -39,6 +39,4 @@ func (i *ExitCode) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (i ExitCode) Validate() {
-	i.String()
-}
+func (i ExitCode) Validate() {}

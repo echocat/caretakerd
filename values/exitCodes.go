@@ -39,9 +39,7 @@ func (i *ExitCodes) Set(value string) error {
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (i ExitCodes) Validate() {
-	i.String()
-}
+func (i ExitCodes) Validate() {}
 
 // Contains return true if the given exitCode (what) is contained in this exitCodes.
 func (i ExitCodes) Contains(what ExitCode) bool {
