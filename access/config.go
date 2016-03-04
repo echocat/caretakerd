@@ -1,5 +1,4 @@
 package access
-package access
 
 import (
 	"github.com/echocat/caretakerd/errors"
