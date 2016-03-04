@@ -13,38 +13,70 @@ import (
 type Signal syscall.Signal
 
 const (
-	NOOP   = Signal(0x0)
-	ABRT   = Signal(0x6)
-	ALRM   = Signal(0xe)
-	BUS    = Signal(0x7)
-	CHLD   = Signal(0x11)
-	CONT   = Signal(0x12)
-	FPE    = Signal(0x8)
-	HUP    = Signal(0x1)
-	ILL    = Signal(0x4)
-	INT    = Signal(0x2)
-	IO     = Signal(0x1d)
-	KILL   = Signal(0x9)
-	PIPE   = Signal(0xd)
-	PROF   = Signal(0x1b)
-	PWR    = Signal(0x1e)
-	QUIT   = Signal(0x3)
-	SEGV   = Signal(0xb)
+	// NOOP represents the system signal NOOP
+	NOOP = Signal(0x0)
+	// ABRT represents the system signal ABRT
+	ABRT = Signal(0x6)
+	// ALRM represents the system signal ALRM
+	ALRM = Signal(0xe)
+	// BUS represents the system signal BUS
+	BUS = Signal(0x7)
+	// CHLD represents the system signal CHLD
+	CHLD = Signal(0x11)
+	// CONT represents the system signal CONT
+	CONT = Signal(0x12)
+	// FPE represents the system signal FPE
+	FPE = Signal(0x8)
+	// HUP represents the system signal HUP
+	HUP = Signal(0x1)
+	// ILL represents the system signal ILL
+	ILL = Signal(0x4)
+	// INT represents the system signal INT
+	INT = Signal(0x2)
+	// IO represents the system signal IO
+	IO = Signal(0x1d)
+	// KILL represents the system signal KILL
+	KILL = Signal(0x9)
+	// PIPE represents the system signal PIPE
+	PIPE = Signal(0xd)
+	// PROF represents the system signal PROF
+	PROF = Signal(0x1b)
+	// PWR represents the system signal PWR
+	PWR = Signal(0x1e)
+	// QUIT represents the system signal QUIT
+	QUIT = Signal(0x3)
+	// SEGV represents the system signal SEGV
+	SEGV = Signal(0xb)
+	// STKFLT represents the system signal STKFLT
 	STKFLT = Signal(0x10)
-	STOP   = Signal(0x13)
-	SYS    = Signal(0x1f)
-	TERM   = Signal(0xf)
-	TRAP   = Signal(0x5)
-	TSTP   = Signal(0x14)
-	TTIN   = Signal(0x15)
-	TTOU   = Signal(0x16)
-	URG    = Signal(0x17)
-	USR1   = Signal(0xa)
-	USR2   = Signal(0xc)
+	// STOP represents the system signal STOP
+	STOP = Signal(0x13)
+	// SYS represents the system signal SYS
+	SYS = Signal(0x1f)
+	// TERM represents the system signal TERM
+	TERM = Signal(0xf)
+	// TRAP represents the system signal TRAP
+	TRAP = Signal(0x5)
+	// TSTP represents the system signal TSTP
+	TSTP = Signal(0x14)
+	// TTIN represents the system signal TTIN
+	TTIN = Signal(0x15)
+	// TTOU represents the system signal TTOU
+	TTOU = Signal(0x16)
+	// URG represents the system signal URG
+	URG = Signal(0x17)
+	// USR1 represents the system signal USR1
+	USR1 = Signal(0xa)
+	// USR2 represents the system signal USR2
+	USR2 = Signal(0xc)
+	// VTALRM represents the system signal VTALRM
 	VTALRM = Signal(0x1a)
-	WINCH  = Signal(0x1c)
-	XCPU   = Signal(0x18)
-	XFSZ   = Signal(0x19)
+	// WINCH represents the system signal WINCH
+	WINCH = Signal(0x1c)
+	// XCPU represents the system signal XCPU
+	XCPU = Signal(0x18)
+	// XFSZ represents the system signal XFSZ
+	XFSZ = Signal(0x19)
 )
 
 // SignalToName contains all possible variants of Signal and their name
@@ -83,7 +115,7 @@ var SignalToName = map[Signal]string{
 	XFSZ:   "XFSZ",
 }
 
-// SignalToName contains all possible variants of Signal names and their values
+// NameToSignal contains all possible variants of Signal names and their values
 var NameToSignal = map[string]Signal{}
 
 func init() {
