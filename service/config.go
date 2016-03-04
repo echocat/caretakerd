@@ -232,6 +232,7 @@ func (i *Config) init() {
 	(*i).Access = access.NewNoneConfig()
 }
 
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (i *Config) BeforeUnmarshalYAML() error {
 	i.init()
 	return nil

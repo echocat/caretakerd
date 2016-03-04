@@ -49,8 +49,7 @@ func NewConfig() Config {
 	return result
 }
 
-// Validate return an error instance on every validation problem of the
-// config instance.
+// Validate do validate action on this object and return an error object if any.
 func (instance Config) Validate() error {
 	err := instance.KeyStore.Validate()
 	if err == nil {

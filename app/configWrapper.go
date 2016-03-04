@@ -26,6 +26,8 @@ func (instance ConfigWrapper) String() string {
 	return instance.filename.String()
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (instance *ConfigWrapper) Set(value string) error {
 	if len(value) == 0 {
 		return errors.New("There is an empty filename for configuration provided.")

@@ -42,16 +42,18 @@ var AllLevels = []Level{
 	Fatal,
 }
 
-func (i Level) String() string {
-	result, err := i.CheckedString()
+func (instance Level) String() string {
+	result, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return result
 }
 
-func (i Level) CheckedString() (string, error) {
-	switch i {
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
+func (instance Level) CheckedString() (string, error) {
+	switch instance {
 	case Debug:
 		return "debug", nil
 	case Info:
@@ -63,22 +65,24 @@ func (i Level) CheckedString() (string, error) {
 	case Fatal:
 		return "fatal", nil
 	}
-	return strconv.Itoa(int(i)), nil
+	return strconv.Itoa(int(instance)), nil
 }
 
-func (i Level) DisplayForLogging() string {
-	if i == Warning {
+func (instance Level) DisplayForLogging() string {
+	if instance == Warning {
 		return "WARN"
 	} else {
-		return strings.ToUpper(i.String())
+		return strings.ToUpper(instance.String())
 	}
 }
 
-func (i *Level) Set(value string) error {
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
+func (instance *Level) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllLevels {
 			if int(candidate) == valueAsInt {
-				(*i) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -87,15 +91,15 @@ func (i *Level) Set(value string) error {
 		lowerValue := strings.ToLower(value)
 		switch lowerValue {
 		case "warn":
-			*i = Warning
+			*instance = Warning
 			return nil
 		case "err":
-			*i = Error
+			*instance = Error
 			return nil
 		}
 		for _, candidate := range AllLevels {
 			if candidate.String() == lowerValue {
-				(*i) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -103,39 +107,44 @@ func (i *Level) Set(value string) error {
 	}
 }
 
-func (i Level) IsIndicatingProblem() bool {
-	return i == Warning || i == Error || i == Fatal
+func (instance Level) IsIndicatingProblem() bool {
+	return instance == Warning || instance == Error || instance == Fatal
 }
 
-func (i Level) MarshalYAML() (interface{}, error) {
-	return i.CheckedString()
+// MarshalYAML is used until yaml marshalling. Do not call directly.
+func (instance Level) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
-func (i *Level) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+func (instance *Level) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Level) MarshalJSON() ([]byte, error) {
-	s, err := i.CheckedString()
+// MarshalJSON is used until json marshalling. Do not call directly.
+func (instance Level) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (i *Level) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+func (instance *Level) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Level) Validate() error {
-	_, err := i.CheckedString()
+// Validate do validate action on this object and return an error object if any.
+func (instance Level) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }

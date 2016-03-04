@@ -42,11 +42,13 @@ func (instance *Config) init() {
 	SetDefaultsTo(defaults, instance)
 }
 
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Config) Validate() error {
 	err := instance.Enabled.Validate()
 	if err == nil {

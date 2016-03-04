@@ -8,6 +8,7 @@ import (
 	"syscall"
 )
 
+// Signal represents an system signal.
 // @inline
 type Signal syscall.Signal
 
@@ -46,6 +47,7 @@ const (
 	XFSZ   = Signal(0x19)
 )
 
+// AllSignals contains all possible variants of Signal.
 var AllSignals = []Signal{
 	NOOP,
 	ABRT,
@@ -89,6 +91,8 @@ func (i Signal) String() string {
 	return result
 }
 
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
 func (i Signal) CheckedString() (string, error) {
 	switch i {
 	case NOOP:
@@ -159,6 +163,8 @@ func (i Signal) CheckedString() (string, error) {
 	return "", errors.New("Illegal signal: %d", i)
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (i *Signal) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllSignals {
@@ -168,23 +174,24 @@ func (i *Signal) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal signal: " + value)
-	} else {
-		lowerValue := strings.ToUpper(value)
-		for _, candidate := range AllSignals {
-			candidateAsString := strings.ToUpper(candidate.String())
-			if candidateAsString == lowerValue || "sig"+candidateAsString == lowerValue {
-				(*i) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal signal: " + value)
 	}
+	lowerValue := strings.ToUpper(value)
+	for _, candidate := range AllSignals {
+		candidateAsString := strings.ToUpper(candidate.String())
+		if candidateAsString == lowerValue || "sig"+candidateAsString == lowerValue {
+			(*i) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal signal: " + value)
 }
 
+// MarshalYAML is used until yaml marshalling. Do not call directly.
 func (i Signal) MarshalYAML() (interface{}, error) {
 	return i.CheckedString()
 }
 
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (i *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -193,6 +200,7 @@ func (i *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return i.Set(value)
 }
 
+// MarshalJSON is used until json marshalling. Do not call directly.
 func (i Signal) MarshalJSON() ([]byte, error) {
 	s, err := i.CheckedString()
 	if err != nil {
@@ -201,6 +209,7 @@ func (i Signal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
 func (i *Signal) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -209,6 +218,7 @@ func (i *Signal) UnmarshalJSON(b []byte) error {
 	return i.Set(value)
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (i Signal) Validate() error {
 	_, err := i.CheckedString()
 	return err

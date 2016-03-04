@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Configs) Validate() error {
 	for name, service := range instance {
 		err := instance.validateService(service, name)
@@ -39,6 +40,7 @@ func (instance Configs) validateService(service Config, name string) error {
 	return nil
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Config) Validate() error {
 	err := instance.Logger.Validate()
 	if err == nil {

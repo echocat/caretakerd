@@ -80,6 +80,8 @@ func (instance CronExpression) String() string {
 	return instance.spec
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (instance *CronExpression) Set(value string) error {
 	if len(strings.TrimSpace(value)) > 0 {
 		schedule, err := cron.Parse(value)
@@ -95,10 +97,12 @@ func (instance *CronExpression) Set(value string) error {
 	return nil
 }
 
+// MarshalYAML is used until yaml marshalling. Do not call directly.
 func (instance CronExpression) MarshalYAML() (interface{}, error) {
 	return instance.String(), nil
 }
 
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (instance *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {

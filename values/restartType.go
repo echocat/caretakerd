@@ -8,7 +8,7 @@ import (
 
 // # Description
 //
-// This tells caretakerd what to do if a process ends.
+// RestartType tells caretakerd what to do if a process ends.
 type RestartType int
 
 const (
@@ -23,22 +23,25 @@ const (
 	Always RestartType = 2
 )
 
+// AllRestartTypes contains all possible variants of RestartType.
 var AllRestartTypes = []RestartType{
 	Never,
 	OnFailures,
 	Always,
 }
 
-func (i RestartType) String() string {
-	result, err := i.CheckedString()
+func (instance RestartType) String() string {
+	result, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return result
 }
 
-func (i RestartType) CheckedString() (string, error) {
-	switch i {
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
+func (instance RestartType) CheckedString() (string, error) {
+	switch instance {
 	case Never:
 		return "never", nil
 	case OnFailures:
@@ -46,57 +49,66 @@ func (i RestartType) CheckedString() (string, error) {
 	case Always:
 		return "always", nil
 	}
-	return "", errors.New("Illegal restart type: %v", i)
+	return "", errors.New("Illegal restart type: %v", instance)
 }
 
-func (i *RestartType) Set(value string) error {
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
+func (instance *RestartType) Set(value string) error {
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllRestartTypes {
 		if strings.ToLower(candidate.String()) == lowerValue {
-			(*i) = candidate
+			(*instance) = candidate
 			return nil
 		}
 	}
 	return errors.New("Illegal restart type: %s", value)
 }
 
-func (i RestartType) MarshalYAML() (interface{}, error) {
-	return i.CheckedString()
+// MarshalYAML is used until yaml marshalling. Do not call directly.
+func (instance RestartType) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
-func (i *RestartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+func (instance *RestartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i RestartType) MarshalJSON() ([]byte, error) {
-	s, err := i.CheckedString()
+// MarshalJSON is used until json marshalling. Do not call directly.
+func (instance RestartType) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (i *RestartType) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+func (instance *RestartType) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i RestartType) OnSuccess() bool {
-	return i == Always
+// OnSuccess returns true of the current RestartType tells to restart on success.
+func (instance RestartType) OnSuccess() bool {
+	return instance == Always
 }
 
-func (i RestartType) OnFailures() bool {
-	return i == OnFailures || i == Always
+// OnFailures returns true of the current RestartType tells to restart on failures.
+func (instance RestartType) OnFailures() bool {
+	return instance == OnFailures || instance == Always
 }
 
-func (i RestartType) Validate() error {
-	_, err := i.CheckedString()
+// Validate do validate action on this object and return an error object if any.
+func (instance RestartType) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }

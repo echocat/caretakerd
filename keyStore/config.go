@@ -54,6 +54,7 @@ func NewConfig() Config {
 	return result
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Config) Validate() error {
 	err := instance.Type.Validate()
 	if err == nil {

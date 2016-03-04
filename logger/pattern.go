@@ -89,19 +89,25 @@ func (instance Pattern) String() string {
 	return s
 }
 
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
 func (instance Pattern) CheckedString() (string, error) {
 	return string(instance), nil
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (instance *Pattern) Set(value string) error {
 	(*instance) = Pattern(value)
 	return nil
 }
 
+// MarshalYAML is used until yaml marshalling. Do not call directly.
 func (instance Pattern) MarshalYAML() (interface{}, error) {
 	return string(instance), nil
 }
 
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (instance *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -110,6 +116,7 @@ func (instance *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return instance.Set(value)
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Pattern) Validate() error {
 	_, err := instance.CheckedString()
 	return err

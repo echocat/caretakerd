@@ -7,86 +7,98 @@ import (
 	"strings"
 )
 
+// Protocol represents a type of an protocol.
 type Protocol int
 
 const (
-	Tcp  Protocol = 0
+	// TCP represents the TCP protocol type.
+	TCP Protocol = 0
+	// Unix represents a Unix socket files based protocol type.
 	Unix Protocol = 1
 )
 
+// AllProtocols contains all possible variants of Protocol.
 var AllProtocols = []Protocol{
-	Tcp,
+	TCP,
 	Unix,
 }
 
-func (i Protocol) String() string {
-	result, err := i.CheckedString()
+func (instance Protocol) String() string {
+	result, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return result
 }
 
-func (i Protocol) CheckedString() (string, error) {
-	switch i {
-	case Tcp:
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
+func (instance Protocol) CheckedString() (string, error) {
+	switch instance {
+	case TCP:
 		return "tcp", nil
 	case Unix:
 		return "unix", nil
 	}
-	return "", errors.New("Illegal protocol: %d", i)
+	return "", errors.New("Illegal protocol: %d", instance)
 }
 
-func (i *Protocol) Set(value string) error {
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
+func (instance *Protocol) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllProtocols {
 			if int(candidate) == valueAsInt {
-				(*i) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal protocol: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllProtocols {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*i) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
 		return errors.New("Illegal protocol: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllProtocols {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal protocol: " + value)
 }
 
-func (i Protocol) MarshalYAML() (interface{}, error) {
-	return i.String(), nil
+// MarshalYAML is used until yaml marshalling. Do not call directly.
+func (instance Protocol) MarshalYAML() (interface{}, error) {
+	return instance.String(), nil
 }
 
-func (i *Protocol) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+func (instance *Protocol) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Protocol) MarshalJSON() ([]byte, error) {
-	s, err := i.CheckedString()
+// MarshalJSON is used until json marshalling. Do not call directly.
+func (instance Protocol) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (i *Protocol) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+func (instance *Protocol) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Protocol) Validate() error {
-	_, err := i.CheckedString()
+// Validate do validate action on this object and return an error object if any.
+func (instance Protocol) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }

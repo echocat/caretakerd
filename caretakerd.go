@@ -72,7 +72,7 @@ func NewCaretakerd(conf Config, syncGroup *usync.SyncGroup) (*Caretakerd, error)
 	return &result, nil
 }
 
-// IsOpen return true if caretakerd is still open. This sould be false after Close() was called.
+// IsOpen return true if caretakerd is still open. This should be false after Close() was called.
 func (instance Caretakerd) IsOpen() bool {
 	return instance.open
 }

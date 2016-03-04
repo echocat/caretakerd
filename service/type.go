@@ -43,16 +43,18 @@ var AllTypes = []Type{
 	Master,
 }
 
-func (i Type) String() string {
-	result, err := i.CheckedString()
+func (instance Type) String() string {
+	result, err := instance.CheckedString()
 	if err != nil {
 		panic(err)
 	}
 	return result
 }
 
-func (i Type) CheckedString() (string, error) {
-	switch i {
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
+func (instance Type) CheckedString() (string, error) {
+	switch instance {
 	case OnDemand:
 		return "onDemand", nil
 	case AutoStart:
@@ -60,14 +62,16 @@ func (i Type) CheckedString() (string, error) {
 	case Master:
 		return "master", nil
 	}
-	return "", errors.New("Illegal type: %d", i)
+	return "", errors.New("Illegal type: %d", instance)
 }
 
-func (i *Type) Set(value string) error {
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
+func (instance *Type) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllTypes {
 			if int(candidate) == valueAsInt {
-				(*i) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -76,7 +80,7 @@ func (i *Type) Set(value string) error {
 		lowerValue := strings.ToLower(value)
 		for _, candidate := range AllTypes {
 			if strings.ToLower(candidate.String()) == lowerValue {
-				(*i) = candidate
+				(*instance) = candidate
 				return nil
 			}
 		}
@@ -84,36 +88,40 @@ func (i *Type) Set(value string) error {
 	}
 }
 
-func (i Type) MarshalYAML() (interface{}, error) {
-	return i.CheckedString()
+// MarshalYAML is used until yaml marshalling. Do not call directly.
+func (instance Type) MarshalYAML() (interface{}, error) {
+	return instance.CheckedString()
 }
 
-func (i *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Type) MarshalJSON() ([]byte, error) {
-	s, err := i.CheckedString()
+// MarshalJSON is used until json marshalling. Do not call directly.
+func (instance Type) MarshalJSON() ([]byte, error) {
+	s, err := instance.CheckedString()
 	if err != nil {
 		return []byte{}, err
 	}
 	return json.Marshal(s)
 }
 
-func (i *Type) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+func (instance *Type) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
 		return err
 	}
-	return i.Set(value)
+	return instance.Set(value)
 }
 
-func (i Type) IsAutoStartable() bool {
-	switch i {
+func (instance Type) IsAutoStartable() bool {
+	switch instance {
 	case Master:
 		fallthrough
 	case AutoStart:
@@ -122,7 +130,8 @@ func (i Type) IsAutoStartable() bool {
 	return false
 }
 
-func (i Type) Validate() error {
-	_, err := i.CheckedString()
+// Validate do validate action on this object and return an error object if any.
+func (instance Type) Validate() error {
+	_, err := instance.CheckedString()
 	return err
 }

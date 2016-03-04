@@ -46,6 +46,8 @@ func (instance Status) String() string {
 	panic(panics.New("Illegal status: %d", instance))
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (instance *Status) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllStatus {
@@ -67,10 +69,12 @@ func (instance *Status) Set(value string) error {
 	}
 }
 
+// MarshalJSON is used until json marshalling. Do not call directly.
 func (instance Status) MarshalJSON() ([]byte, error) {
 	return json.Marshal(instance.String())
 }
 
+// UnmarshalJSON is used until json unmarshalling. Do not call directly.
 func (instance *Status) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -79,6 +83,7 @@ func (instance *Status) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Status) Validate() {
 	instance.String()
 }

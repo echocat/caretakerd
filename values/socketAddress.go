@@ -14,7 +14,7 @@ var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
 // @serializedAs string
 // # Description
 //
-// This represents a socket address in format ``<protocol>://<target>``.
+// SocketAddress represents a socket address in format ``<protocol>://<target>``.
 //
 // # Protocols
 //
@@ -33,10 +33,12 @@ type SocketAddress struct {
 	Port     int
 }
 
+// AsScheme return a string that represents this SocketAddress as scheme.
 func (instance SocketAddress) AsScheme() string {
 	return instance.Protocol.String()
 }
 
+// AsAddress return a string that represents this SocketAddress an socket address.
 func (instance SocketAddress) AsAddress() string {
 	s, err := instance.checkedStringWithoutProtocol()
 	if err != nil {
@@ -62,6 +64,8 @@ func validateHost(host string) error {
 	return err
 }
 
+// CheckedString is like String but return also an optional error if there are some
+// validation errors.
 func (instance SocketAddress) CheckedString() (string, error) {
 	s, err := instance.checkedStringWithoutProtocol()
 	if err != nil {
@@ -72,7 +76,7 @@ func (instance SocketAddress) CheckedString() (string, error) {
 
 func (instance SocketAddress) checkedStringWithoutProtocol() (string, error) {
 	switch instance.Protocol {
-	case Tcp:
+	case TCP:
 		if !isValidPort(instance.Port) {
 			return "", errors.New("Illegal port for protocol %v: %d", instance.Protocol, instance.Port)
 		}
@@ -92,6 +96,8 @@ func (instance SocketAddress) checkedStringWithoutProtocol() (string, error) {
 	return "", errors.New("Unknown protocol: %v", instance.Protocol)
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (instance *SocketAddress) Set(value string) error {
 	match := uriPattern.FindStringSubmatch(value)
 	if match != nil && len(match) == 3 {
@@ -101,18 +107,18 @@ func (instance *SocketAddress) Set(value string) error {
 			return err
 		}
 		switch protocol {
-		case Tcp:
-			return instance.SetTcp(match[2])
+		case TCP:
+			return instance.SetTCP(match[2])
 		case Unix:
 			return instance.SetUnix(match[2])
 		}
 		return errors.New("Unknown protocol %v in address '%v'.", protocol, value)
-	} else {
-		return errors.New("Illegal socket address: %s", value)
 	}
+	return errors.New("Illegal socket address: %s", value)
 }
 
-func (instance *SocketAddress) SetTcp(value string) error {
+// SetTCP set this SocketAddress instance to the given TCP address (without leadning tcp:// scheme)
+func (instance *SocketAddress) SetTCP(value string) error {
 	lastDoubleDot := strings.LastIndex(value, ":")
 	if lastDoubleDot <= 0 || lastDoubleDot+2 >= len(value) {
 		return errors.New("No port specified for address '%v'.", value)
@@ -121,17 +127,18 @@ func (instance *SocketAddress) SetTcp(value string) error {
 	plainPort := value[lastDoubleDot+1:]
 	port, err := strconv.Atoi(plainPort)
 	if err != nil || !isValidPort(port) {
-		return errors.New("'%v' of specified address '%v' is not a valid port number.", plainPort, value)
+		return errors.New("'%v' of specified address '%v' is not a valid port number", plainPort, value)
 	}
 	if err := validateHost(host); err != nil {
-		return errors.New("'%v' of specified address '%v' is not a valid host.", host, value)
+		return errors.New("'%v' of specified address '%v' is not a valid host", host, value)
 	}
-	(*instance).Protocol = Tcp
+	(*instance).Protocol = TCP
 	(*instance).Target = host
 	(*instance).Port = port
 	return nil
 }
 
+// SetUnix set this SocketAddress instance to the given Unix socket file (without leadning unix:// scheme)
 func (instance *SocketAddress) SetUnix(value string) error {
 	(*instance).Protocol = Unix
 	(*instance).Target = value
@@ -139,10 +146,12 @@ func (instance *SocketAddress) SetUnix(value string) error {
 	return nil
 }
 
+// MarshalYAML is used until yaml marshalling. Do not call directly.
 func (instance SocketAddress) MarshalYAML() (interface{}, error) {
 	return instance.String(), nil
 }
 
+// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (instance *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -151,6 +160,7 @@ func (instance *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) 
 	return instance.Set(value)
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance SocketAddress) Validate() error {
 	_, err := instance.CheckedString()
 	return err

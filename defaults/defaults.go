@@ -13,7 +13,7 @@ type Defaults struct {
 }
 
 var listenAddress = values.SocketAddress{
-	Protocol: values.Tcp,
+	Protocol: values.TCP,
 	Target:   "localhost",
 	Port:     57955,
 }

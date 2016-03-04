@@ -26,11 +26,13 @@ func (instance *Config) init() {
 	(*instance).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilename())
 }
 
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (instance Config) Validate() error {
 	return instance.Access.Validate()
 }

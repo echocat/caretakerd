@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// ExitCodes represents a couple of exitCodes.
 // @inline
 type ExitCodes []ExitCode
 
@@ -18,6 +19,8 @@ func (i ExitCodes) String() string {
 	return result
 }
 
+// Set the given string to current object from a string.
+// Return an error object if there are some problems while transforming the string.
 func (i *ExitCodes) Set(value string) error {
 	candidates := strings.Split(value, ",")
 	result := ExitCodes{}
@@ -35,10 +38,12 @@ func (i *ExitCodes) Set(value string) error {
 	return nil
 }
 
+// Validate do validate action on this object and return an error object if any.
 func (i ExitCodes) Validate() {
 	i.String()
 }
 
+// Contains return true if the given exitCode (what) is contained in this exitCodes.
 func (i ExitCodes) Contains(what ExitCode) bool {
 	for _, candidate := range i {
 		if candidate == what {
