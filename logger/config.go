@@ -1,17 +1,17 @@
 package logger
 
 import (
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 )
 
 var defaults = map[string]interface{}{
 	"Level":        Info,
 	"StdoutLevel":  Info,
 	"StderrLevel":  Error,
-	"Filename":     String("console"),
-	"MaxSizeInMb":  NonNegativeInteger(500),
-	"MaxBackups":   NonNegativeInteger(5),
-	"MaxAgeInDays": NonNegativeInteger(1),
+	"Filename":     values.String("console"),
+	"MaxSizeInMb":  values.NonNegativeInteger(500),
+	"MaxBackups":   values.NonNegativeInteger(5),
+	"MaxAgeInDays": values.NonNegativeInteger(1),
 	"Pattern":      Pattern("%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"),
 }
 
@@ -40,21 +40,21 @@ type Config struct {
 	//
 	// If instance value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
 	// above or equal to {@ref .Level#Warning warning}.
-	Filename String `json:"filename" yaml:"filename"`
+	Filename values.String `json:"filename" yaml:"filename"`
 
 	// @default 500
 	//
 	// Maximum size in megabytes of the log file before it gets rotated.
 	//
 	// This is ignored if {@ref #Filename filename} os set to ``console``.
-	MaxSizeInMb NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
+	MaxSizeInMb values.NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
 
 	// @default 500
 	//
 	// Maximum number of old log files to retain.
 	//
 	// This is ignored if {@ref #Filename filename} os set to ``console``.
-	MaxBackups NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
+	MaxBackups values.NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
 
 	// @default 1
 	//
@@ -64,7 +64,7 @@ type Config struct {
 	// savings, leap seconds, etc.
 	//
 	// This is ignored if {@ref #Filename filename} os set to ``console``.
-	MaxAgeInDays NonNegativeInteger `json:"maxAgeInDays" yaml:"maxAgeInDays"`
+	MaxAgeInDays values.NonNegativeInteger `json:"maxAgeInDays" yaml:"maxAgeInDays"`
 
 	// @default "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"
 	//
@@ -72,6 +72,7 @@ type Config struct {
 	Pattern Pattern `json:"pattern" yaml:"pattern"`
 }
 
+// NewConfig creates a new instance of Config.
 func NewConfig() Config {
 	result := Config{}
 	result.init()
@@ -88,7 +89,7 @@ func (instance Config) Validate() error {
 }
 
 func (instance *Config) init() {
-	SetDefaultsTo(defaults, instance)
+	values.SetDefaultsTo(defaults, instance)
 }
 
 // BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.

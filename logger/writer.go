@@ -2,7 +2,7 @@ package logger
 
 import (
 	"github.com/echocat/caretakerd/errors"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"
@@ -10,23 +10,26 @@ import (
 )
 
 var writeSynchronizerLock = new(sync.Mutex)
-var filenameToWriteSynchronizer = map[String]*Writer{}
+var filenameToWriteSynchronizer = map[values.String]*Writer{}
 
+// Writer represents a log writer.
+// A writer of this type is synchronized and could be used from different threads and contexts.
 type Writer struct {
 	lock       *sync.Mutex
 	ownerCount int
-	filename   String
+	filename   values.String
 	writer     *lumberjack.Logger
 }
 
-func NewWriteFor(filename String, writer *lumberjack.Logger) *Writer {
+// NewWriter creates a new Write for given filename.
+func NewWriter(filename values.String, writer *lumberjack.Logger) *Writer {
 	writeSynchronizerLock.Lock()
 	defer writeSynchronizerLock.Unlock()
 
 	result := filenameToWriteSynchronizer[filename]
 	if result != nil {
 		result.lock.Lock()
-		result.ownerCount += 1
+		result.ownerCount++
 		result.lock.Unlock()
 	} else {
 		result = &Writer{
@@ -40,6 +43,7 @@ func NewWriteFor(filename String, writer *lumberjack.Logger) *Writer {
 	return result
 }
 
+// Write writes the given content to writer drain.
 func (instance *Writer) Write(what []byte, stderr bool) (int, error) {
 	instance.lock.Lock()
 	defer instance.lock.Unlock()
@@ -66,10 +70,12 @@ func (instance *Writer) writeIgnoringProblems(what []byte, to io.Writer) (int, e
 	return n, err
 }
 
+// Close closes this Writer and all of its resources.
+// After this a usage is not longer possible.
 func (instance *Writer) Close() {
 	instance.lock.Lock()
 	defer instance.lock.Unlock()
-	instance.ownerCount -= 1
+	instance.ownerCount--
 
 	if instance.ownerCount == 0 {
 		writeSynchronizerLock.Lock()

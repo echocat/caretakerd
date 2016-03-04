@@ -132,7 +132,7 @@ func (instance *Rpc) Run() {
 
 	server := &http.Server{
 		Handler:  container,
-		ErrorLog: log.New(instance.logger.ReceiverFor(logger.Debug), "", 0),
+		ErrorLog: log.New(instance.logger.NewOutputStreamWrapperFor(logger.Debug), "", 0),
 	}
 	instance.logger.Log(logger.Debug, "Rpc will bind to %v...", instance.conf.Listen)
 	listener, err := net.Listen(instance.conf.Listen.AsScheme(), instance.conf.Listen.AsAddress())

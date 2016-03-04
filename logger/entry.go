@@ -9,11 +9,18 @@ import (
 	"time"
 )
 
-func (i *Logger) EntryFor(framesToSkip int, problem interface{}, priority Level, time time.Time, message string) Entry {
-	uptime := i.Uptime()
-	return NewEntry(framesToSkip+1, problem, i.name, priority, time, message, uptime)
+// Entry represents an entry to be logged.
+type Entry struct {
+	Time     time.Time
+	Message  string
+	Priority Level
+	Category string
+	Stack    stack.Stack
+	Uptime   time.Duration
+	Problem  interface{}
 }
 
+// NewEntry creates a new instance of Entry.
 func NewEntry(framesToSkip int, problem interface{}, category string, prioriy Level, time time.Time, message string, uptime time.Duration) Entry {
 	return Entry{
 		Time:     time,
@@ -26,16 +33,7 @@ func NewEntry(framesToSkip int, problem interface{}, category string, prioriy Le
 	}
 }
 
-type Entry struct {
-	Time     time.Time
-	Message  string
-	Priority Level
-	Category string
-	Stack    stack.Stack
-	Uptime   time.Duration
-	Problem  interface{}
-}
-
+// Format formats the current entry using the given pattern.
 func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 	result := []byte{}
 	flag := byte(0)
@@ -69,10 +67,9 @@ func (e Entry) Format(pattern Pattern, framesToSkip int) (string, error) {
 			} else if c == '%' {
 				if flagStarted {
 					return "", NewFormatError(position, "Unexpedted character %c at instance position within flag %c.", c, flag)
-				} else {
-					flagFormat = []byte{}
-					result = append(result, c)
 				}
+				flagFormat = []byte{}
+				result = append(result, c)
 			} else if c == '*' || c == '.' || c == '-' || c == ' ' || (c >= '0' && c <= '9') {
 				flagStarted = true
 				flagFormat = append(flagFormat, c)
@@ -190,16 +187,18 @@ func (e Entry) formatProblemIfNeeded(arguments string, framesToSkip int) (string
 	return "", nil
 }
 
+// FormatError represents an error if a given pattern contains wrong arguments.
+type FormatError struct {
+	Message  string
+	Position int
+}
+
+// NewFormatError creates a new instance of FormatError.
 func NewFormatError(position int, message string, a ...interface{}) FormatError {
 	return FormatError{
 		Message:  errors.New(message, a...).Message(),
 		Position: position,
 	}
-}
-
-type FormatError struct {
-	Message  string
-	Position int
 }
 
 func (e FormatError) Error() string {

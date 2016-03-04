@@ -1,7 +1,5 @@
 package logger
 
-import "strings"
-
 // # Description
 //
 // A flexible pattern string.
@@ -120,12 +118,4 @@ func (instance *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error 
 func (instance Pattern) Validate() error {
 	_, err := instance.CheckedString()
 	return err
-}
-
-func (instance Pattern) IsEmpty() bool {
-	return len(instance) <= 0
-}
-
-func (instance Pattern) IsTrimmedEmpty() bool {
-	return len(strings.TrimSpace(instance.String())) <= 0
 }

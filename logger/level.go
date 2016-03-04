@@ -34,6 +34,7 @@ const (
 	Fatal Level = 600
 )
 
+// AllLevels contains all possible variants of Level.
 var AllLevels = []Level{
 	Debug,
 	Info,
@@ -68,12 +69,12 @@ func (instance Level) CheckedString() (string, error) {
 	return strconv.Itoa(int(instance)), nil
 }
 
+// DisplayForLogging returns a string that could be used to display this level in log messages.
 func (instance Level) DisplayForLogging() string {
 	if instance == Warning {
 		return "WARN"
-	} else {
-		return strings.ToUpper(instance.String())
 	}
+	return strings.ToUpper(instance.String())
 }
 
 // Set the given string to current object from a string.
@@ -87,26 +88,26 @@ func (instance *Level) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal level: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		switch lowerValue {
-		case "warn":
-			*instance = Warning
-			return nil
-		case "err":
-			*instance = Error
-			return nil
-		}
-		for _, candidate := range AllLevels {
-			if candidate.String() == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal level: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	switch lowerValue {
+	case "warn":
+		*instance = Warning
+		return nil
+	case "err":
+		*instance = Error
+		return nil
+	}
+	for _, candidate := range AllLevels {
+		if candidate.String() == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal level: " + value)
 }
 
+// IsIndicatingProblem returns true if this level indicates a problem.
 func (instance Level) IsIndicatingProblem() bool {
 	return instance == Warning || instance == Error || instance == Fatal
 }
