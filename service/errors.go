@@ -1,25 +1,19 @@
 package service
 
-type ServiceDownError struct {
+// AlreadyRunningError indicates that a service is up but expected was down.
+type AlreadyRunningError struct {
 	Name string
 }
 
-func (instance ServiceDownError) Error() string {
-	return "Service '" + instance.Name + "' is down."
-}
-
-type ServiceAlreadyRunningError struct {
-	Name string
-}
-
-func (instance ServiceAlreadyRunningError) Error() string {
+func (instance AlreadyRunningError) Error() string {
 	return "Service '" + instance.Name + "' already running."
 }
 
-type ServiceAlreadyStoppedError struct {
+// AlreadyStoppedError indicates that a service is up but expected was down.
+type AlreadyStoppedError struct {
 	Name string
 }
 
-func (instance ServiceAlreadyStoppedError) Error() string {
+func (instance AlreadyStoppedError) Error() string {
 	return "Service '" + instance.Name + "' already stopped."
 }

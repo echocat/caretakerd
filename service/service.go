@@ -9,6 +9,7 @@ import (
 	"runtime"
 )
 
+// Service represents a service instance in caretakerd that was created from a Config object.
 type Service struct {
 	config    Config
 	logger    *logger.Logger
@@ -21,6 +22,7 @@ func finalize(what *Service) {
 	what.Close()
 }
 
+// NewService creates a new service instance from given Config.
 func NewService(conf Config, name string, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Service, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -45,6 +47,7 @@ func NewService(conf Config, name string, syncGroup *usync.Group, sec *keyStore.
 	return result, nil
 }
 
+// Close closes all resources of this service.
 func (instance *Service) Close() {
 	instance.logger.Close()
 }
@@ -53,18 +56,22 @@ func (instance Service) String() string {
 	return instance.Name()
 }
 
+// Name returns the name of this service.
 func (instance Service) Name() string {
 	return instance.name
 }
 
+// Config returns the config this services was created from.
 func (instance Service) Config() Config {
 	return instance.config
 }
 
+// Logger returns the logger this service uses.
 func (instance Service) Logger() *logger.Logger {
 	return instance.logger
 }
 
+// Access returns the access instance this service uses.
 func (instance *Service) Access() *access.Access {
 	return instance.access
 }

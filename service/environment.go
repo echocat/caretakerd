@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Environments represents a couple of key value pair environment variables.
 // @inline
 type Environments map[string]string
 
@@ -43,6 +44,7 @@ func (i *Environments) Set(value string) error {
 	return nil
 }
 
+// Append appends a string with format key=value to this instance.
 func (i Environments) Append(value string) error {
 	values, err := evaluate(value)
 	if err != nil {
@@ -54,6 +56,7 @@ func (i Environments) Append(value string) error {
 	return nil
 }
 
+// Put appends a key value pair to this instance.
 func (i *Environments) Put(key string, value string) error {
 	(*i)[key] = value
 	return nil

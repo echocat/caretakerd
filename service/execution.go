@@ -6,7 +6,7 @@ import (
 	"github.com/echocat/caretakerd/keyStore"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
-	. "github.com/echocat/caretakerd/values"
+	"github.com/echocat/caretakerd/values"
 	"os"
 	"os/exec"
 	"strconv"
@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+// Execution represents an execution of a service.
+// An execution could only be used one times.
 type Execution struct {
 	service   *Service
 	logger    *logger.Logger
@@ -26,6 +28,7 @@ type Execution struct {
 	syncGroup *sync.Group
 }
 
+// NewExecution creates a new instance of Execution.
 func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error) {
 	a, err := access.NewAccess(instance.config.Access, instance.name, sec)
 	if err != nil {
@@ -54,16 +57,14 @@ func (instance *Service) expandValue(ai *access.Access, in string) string {
 		} else if key == "CTD_PEM" {
 			if ai.Type() == access.GenerateToEnvironment {
 				return string(ai.Pem())
-			} else {
-				return ""
 			}
-		} else {
-			return os.Getenv(key)
+			return ""
 		}
+		return os.Getenv(key)
 	})
 }
 
-func getServiceBasedRunArgumentsFor(s *Service, ai *access.Access, command []String) []string {
+func getServiceBasedRunArgumentsFor(s *Service, ai *access.Access, command []values.String) []string {
 	args := []string{}
 	for i := 1; i < len(command); i++ {
 		args = append(args, s.expandValue(ai, command[i].String()))
@@ -71,7 +72,7 @@ func getServiceBasedRunArgumentsFor(s *Service, ai *access.Access, command []Str
 	return args
 }
 
-func generateServiceBasedCmd(s *Service, ai *access.Access, command []String) *exec.Cmd {
+func generateServiceBasedCmd(s *Service, ai *access.Access, command []values.String) *exec.Cmd {
 	logger := (*s).logger
 	config := (*s).config
 	executable := s.expandValue(ai, command[0].String())
@@ -98,16 +99,15 @@ func generateServiceBasedCmd(s *Service, ai *access.Access, command []String) *e
 	return cmd
 }
 
-func (instance *Execution) generateCmd(command []String) *exec.Cmd {
+func (instance *Execution) generateCmd(command []values.String) *exec.Cmd {
 	return generateServiceBasedCmd(instance.service, instance.access, command)
 }
 
-func (instance *Execution) extractCommandProperties(command []String) (cleanCommand []String, handleErrors bool) {
+func (instance *Execution) extractCommandProperties(command []values.String) (cleanCommand []values.String, handleErrors bool) {
 	if len(command) > 0 && command[0] == "-" {
 		return command[1:], false
-	} else {
-		return command, true
 	}
+	return command, true
 }
 
 func (instance *Execution) commandLineOf(cmd *exec.Cmd) string {
@@ -138,7 +138,7 @@ func (instance *Execution) handleBeforeRun() error {
 	return nil
 }
 
-func (instance *Execution) preExecution() (ExitCode, error) {
+func (instance *Execution) preExecution() (values.ExitCode, error) {
 	preCommands := instance.service.config.PreCommands
 	for _, preCommand := range preCommands {
 		command, handleErrors := instance.extractCommandProperties(preCommand)
@@ -157,7 +157,7 @@ func (instance *Execution) preExecution() (ExitCode, error) {
 			}
 		}
 	}
-	return ExitCode(0), nil
+	return values.ExitCode(0), nil
 }
 
 func (instance *Execution) postExecution() {
@@ -179,17 +179,19 @@ func (instance *Execution) postExecution() {
 	}
 }
 
-func (instance *Execution) Run() (ExitCode, error) {
+// Run runs this execution.
+// This method is blocking and could only be executed at this instance one time.
+func (instance *Execution) Run() (values.ExitCode, error) {
 	err := instance.handleBeforeRun()
 	if err != nil {
-		return ExitCode(1), err
+		return values.ExitCode(1), err
 	}
 	exitCode, err := instance.preExecution()
 	if err != nil || exitCode != 0 {
 		return exitCode, err
 	}
 	instance.logger.Log(logger.Debug, "Start service '%s' with command: %s", instance.Name(), instance.commandLineOf(instance.cmd))
-	exitCode, err, lastState := instance.runBare()
+	exitCode, lastState, err := instance.runBare()
 	if lastState == Killed {
 		err = StoppedOrKilledError{error: errors.New("Process was killed.")}
 		instance.logger.Log(logger.Debug, "Service '%s' ended after kill: %d", instance.Name(), exitCode)
@@ -208,42 +210,41 @@ func (instance *Execution) Run() (ExitCode, error) {
 	return exitCode, err
 }
 
+// UnrecoverableError indicates a problem that could not recovered with a restart of a service.
 type UnrecoverableError struct {
 	error
 }
 
+// StoppedOrKilledError indicates not a real problem.
+// It means that the service was stopped or killed.
 type StoppedOrKilledError struct {
 	error
 }
 
-func (instance *Execution) runCommand(cmd *exec.Cmd) (ExitCode, error) {
+func (instance *Execution) runCommand(cmd *exec.Cmd) (values.ExitCode, error) {
 	var waitStatus syscall.WaitStatus
 	if err := cmd.Run(); err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			waitStatus = exitError.Sys().(syscall.WaitStatus)
 			exitSignal := waitStatus.Signal()
 			if exitSignal > 0 {
-				return ExitCode(int(exitSignal) + 128), nil
-			} else {
-				return ExitCode(waitStatus.ExitStatus()), nil
+				return values.ExitCode(int(exitSignal) + 128), nil
 			}
-		} else {
-			return ExitCode(0), UnrecoverableError{error: err}
+			return values.ExitCode(waitStatus.ExitStatus()), nil
 		}
-	} else {
-		waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
-		return ExitCode(waitStatus.ExitStatus()), nil
+		return values.ExitCode(0), UnrecoverableError{error: err}
 	}
+	waitStatus = cmd.ProcessState.Sys().(syscall.WaitStatus)
+	return values.ExitCode(waitStatus.ExitStatus()), nil
 }
 
-func (instance *Execution) runBare() (ExitCode, error, Status) {
+func (instance *Execution) runBare() (values.ExitCode, Status, error) {
 	if instance.doTrySetRunningState() {
 		defer instance.doSetDownState()
 		exitCode, err := instance.runCommand((*instance).cmd)
-		return exitCode, err, instance.status
-	} else {
-		return ExitCode(0), UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}, instance.status
+		return exitCode, instance.status, err
 	}
+	return values.ExitCode(0), instance.status, UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}
 }
 
 func (instance *Execution) doTrySetRunningState() bool {
@@ -284,10 +285,13 @@ func (instance *Execution) setStateTo(ns Status) bool {
 	return false
 }
 
+// Name returns the name of the owning service.
 func (instance *Execution) Name() string {
 	return (*instance).service.name
 }
 
+// Stop stops this execution instance if running.
+// This method block until the execution is done.
 func (instance *Execution) Stop() {
 	instance.syncGroup.Interrupt()
 	if instance.doLock() != nil {
@@ -328,6 +332,8 @@ func (instance *Execution) sendStop() {
 	}
 }
 
+// Kill kills a this execution if running.
+// This method block until the execution is done.
 func (instance *Execution) Kill() error {
 	instance.syncGroup.Interrupt()
 	if err := instance.doLock(); err != nil {
@@ -342,7 +348,7 @@ func (instance *Execution) Kill() error {
 func (instance *Execution) sendKill() {
 	if instance.status != Killed && instance.setStateTo(Killed) {
 		for instance.status != Down {
-			if err := instance.sendSignal(KILL); err != nil {
+			if err := instance.sendSignal(values.KILL); err != nil {
 				instance.logger.LogProblem(err, logger.Warning, "Could not kill: %v", instance.service.Name())
 			}
 			if instance.status != Down {
@@ -352,7 +358,9 @@ func (instance *Execution) sendKill() {
 	}
 }
 
-func (instance *Execution) Signal(what Signal) error {
+// Signal sends the given signal to this execution if running.
+// This method is not blocking.
+func (instance *Execution) Signal(what values.Signal) error {
 	if err := instance.doLock(); err != nil {
 		return err
 	}
@@ -361,7 +369,7 @@ func (instance *Execution) Signal(what Signal) error {
 	return instance.sendSignal(what)
 }
 
-func (instance *Execution) sendSignal(s Signal) error {
+func (instance *Execution) sendSignal(s values.Signal) error {
 	if instance.isKillSignal(s) {
 		if !instance.setStateTo(Killed) {
 			return errors.New("Service '%v' is not running.", instance)
@@ -378,18 +386,18 @@ func (instance *Execution) sendSignal(s Signal) error {
 		instance.setStateTo(Down)
 		return errors.New("Service '%v' is not running.", instance)
 	}
-	if s != NOOP {
+	if s != values.NOOP {
 		return sendSignalToService((*instance).service, process, s)
 	}
 	return nil
 }
 
-func (instance Execution) isStopSignal(s Signal) bool {
+func (instance Execution) isStopSignal(s values.Signal) bool {
 	return s == instance.service.config.StopSignal
 }
 
-func (instance Execution) isKillSignal(s Signal) bool {
-	return s == KILL
+func (instance Execution) isKillSignal(s values.Signal) bool {
+	return s == values.KILL
 }
 
 func (instance *Execution) doLock() error {
@@ -400,7 +408,8 @@ func (instance *Execution) doUnlock() {
 	instance.lock.Unlock()
 }
 
-func (instance *Execution) Pid() int {
+// PID returns the PID of this execution if running - otherwise 0.
+func (instance *Execution) PID() int {
 	if instance.doLock() != nil {
 		return 0
 	}
@@ -415,6 +424,7 @@ func (instance *Execution) Pid() int {
 	return 0
 }
 
+// Status returns the status of this execution.
 func (instance *Execution) Status() Status {
 	if instance.doLock() != nil {
 		return Unknown
@@ -423,6 +433,7 @@ func (instance *Execution) Status() Status {
 	return instance.status
 }
 
+// Service returns the service this execution belongs to.
 func (instance Execution) Service() *Service {
 	return instance.service
 }
@@ -431,6 +442,7 @@ func (instance Execution) String() string {
 	return instance.service.String()
 }
 
+// SyncGroup returns the syncGroup this execution is using.
 func (instance *Execution) SyncGroup() *sync.Group {
 	return instance.syncGroup
 }

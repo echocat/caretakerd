@@ -6,15 +6,17 @@ import (
 	usync "github.com/echocat/caretakerd/sync"
 )
 
+// Services is a couple of services with their names.
 type Services map[string]*Service
 
-func NewServices(confs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Services, error) {
-	err := confs.Validate()
+// NewServices creates a new instance of Services from given Configs.
+func NewServices(configs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Services, error) {
+	err := configs.Validate()
 	if err != nil {
 		return nil, err
 	}
 	result := Services{}
-	for name, conf := range confs {
+	for name, conf := range configs {
 		newService, err := NewService(conf, name, syncGroup.NewGroup(), sec)
 		if err != nil {
 			return nil, err
@@ -24,13 +26,16 @@ func NewServices(confs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore) 
 	return &result, nil
 }
 
-func (s Services) Get(name string) (*Service, bool) {
-	result, ok := s[name]
-	return result, ok
+// Get returns a service for the give name if exists.
+// If no service for the given name could be found nil is returned.
+func (instance Services) Get(name string) *Service {
+	return instance[name]
 }
 
-func (s Services) GetMaster() *Service {
-	for _, service := range s {
+// GetMaster returns the master of this instance.
+// If there is no master nil is returned.
+func (instance Services) GetMaster() *Service {
+	for _, service := range instance {
 		if service.config.Type != Master {
 			return service
 		}
@@ -38,17 +43,20 @@ func (s Services) GetMaster() *Service {
 	return nil
 }
 
-func (s Services) GetMasterOrFail() *Service {
-	master := s.GetMaster()
+// GetMasterOrFail returns the master if exists.
+// Otherwise it will fail with a panic.
+func (instance Services) GetMasterOrFail() *Service {
+	master := instance.GetMaster()
 	if master == nil {
 		panics.New("There is no master service defined.").Throw()
 	}
 	return master
 }
 
-func (s Services) GetAllButMaster() Services {
+// GetAllButMaster returns every service but not the master.
+func (instance Services) GetAllButMaster() Services {
 	result := Services{}
-	for name, service := range s {
+	for name, service := range instance {
 		if service.config.Type != Master {
 			result[name] = service
 		}
@@ -56,9 +64,10 @@ func (s Services) GetAllButMaster() Services {
 	return result
 }
 
-func (s Services) GetAllAutoStartable() Services {
+// GetAllAutoStartable returns every service that is autostartable.
+func (instance Services) GetAllAutoStartable() Services {
 	result := Services{}
-	for name, service := range s {
+	for name, service := range instance {
 		if service.config.Type.IsAutoStartable() {
 			result[name] = service
 		}
@@ -66,8 +75,9 @@ func (s Services) GetAllAutoStartable() Services {
 	return result
 }
 
-func (s Services) Close() {
-	for _, service := range s {
+// Close closes this instance all of the services.
+func (instance Services) Close() {
+	for _, service := range instance {
 		service.Close()
 	}
 }

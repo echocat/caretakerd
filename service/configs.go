@@ -4,13 +4,17 @@ import (
 	"github.com/echocat/caretakerd/errors"
 )
 
+// Configs represents a couple of named service configs.
 // @inline
 type Configs map[string]Config
 
+// NewConfigs creates a new instance of Configs.
 func NewConfigs() Configs {
 	return Configs{}
 }
 
+// GetMasterName returns the name of the configured master.
+// If there is no valid master configured false is returned.
 func (s *Configs) GetMasterName() (string, bool) {
 	for name, service := range *s {
 		if service.Type == Master {
@@ -20,22 +24,24 @@ func (s *Configs) GetMasterName() (string, bool) {
 	return "", false
 }
 
-func (s *Configs) Configure(name string, value string, with func(conf *Config, value string) error) error {
-	conf, ok := (*s)[name]
+// Configure executes a configuring action for a service with given name.
+func (s *Configs) Configure(serviceName string, value string, with func(conf *Config, value string) error) error {
+	conf, ok := (*s)[serviceName]
 	if !ok {
-		return errors.New("There does no service with name '%s' exist.", name)
+		return errors.New("There does no service with name '%s' exist.", serviceName)
 	}
 	err := with(&conf, value)
-	(*s)[name] = conf
+	(*s)[serviceName] = conf
 	return err
 }
 
-func (s *Configs) ConfigureSub(name string, key string, value string, with func(conf *Config, key string, value string) error) error {
-	conf, ok := (*s)[name]
+// ConfigureSub executes a configuring action for a service with given name.
+func (s *Configs) ConfigureSub(serviceName string, key string, value string, with func(conf *Config, key string, value string) error) error {
+	conf, ok := (*s)[serviceName]
 	if !ok {
-		return errors.New("There does no service with name '%s' exist.", name)
+		return errors.New("There does no service with name '%s' exist.", serviceName)
 	}
 	err := with(&conf, key, value)
-	(*s)[name] = conf
+	(*s)[serviceName] = conf
 	return err
 }

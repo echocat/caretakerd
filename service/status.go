@@ -7,17 +7,25 @@ import (
 	"strings"
 )
 
+// Status represents a status of a service execution.
 type Status int
 
 const (
-	New     = Status(0)
-	Down    = Status(1)
+	// New indicates that the execution was created but not run.
+	New = Status(0)
+	// Down indicates that the execution was executed and is now done regularly.
+	Down = Status(1)
+	// Running indicates that the execution is still running.
 	Running = Status(2)
+	// Stopped indicates that the execution is still running but a stop was initiated.
 	Stopped = Status(3)
-	Killed  = Status(4)
+	// Killed indicates that the execution is still running but a kill was initiated.
+	Killed = Status(4)
+	// Unknown indicates nothing useful.
 	Unknown = Status(5)
 )
 
+// AllStatus contains all possible variants of Status.
 var AllStatus = []Status{
 	New,
 	Down,
@@ -66,16 +74,15 @@ func (instance *Status) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal status: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllStatus {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal status: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllStatus {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal status: " + value)
 }
 
 // MarshalJSON is used until json marshalling. Do not call directly.
@@ -98,6 +105,7 @@ func (instance Status) Validate() error {
 	return err
 }
 
+// IsGoDownRequest returns true if the status indicates that the execution have to come to the end now.
 func (instance Status) IsGoDownRequest() bool {
 	switch instance {
 	case Stopped:

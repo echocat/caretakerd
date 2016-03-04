@@ -37,6 +37,7 @@ const (
 	Master Type = 2
 )
 
+// AllTypes contains all possible variants of Type.
 var AllTypes = []Type{
 	OnDemand,
 	AutoStart,
@@ -76,16 +77,15 @@ func (instance *Type) Set(value string) error {
 			}
 		}
 		return errors.New("Illegal type: " + value)
-	} else {
-		lowerValue := strings.ToLower(value)
-		for _, candidate := range AllTypes {
-			if strings.ToLower(candidate.String()) == lowerValue {
-				(*instance) = candidate
-				return nil
-			}
-		}
-		return errors.New("Illegal type: " + value)
 	}
+	lowerValue := strings.ToLower(value)
+	for _, candidate := range AllTypes {
+		if strings.ToLower(candidate.String()) == lowerValue {
+			(*instance) = candidate
+			return nil
+		}
+	}
+	return errors.New("Illegal type: " + value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
@@ -120,6 +120,8 @@ func (instance *Type) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
+// IsAutoStartable returns true if this type indicates that the service
+// have to be started automatically together with caretakerd.
 func (instance Type) IsAutoStartable() bool {
 	switch instance {
 	case Master:

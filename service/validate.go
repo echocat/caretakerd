@@ -16,6 +16,7 @@ func (instance Configs) Validate() error {
 	return nil
 }
 
+// ValidateMaster do validate if there is exact one valid master or return an error object.
 func (instance Configs) ValidateMaster() error {
 	masters := []string{}
 	for name, service := range instance {
@@ -67,8 +68,8 @@ func (instance Config) Validate() error {
 	return err
 }
 
-func (i Config) validateCommand() error {
-	if len(i.Command) <= 0 {
+func (instance Config) validateCommand() error {
+	if len(instance.Command) <= 0 {
 		return errors.New("There is no command defined.")
 	}
 	return nil

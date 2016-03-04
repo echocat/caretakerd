@@ -95,7 +95,7 @@ func (instance *Execution) startAndLogProblemsIfNeeded(target *service.Service) 
 func (instance *Execution) Start(target *service.Service) error {
 	execution, err := instance.createAndRegisterNotExistingExecutionFor(target)
 	if err != nil {
-		if sare, ok := err.(service.ServiceAlreadyRunningError); ok {
+		if sare, ok := err.(service.AlreadyRunningError); ok {
 			return sare
 		}
 		return errors.New("Could not start service '%v'.", target).CausedBy(err)
@@ -244,7 +244,7 @@ func (instance *Execution) Restart(target *service.Service) error {
 	instance.doRLock()
 	if stopRequested, ok := instance.stopRequests[target]; ok && stopRequested {
 		instance.doRUnlock()
-		return service.ServiceAlreadyStoppedError{Name: target.Name()}
+		return service.AlreadyStoppedError{Name: target.Name()}
 	}
 	execution, ok := instance.executions[target]
 	if !ok {
@@ -263,7 +263,7 @@ func (instance *Execution) Stop(target *service.Service) error {
 	execution, ok := instance.executions[target]
 	if !ok {
 		instance.doRUnlock()
-		return service.ServiceDownError{Name: target.Name()}
+		return service.AlreadyStoppedError{Name: target.Name()}
 	}
 	instance.doRUnlock()
 	instance.registerStopRequestsFor(execution)
@@ -277,7 +277,7 @@ func (instance *Execution) Kill(target *service.Service) error {
 	execution, ok := instance.executions[target]
 	if !ok {
 		instance.doRUnlock()
-		return service.ServiceDownError{Name: target.Name()}
+		return service.AlreadyStoppedError{Name: target.Name()}
 	}
 	instance.doRUnlock()
 	instance.registerStopRequestsFor(execution)
@@ -290,7 +290,7 @@ func (instance *Execution) Signal(target *service.Service, what values.Signal) e
 	execution, ok := instance.executions[target]
 	if !ok {
 		instance.doRUnlock()
-		return service.ServiceDownError{Name: target.Name()}
+		return service.AlreadyStoppedError{Name: target.Name()}
 	}
 	instance.doRUnlock()
 	return execution.Signal(what)
@@ -304,7 +304,7 @@ func (instance *Execution) createAndRegisterNotExistingExecutionFor(target *serv
 		return nil, err
 	}
 	if _, ok := instance.executions[target]; ok {
-		return nil, service.ServiceAlreadyRunningError{Name: target.Name()}
+		return nil, service.AlreadyRunningError{Name: target.Name()}
 	}
 	instance.executions[target] = result
 	return result, nil

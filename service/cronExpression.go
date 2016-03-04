@@ -69,6 +69,7 @@ type CronExpression struct {
 	schedule cron.Schedule
 }
 
+// NewCronExpression creates a new instance of CronExpression
 func NewCronExpression() CronExpression {
 	return CronExpression{
 		spec:     "",
@@ -111,10 +112,12 @@ func (instance *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error)
 	return instance.Set(value)
 }
 
+// IsEnabled returns true if this expression is valid and enabled.
 func (instance CronExpression) IsEnabled() bool {
 	return instance.schedule != nil
 }
 
+// Next returns the next possible time matching to this cron expression based on the given time.
 func (instance CronExpression) Next(from time.Time) *time.Time {
 	if instance.IsEnabled() {
 		result := instance.schedule.Next(from)

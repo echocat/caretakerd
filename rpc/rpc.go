@@ -276,7 +276,7 @@ func (instance *RPC) service(request *restful.Request, response *restful.Respons
 	instance.onReadPermission(request, response, func() {
 		serviceName := request.PathParameter("serviceName")
 		services := instance.caretakerd.Services()
-		if service, ok := services.Get(serviceName); ok {
+		if service := services.Get(serviceName); service != nil {
 			information := instance.execution.InformationFor(service)
 			response.WriteEntity(information)
 		} else {
@@ -309,7 +309,7 @@ func (instance *RPC) servicePid(request *restful.Request, response *restful.Resp
 	instance.onReadPermission(request, response, func() {
 		instance.doWithExecution(request, response, func(execution *service.Execution) {
 			if execution != nil {
-				response.Write([]byte(strconv.Itoa(execution.Pid())))
+				response.Write([]byte(strconv.Itoa(execution.PID())))
 			} else {
 				response.Write([]byte("0"))
 			}
@@ -336,7 +336,7 @@ func (instance *RPC) serviceStart(request *restful.Request, response *restful.Re
 			err := instance.execution.Start(sc)
 			if err == nil {
 				response.Write([]byte("OK"))
-			} else if sde, ok := err.(service.ServiceAlreadyRunningError); ok {
+			} else if sde, ok := err.(service.AlreadyRunningError); ok {
 				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
 				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
@@ -351,7 +351,7 @@ func (instance *RPC) serviceStop(request *restful.Request, response *restful.Res
 			err := instance.execution.Stop(sc)
 			if err == nil {
 				response.Write([]byte("OK"))
-			} else if sde, ok := err.(service.ServiceDownError); ok {
+			} else if sde, ok := err.(service.AlreadyStoppedError); ok {
 				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
 				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
@@ -366,7 +366,7 @@ func (instance *RPC) serviceKill(request *restful.Request, response *restful.Res
 			err := instance.execution.Kill(sc)
 			if err == nil {
 				response.Write([]byte("OK"))
-			} else if sde, ok := err.(service.ServiceDownError); ok {
+			} else if sde, ok := err.(service.AlreadyStoppedError); ok {
 				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
 				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
@@ -391,7 +391,7 @@ func (instance *RPC) serviceSignal(request *restful.Request, response *restful.R
 				err = instance.execution.Kill(sc)
 				if err == nil {
 					response.Write([]byte("OK"))
-				} else if sde, ok := err.(service.ServiceDownError); ok {
+				} else if sde, ok := err.(service.AlreadyStoppedError); ok {
 					response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 				} else {
 					response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
@@ -404,7 +404,7 @@ func (instance *RPC) serviceSignal(request *restful.Request, response *restful.R
 func (instance *RPC) doWithService(request *restful.Request, response *restful.Response, what func(service *service.Service)) {
 	serviceName := request.PathParameter("serviceName")
 	services := instance.caretakerd.Services()
-	if service, ok := services.Get(serviceName); ok {
+	if service := services.Get(serviceName); service != nil {
 		what(service)
 	} else {
 		response.WriteError(http.StatusNotFound, errors.New("Service '%s' does not exist.", serviceName))
