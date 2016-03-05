@@ -1,12 +1,15 @@
 package sync
 
 import (
-	"github.com/stretchr/testify/assert"
+	. "github.com/echocat/caretakerd/testUtils"
+	. "gopkg.in/check.v1"
 	"testing"
 	"time"
 )
 
-func TestSleep_Interrupt(t *testing.T) {
+type SleepTest struct{}
+
+func (s *SleepTest) TestInterrupt(c *C) {
 	sg := NewGroup().NewGroup()
 	start := time.Now()
 	go func() {
@@ -14,6 +17,14 @@ func TestSleep_Interrupt(t *testing.T) {
 		sg.Interrupt()
 	}()
 	sg.Sleep(10 * time.Second)
-	duration := time.Since(start) / time.Millisecond
-	assert.Equal(t, true, duration < 50, "Expected was not longer then 50ms but was %d", duration)
+	durationInMs := int(time.Since(start) / time.Millisecond)
+	c.Assert(durationInMs, IsLessThan, 50)
+}
+
+func Test(t *testing.T) {
+	TestingT(t)
+}
+
+func init() {
+	Suite(&SleepTest{})
 }

@@ -2,15 +2,25 @@ package caretakerd
 
 import (
 	. "github.com/echocat/caretakerd/values"
-	"github.com/stretchr/testify/assert"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 
-func TestEnvironment_parseCmd(t *testing.T) {
-	assert.Equal(t, []String{"a", "b"}, parseCmd("a b"))
-	assert.Equal(t, []String{"a b"}, parseCmd("\"a b\""))
-	assert.Equal(t, []String{"\"a", "b"}, parseCmd("\\\"a b"))
-	assert.Equal(t, []String{"\"a b"}, parseCmd("\"\\\"a b\""))
-	assert.Equal(t, []String{"\\"}, parseCmd("\\\\"))
-	assert.Equal(t, []String{"v1=a ", "v2= b"}, parseCmd("v1=\"a \" \"v2= b\""))
+type ConfigEnvironmentTest struct{}
+
+func (s *ConfigEnvironmentTest) TestParseCmd(c *C) {
+	c.Assert(parseCmd("a b"), DeepEquals, []String{"a", "b"})
+	c.Assert(parseCmd("\"a b\""), DeepEquals, []String{"a b"})
+	c.Assert(parseCmd("\\\"a b"), DeepEquals, []String{"\"a", "b"})
+	c.Assert(parseCmd("\"\\\"a b\""), DeepEquals, []String{"\"a b"})
+	c.Assert(parseCmd("\\\\"), DeepEquals, []String{"\\"})
+	c.Assert(parseCmd("v1=\"a \" \"v2= b\""), DeepEquals, []String{"v1=a ", "v2= b"})
+}
+
+func Test(t *testing.T) {
+	TestingT(t)
+}
+
+func init() {
+	Suite(&ConfigEnvironmentTest{})
 }

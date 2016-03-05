@@ -1,12 +1,14 @@
 package logger
 
 import (
-	"github.com/stretchr/testify/assert"
+	. "gopkg.in/check.v1"
 	"testing"
 	"time"
 )
 
-func TestEntry_Format(t *testing.T) {
+type EntryTest struct{}
+
+func (s *EntryTest) TestFormat(c *C) {
 	e := NewEntry(
 		0,
 		nil,
@@ -17,6 +19,14 @@ func TestEntry_Format(t *testing.T) {
 		time.Duration(10*time.Second),
 	)
 	f, err := e.Format("%d{YYYY-MM-DD HH:mm:ss}/%r [%-5.5p] [%-8.8c{2}] %m at %C{1}.%M(%F{1}:%L)%n", 0)
-	assert.Nil(t, err)
-	assert.Equal(t, "2016-01-09 13:59:30/10000 [INFO ] [Cool.Log] This is a test! at logger.TestEntry_Format(entry_test.go:10)\n", f)
+	c.Assert(err, IsNil)
+	c.Assert(f, Matches, "2016-01-09 13:59:30/10000 \\[INFO \\] \\[Cool\\.Log\\] This is a test! at .+\\.TestFormat\\(entry_test.go:[0-9]+\\)\n")
+}
+
+func Test(t *testing.T) {
+	TestingT(t)
+}
+
+func init() {
+	Suite(&EntryTest{})
 }
