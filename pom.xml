@@ -79,6 +79,7 @@
                                     github.com/russross/blackfriday
                                     github.com/tdewolff/minify
                                     github.com/stretchr/testify/assert
+                                    gopkg.in/check.v1
                                 </dependencies>
                             </properties>
                         </configuration>

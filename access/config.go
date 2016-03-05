@@ -48,7 +48,8 @@ type Config struct {
 // NewNoneConfig create a new Config that grant no access to anything.
 func NewNoneConfig() Config {
 	return Config{
-		Type: None,
+		Type:       None,
+		Permission: Forbidden,
 	}
 }
 
@@ -76,8 +77,8 @@ func NewGenerateToFileConfig(permission Permission, pemFile values.String) Confi
 		Type:              GenerateToFile,
 		Permission:        permission,
 		PemFile:           values.String(pemFile),
-		PemFilePermission: DefaultFilePermission(),
 		PemFileUser:       values.String(""),
+		PemFilePermission: DefaultFilePermission(),
 	}
 }
 
@@ -93,8 +94,9 @@ func (instance Config) Validate() error {
 	if err == nil {
 		err = instance.validateStringOnlyAllowedValue(instance.PemFileUser, "pemFileUser", instance.Type.IsTakingFileUser)
 	}
-	// TODO!    i.validateUint32OnlyAllowedValue(uint32(i.PemFilePermission), "pemFilePermission", i.Auth.IsTakingPermission)
-	// TODO!    i.validateStringOnlyAllowedValue(i.KeyArguments, "keyArguments", i.Auth.IsGeneratingCertificate)
+	if err == nil {
+		err = instance.validateUint32OnlyAllowedValue(uint32(instance.PemFilePermission), "pemFilePermission", instance.Type.IsTakingFilePermission)
+	}
 	return err
 }
 
