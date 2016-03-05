@@ -158,7 +158,7 @@ func (s *ConfigTest) TestValidateNotAllowedFilePermission(c *C) {
 	}
 }
 
-func Test(t *testing.T) {
+func TestConfig(t *testing.T) {
 	TestingT(t)
 }
 

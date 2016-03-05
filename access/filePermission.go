@@ -60,7 +60,7 @@ func (instance *FilePermission) UnmarshalJSON(b []byte) error {
 }
 
 // Validate do validate action on this object and return an error object if any.
-func (instance FilePermission) Validate() {}
+func (instance FilePermission) Validate() error { return nil }
 
 // ThisOrDefault returns this instance if not empty. Otherwise default FilePermission will be returned.
 func (instance FilePermission) ThisOrDefault() FilePermission {
