@@ -47,7 +47,7 @@ func sendSignalToService(service *Service, process *os.Process, what values.Sign
 		pgid, err := syscall.Getpgid(process.Pid)
 		if err != nil {
 			if syscall.Kill(-pgid, syscall.Signal(what)) != nil {
-				return nuil
+				return nil
 			}
 		}
 	}
