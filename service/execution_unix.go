@@ -10,7 +10,6 @@ import (
 	"os/user"
 	"strconv"
 	"syscall"
-	"fmt"
 )
 
 func lookupUser(username string) (uid, gid int, err error) {
