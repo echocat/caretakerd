@@ -1,7 +1,7 @@
 package sync
 
 import (
-	. "github.com/echocat/caretakerd/testUtils"
+	. "github.com/echocat/caretakerd/testing"
 	. "gopkg.in/check.v1"
 	"testing"
 	"time"

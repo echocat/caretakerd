@@ -1,12 +1,36 @@
-package testUtils
+package testing
 
 import (
+	"errors"
 	"github.com/echocat/caretakerd/values"
 	. "gopkg.in/check.v1"
-	"testing"
 )
 
 type CheckersTest struct{}
+
+func init() {
+	Suite(&CheckersTest{})
+}
+
+type enclosesString struct {
+	string
+}
+
+func (instance enclosesString) String() string {
+	return instance.string
+}
+
+func (s *CheckersTest) TestThrowsPanicThatMatches(c *C) {
+	c.Assert(func() {
+		panic(errors.New("foo123"))
+	}, ThrowsPanicThatMatches, "foo1.3")
+	c.Assert(func() {
+		panic(enclosesString{string: "foo123"})
+	}, ThrowsPanicThatMatches, "foo1.3")
+	c.Assert(func() {
+		panic("foo123")
+	}, ThrowsPanicThatMatches, "foo1.3")
+}
 
 func (s *CheckersTest) TestIsEmpty(c *C) {
 	c.Assert("abc", Not(IsEmpty))
@@ -71,12 +95,4 @@ func (s *CheckersTest) TestIsLargerThanOrEqualTo(c *C) {
 	result, message := IsLargerThanOrEqualTo.Check([]interface{}{22.5, 11}, []string{"obtained", "compareTo"})
 	c.Assert(result, Equals, false)
 	c.Assert(message, Equals, "'obtained' type not equal to the type to 'compareTo' type.")
-}
-
-func Test(t *testing.T) {
-	TestingT(t)
-}
-
-func init() {
-	Suite(&CheckersTest{})
 }

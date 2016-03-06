@@ -1,13 +1,16 @@
 package access
 
 import (
-	. "github.com/echocat/caretakerd/testUtils"
+	. "github.com/echocat/caretakerd/testing"
 	"github.com/echocat/caretakerd/values"
 	. "gopkg.in/check.v1"
-	"testing"
 )
 
 type ConfigTest struct{}
+
+func init() {
+	Suite(&ConfigTest{})
+}
 
 func (s *ConfigTest) TestNewNoneConfig(c *C) {
 	actual := NewNoneConfig()
@@ -156,12 +159,4 @@ func (s *ConfigTest) TestValidateNotAllowedFilePermission(c *C) {
 			c.Assert(actual.Validate(), ErrorMatches, "There is no pemFilePermission allowed for type "+t.String()+".")
 		}
 	}
-}
-
-func TestConfig(t *testing.T) {
-	TestingT(t)
-}
-
-func init() {
-	Suite(&ConfigTest{})
 }

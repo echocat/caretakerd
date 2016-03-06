@@ -3,7 +3,6 @@ package access
 import (
 	"encoding/json"
 	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/panics"
 	"strconv"
 	"strings"
 )
@@ -34,15 +33,11 @@ var AllPermissions = []Permission{
 }
 
 func (instance Permission) String() string {
-	switch instance {
-	case Forbidden:
-		return "forbidden"
-	case ReadOnly:
-		return "readOnly"
-	case ReadWrite:
-		return "readWrite"
+	s, err := instance.CheckedString()
+	if err != nil {
+		panic(err)
 	}
-	panic(panics.New("Illegal permission: %d", instance))
+	return s
 }
 
 // CheckedString is like String but return also an optional error if there are some

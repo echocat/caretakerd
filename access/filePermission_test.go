@@ -1,13 +1,17 @@
 package access
 
 import (
+	"github.com/echocat/dockerctl/errors"
 	. "gopkg.in/check.v1"
 	"os"
 	"reflect"
-	"testing"
 )
 
 type FilePermissionTest struct{}
+
+func init() {
+	Suite(&FilePermissionTest{})
+}
 
 func (s *FilePermissionTest) TestString(c *C) {
 	c.Assert(FilePermission(0600).String(), Equals, "0600")
@@ -48,6 +52,11 @@ func (s *FilePermissionTest) TestUnmarshalYAMLWithProblems(c *C) {
 		return nil
 	}), ErrorMatches, "Illegal file permission format: 0000600")
 	c.Assert(actual, Equals, FilePermission(0))
+
+	c.Assert(actual.UnmarshalYAML(func(v interface{}) error {
+		return errors.New("Foo")
+	}), ErrorMatches, "Foo")
+	c.Assert(actual, Equals, FilePermission(0))
 }
 
 func (s *FilePermissionTest) TestMarshalJSON(c *C) {
@@ -84,12 +93,4 @@ func (s *FilePermissionTest) TestThisOrDefault(c *C) {
 func (s *FilePermissionTest) TestAsFileMode(c *C) {
 	c.Assert(FilePermission(0).AsFileMode(), Equals, os.FileMode(0))
 	c.Assert(FilePermission(0600).AsFileMode(), Equals, os.FileMode(0600))
-}
-
-func TestFilePermission(t *testing.T) {
-	TestingT(t)
-}
-
-func init() {
-	Suite(&FilePermissionTest{})
 }
