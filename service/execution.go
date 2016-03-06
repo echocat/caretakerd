@@ -384,7 +384,7 @@ func (instance *Execution) sendSignal(s values.Signal) error {
 	ps := cmd.ProcessState
 	if process == nil || ps != nil {
 		instance.setStateTo(Down)
-		return errors.New("Service '%v' is not running.", instance)
+		return nil
 	}
 	if s != values.NOOP {
 		return sendSignalToService((*instance).service, process, s)
