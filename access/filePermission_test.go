@@ -1,7 +1,7 @@
 package access
 
 import (
-	"github.com/echocat/dockerctl/errors"
+	"github.com/echocat/caretakerd/errors"
 	. "gopkg.in/check.v1"
 	"os"
 	"reflect"
