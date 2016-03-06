@@ -42,13 +42,17 @@ func (checker *throwsPanicThatMatches) Check(params []interface{}, names []strin
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
+				params[0] = err.Error()
 				result = regex.MatchString(err.Error())
 			} else if rs, ok := r.(hasStringMethod); ok {
+				params[0] = rs.String()
 				result = regex.MatchString(rs.String())
 			} else if rs, ok := r.(string); ok {
+				params[0] = rs
 				result = regex.MatchString(rs)
 			} else {
-				panic(r)
+				params[0] = r
+				result = false
 			}
 		}
 	}()
@@ -112,44 +116,13 @@ func (checker *isLessThan) Check(params []interface{}, names []string) (bool, st
 	if !reflect.DeepEqual(obtainedType, compareToType) {
 		return false, fmt.Sprintf("'obtained' type not equal to the type to 'compareTo' type.")
 	}
-	if casted, ok := obtained.(uint8); ok {
-		return casted < compareTo.(uint8), ""
+	obtainedS := simplifyTypesIfPossible(obtained)
+	compareToS := simplifyTypesIfPossible(compareTo)
+	if casted, ok := obtainedS.(int64); ok {
+		return casted < compareToS.(int64), ""
 	}
-	if casted, ok := obtained.(uint16); ok {
-		return casted < compareTo.(uint16), ""
-	}
-	if casted, ok := obtained.(uint32); ok {
-		return casted < compareTo.(uint32), ""
-	}
-	if casted, ok := obtained.(uint64); ok {
-		return casted < compareTo.(uint64), ""
-	}
-	if casted, ok := obtained.(int8); ok {
-		return casted < compareTo.(int8), ""
-	}
-	if casted, ok := obtained.(int16); ok {
-		return casted < compareTo.(int16), ""
-	}
-	if casted, ok := obtained.(int32); ok {
-		return casted < compareTo.(int32), ""
-	}
-	if casted, ok := obtained.(int64); ok {
-		return casted < compareTo.(int64), ""
-	}
-	if casted, ok := obtained.(float32); ok {
-		return casted < compareTo.(float32), ""
-	}
-	if casted, ok := obtained.(float64); ok {
-		return casted < compareTo.(float64), ""
-	}
-	if casted, ok := obtained.(int); ok {
-		return casted < compareTo.(int), ""
-	}
-	if casted, ok := obtained.(uint); ok {
-		return casted < compareTo.(uint), ""
-	}
-	if casted, ok := obtained.(uintptr); ok {
-		return casted < compareTo.(uintptr), ""
+	if casted, ok := obtainedS.(float64); ok {
+		return casted < compareToS.(float64), ""
 	}
 	if casted, ok := obtained.(byte); ok {
 		return casted < compareTo.(byte), ""
@@ -201,44 +174,13 @@ func (checker *isLargerThan) Check(params []interface{}, names []string) (bool, 
 	if !reflect.DeepEqual(obtainedType, compareToType) {
 		return false, fmt.Sprintf("'obtained' type not equal to the type to 'compareTo' type.")
 	}
-	if casted, ok := obtained.(uint8); ok {
-		return casted > compareTo.(uint8), ""
+	obtainedS := simplifyTypesIfPossible(obtained)
+	compareToS := simplifyTypesIfPossible(compareTo)
+	if casted, ok := obtainedS.(int64); ok {
+		return casted > compareToS.(int64), ""
 	}
-	if casted, ok := obtained.(uint16); ok {
-		return casted > compareTo.(uint16), ""
-	}
-	if casted, ok := obtained.(uint32); ok {
-		return casted > compareTo.(uint32), ""
-	}
-	if casted, ok := obtained.(uint64); ok {
-		return casted > compareTo.(uint64), ""
-	}
-	if casted, ok := obtained.(int8); ok {
-		return casted > compareTo.(int8), ""
-	}
-	if casted, ok := obtained.(int16); ok {
-		return casted > compareTo.(int16), ""
-	}
-	if casted, ok := obtained.(int32); ok {
-		return casted > compareTo.(int32), ""
-	}
-	if casted, ok := obtained.(int64); ok {
-		return casted > compareTo.(int64), ""
-	}
-	if casted, ok := obtained.(float32); ok {
-		return casted > compareTo.(float32), ""
-	}
-	if casted, ok := obtained.(float64); ok {
-		return casted > compareTo.(float64), ""
-	}
-	if casted, ok := obtained.(int); ok {
-		return casted > compareTo.(int), ""
-	}
-	if casted, ok := obtained.(uint); ok {
-		return casted > compareTo.(uint), ""
-	}
-	if casted, ok := obtained.(uintptr); ok {
-		return casted > compareTo.(uintptr), ""
+	if casted, ok := obtainedS.(float64); ok {
+		return casted > compareToS.(float64), ""
 	}
 	if casted, ok := obtained.(byte); ok {
 		return casted > compareTo.(byte), ""
@@ -266,4 +208,20 @@ func (checker *isLargerThanOrEqualTo) Check(params []interface{}, names []string
 		return result, err
 	}
 	return check.Equals.Check(params, names)
+}
+
+func simplifyTypesIfPossible(in interface{}) interface{} {
+	inv := reflect.ValueOf(in)
+	switch inv.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return inv.Convert(reflect.TypeOf(int64(0))).Interface()
+	case reflect.Float32, reflect.Float64:
+		return inv.Convert(reflect.TypeOf(float64(0))).Interface()
+	case reflect.Complex64, reflect.Complex128:
+		return inv.Convert(reflect.TypeOf(complex128(0))).Interface()
+	}
+	if b, ok := in.(byte); ok {
+		return int64(b)
+	}
+	return in
 }
