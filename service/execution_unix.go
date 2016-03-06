@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"strconv"
 	"syscall"
+	"fmt"
 )
 
 func lookupUser(username string) (uid, gid int, err error) {
@@ -45,8 +46,8 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
 	if what == values.KILL || what == values.STOP {
 		pgid, err := syscall.Getpgid(process.Pid)
-		if err != nil {
-			if syscall.Kill(-pgid, syscall.Signal(what)) != nil {
+		if err == nil {
+			if syscall.Kill(-pgid, syscall.Signal(what)) == nil {
 				return nil
 			}
 		}
