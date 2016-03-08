@@ -3,6 +3,8 @@
 
 # caretakerd
 
+[![Join the chat at https://gitter.im/echocat/caretakerd](https://badges.gitter.im/echocat/caretakerd.svg)](https://gitter.im/echocat/caretakerd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 caretakerd is a minimal process supervisor build for easy use with no dependencies.
 
 * [Documentation](#documentation)
