@@ -152,8 +152,9 @@ public class PrepareGoToolchain {
     }
 
     public static run(MavenProject project){
+        final goVersion = project.properties.getProperty('project.versions.go')
         if (StringUtils.isEmpty(project.properties.getProperty("project.go.root"))) {
-            project.properties.setProperty("project.go.root", "${System.getProperty("user.home", project.basedir.path)}/.go-bootstrap")
+            project.properties.setProperty("project.go.root", "${System.getProperty("user.home", project.basedir.path)}/.go-bootstrap/${goVersion}")
         }
 
         if (StringUtils.isEmpty(project.properties.getProperty("project.go.path"))) {
@@ -161,7 +162,7 @@ public class PrepareGoToolchain {
         }
 
         downloadAndExtract(
-                project.properties.getProperty('project.versions.go'),
+                goVersion,
                 project.properties.getProperty('project.go.root'),
                 Boolean.TRUE.toString().equalsIgnoreCase(project.properties.getProperty('project.go.forceDownloadToolchain'))
         )
