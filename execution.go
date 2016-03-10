@@ -111,25 +111,23 @@ func (instance *Execution) drive(target *service.Execution) {
 	defer instance.doAfterExecution(target, exitCode, err)
 	respectDelay := true
 	doRun := true
-	for run := 1; doRun && target != nil; run++ {
-		if !instance.isAlreadyStopRequested(target) {
-			if respectDelay {
-				if !instance.delayedStartIfNeeded(target, run) {
-					break
-				}
-			} else {
-				run = 1
+	for run := 1; doRun && target != nil && !instance.isAlreadyStopRequested(target); run++ {
+		if respectDelay {
+			if !instance.delayedStartIfNeeded(target, run) {
+				break
 			}
-			if !instance.isAlreadyStopRequested(target) {
-				exitCode, err = target.Run()
-				doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
-				if doRun && !instance.isAlreadyStopRequested(target) {
-					newTarget, err := instance.recreateExecution(target)
-					if err != nil {
-						instance.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
-					} else {
-						target = newTarget
-					}
+		} else {
+			run = 1
+		}
+		if !instance.isAlreadyStopRequested(target) {
+			exitCode, err = target.Run()
+			doRun, respectDelay = instance.checkAfterExecutionStates(target, exitCode, err)
+			if doRun && !instance.isAlreadyStopRequested(target) {
+				newTarget, err := instance.recreateExecution(target)
+				if err != nil {
+					instance.executable.Logger().LogProblem(err, logger.Error, "Could not retrigger execution of '%v'.", target)
+				} else {
+					target = newTarget
 				}
 			}
 		}

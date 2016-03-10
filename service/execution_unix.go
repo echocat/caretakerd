@@ -3,37 +3,23 @@
 package service
 
 import (
+	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/values"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
 	"strconv"
+	"strings"
 	"syscall"
 )
-
-func lookupUser(username string) (uid, gid int, err error) {
-	u, err := user.Lookup(username)
-	if err != nil {
-		return -1, -1, err
-	}
-	uid, err = strconv.Atoi(u.Uid)
-	if err != nil {
-		return -1, -1, err
-	}
-	gid, err = strconv.Atoi(u.Gid)
-	if err != nil {
-		return -1, -1, err
-	}
-	return uid, gid, nil
-}
 
 func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 	config := (*service).config
 	userName := config.User
 	if !userName.IsTrimmedEmpty() {
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
-		//		u, err := userLookup(userName.String())
 		uid, gid, err := lookupUser(userName.String())
 		if err != nil {
 			panics.New("Could not run as user '%v'.", userName).CausedBy(err).Throw()
@@ -61,4 +47,48 @@ func (instance *Service) createSysProcAttr() *syscall.SysProcAttr {
 		Setpgid: true,
 		Pgid:    0,
 	}
+}
+
+func lookupUser(username string) (uid, gid int, err error) {
+	u, err := lookupUserInPasswd(username)
+	if err != nil {
+		usernameParts := strings.SplitN(username, ":", 2)
+		if len(usernameParts) == 2 {
+			u = &user.User{
+				Uid: usernameParts[0],
+				Gid: usernameParts[1],
+			}
+		} else {
+			return -1, -1, err
+		}
+	}
+	uid, err = strconv.Atoi(u.Uid)
+	if err != nil {
+		return -1, -1, err
+	}
+	gid, err = strconv.Atoi(u.Gid)
+	if err != nil {
+		return -1, -1, err
+	}
+	return uid, gid, nil
+}
+
+func lookupUserInPasswd(uid string) (*user.User, error) {
+	file, err := ioutil.ReadFile("/etc/passwd")
+	if err != nil {
+		return nil, err
+	}
+	for _, line := range strings.Split(string(file), "\n") {
+		data := strings.Split(line, ":")
+		if len(data) > 5 && (data[0] == uid || data[2] == uid) {
+			return &user.User{
+				Uid:      data[2],
+				Gid:      data[3],
+				Username: data[0],
+				Name:     data[4],
+				HomeDir:  data[5],
+			}, nil
+		}
+	}
+	return nil, errors.New("User not found in /etc/passwd")
 }

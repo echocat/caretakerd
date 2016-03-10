@@ -242,9 +242,12 @@ func (instance *Execution) runBare() (values.ExitCode, Status, error) {
 	if instance.doTrySetRunningState() {
 		defer instance.doSetDownState()
 		exitCode, err := instance.runCommand((*instance).cmd)
-		return exitCode, instance.status, err
+		// This little sleep is required because if the routines are interrupted
+		// there is no guarantee anymore that every lock is respected.
+		time.Sleep(5 * time.Millisecond)
+		return exitCode, instance.getSyncedCurrentStatus(), err
 	}
-	return values.ExitCode(0), instance.status, UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}
+	return values.ExitCode(0), instance.getSyncedCurrentStatus(), UnrecoverableError{error: errors.New("Cannot run service. Already in status: %v", instance.status)}
 }
 
 func (instance *Execution) doTrySetRunningState() bool {
@@ -257,6 +260,13 @@ func (instance *Execution) doTrySetRunningState() bool {
 		return true
 	}
 	return false
+}
+
+func (instance *Execution) getSyncedCurrentStatus() Status {
+	if instance.doLock() == nil {
+		defer instance.doUnlock()
+	}
+	return instance.status
 }
 
 func (instance *Execution) doSetDownState() {
