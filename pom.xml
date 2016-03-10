@@ -11,7 +11,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.versions.go>1.5.2</project.versions.go>
+        <project.versions.go>1.5.3</project.versions.go>
         <project.go.rooPkg>github.com/echocat/caretakerd</project.go.rooPkg>
         <project.go.forceDownloadToolchain>false</project.go.forceDownloadToolchain>
         <project.go.forceBuildToolchain>false</project.go.forceBuildToolchain>
