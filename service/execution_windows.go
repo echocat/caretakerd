@@ -19,6 +19,9 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 }
 
 func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
+	if service.config.StopSignalTarget != values.Process {
+		return errors.New("On windows only stopSignalTarget == 'process' is supported but got: %v", service.config.StopSignalTarget)
+	}
 	if what == values.TERM {
 		sendSpecialSignal(process, syscall.CTRL_BREAK_EVENT)
 	} else if what == values.INT {
@@ -32,7 +35,7 @@ func sendSignalToService(service *Service, process *os.Process, what values.Sign
 				ignore = se.Error() == "invalid argument"
 			}
 			if !ignore {
-				return errors.New("Could no signal '%v': %v", service, what).CausedBy(err)
+				return errors.New("Could not signal '%v': %v", service, what).CausedBy(err)
 			}
 		}
 	}

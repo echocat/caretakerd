@@ -133,6 +133,13 @@ type Config struct {
 	// You can use the signal number here and also names like ``"TERM"`` or ``"KILL"``.
 	StopSignal values.Signal `json:"stopSignal" yaml:"stopSignal"`
 
+	// @default "process"
+	//
+	// Defines who have to receive the stop signal.
+	//
+	// > **Hint:** If the service have to be killed always ``processGroup`` is used.
+	StopSignalTarget values.SignalTarget `json:"stopSignalTarget" yaml:"stopSignalTarget"`
+
 	// @default []
 	//
 	// Command to be execute to stop the service.
@@ -225,6 +232,7 @@ func (instance *Config) init() {
 	(*instance).RestartDelayInSeconds = values.NonNegativeInteger(5)
 	(*instance).SuccessExitCodes = values.ExitCodes{values.ExitCode(0)}
 	(*instance).StopSignal = defaultStopSignal()
+	(*instance).StopSignalTarget = values.Process
 	(*instance).StopCommand = []values.String{}
 	(*instance).StopWaitInSeconds = values.NonNegativeInteger(30)
 	(*instance).User = values.String("")

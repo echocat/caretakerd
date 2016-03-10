@@ -372,11 +372,19 @@ func (instance *Execution) Signal(what values.Signal) error {
 func (instance *Execution) sendSignal(s values.Signal) error {
 	if instance.isKillSignal(s) {
 		if !instance.setStateTo(Killed) {
-			return errors.New("Service '%v' is not running.", instance)
+			if s == values.KILL || instance.service.config.StopSignal == s {
+				return nil
+			} else {
+				return errors.New("Service '%v' is not running.", instance)
+			}
 		}
 	} else if instance.isStopSignal(s) {
 		if !instance.setStateTo(Stopped) {
-			return errors.New("Service '%v' is not running.", instance)
+			if s == values.KILL || instance.service.config.StopSignal == s {
+				return nil
+			} else {
+				return errors.New("Service '%v' is not running.", instance)
+			}
 		}
 	}
 	cmd := (*instance).cmd

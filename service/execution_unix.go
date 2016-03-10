@@ -43,7 +43,7 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 }
 
 func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
-	if what == values.KILL || what == values.STOP {
+	if service.config.StopSignalTarget == values.ProcessGroup || what == values.KILL || what == values.STOP {
 		pgid, err := syscall.Getpgid(process.Pid)
 		if err == nil {
 			if syscall.Kill(-pgid, syscall.Signal(what)) == nil {
