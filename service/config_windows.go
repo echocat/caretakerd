@@ -7,5 +7,5 @@ import (
 )
 
 func defaultStopSignal() values.Signal {
-	return values.KILL
+	return values.TERM
 }

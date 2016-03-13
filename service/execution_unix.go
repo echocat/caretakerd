@@ -28,8 +28,20 @@ func serviceHandleUsersFor(service *Service, cmd *exec.Cmd) {
 	}
 }
 
-func sendSignalToService(service *Service, process *os.Process, what values.Signal) error {
-	if service.config.StopSignalTarget == values.ProcessGroup || what == values.KILL || what == values.STOP {
+func sendSignalToService(service *Service, process *os.Process, what values.Signal, signalTarget values.SignalTarget) error {
+	switch signalTarget {
+	case values.Process:
+		return sendSignalToProcess(process, what, false)
+	case values.ProcessGroup:
+		return sendSignalToProcess(process, what, true)
+	case values.Mixed:
+		return sendSignalToProcess(process, what, what == values.KILL || what == values.STOP)
+	}
+	return errors.New("Could not signal '%v' (#%v) %v because signalTarget %v is not supported.", service, process.Pid, what, signalTarget)
+}
+
+func sendSignalToProcess(process *os.Process, what values.Signal, tryGroup bool) error {
+	if tryGroup {
 		pgid, err := syscall.Getpgid(process.Pid)
 		if err == nil {
 			if syscall.Kill(-pgid, syscall.Signal(what)) == nil {

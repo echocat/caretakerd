@@ -127,13 +127,13 @@ type Config struct {
 	// See: {@ref #AutoRestart autoRestart}
 	SuccessExitCodes values.ExitCodes `json:"successExitCodes" yaml:"successExitCodes,flow"`
 
-	// @default "TERM" (on Unix like systems) - "KILL" (on Windows)
+	// @default "TERM"
 	//
 	// Signal which will be send to the service when a stop is requested.
 	// You can use the signal number here and also names like ``"TERM"`` or ``"KILL"``.
 	StopSignal values.Signal `json:"stopSignal" yaml:"stopSignal"`
 
-	// @default "process"
+	// @default "processGroup"
 	//
 	// Defines who have to receive the stop signal.
 	//
@@ -232,7 +232,7 @@ func (instance *Config) init() {
 	(*instance).RestartDelayInSeconds = values.NonNegativeInteger(5)
 	(*instance).SuccessExitCodes = values.ExitCodes{values.ExitCode(0)}
 	(*instance).StopSignal = defaultStopSignal()
-	(*instance).StopSignalTarget = values.Process
+	(*instance).StopSignalTarget = values.ProcessGroup
 	(*instance).StopCommand = []values.String{}
 	(*instance).StopWaitInSeconds = values.NonNegativeInteger(30)
 	(*instance).User = values.String("")

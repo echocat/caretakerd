@@ -19,12 +19,17 @@ const (
 	//
 	// Send a signal to the whole process group.
 	ProcessGroup SignalTarget = 2
+	// @id mixed
+	//
+	// Send every signal only to a process - except KILL and STOP. This are send to the processGroup.
+	Mixed SignalTarget = 3
 )
 
 // AllSignalTargets contains all possible variants of SignalTarget.
 var AllSignalTargets = []SignalTarget{
 	Process,
 	ProcessGroup,
+	Mixed,
 }
 
 func (instance SignalTarget) String() string {

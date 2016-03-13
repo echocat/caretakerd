@@ -309,9 +309,9 @@ func (instance *Execution) Stop() {
 	}
 	defer instance.doUnlock()
 	if instance.status != Down {
+		instance.logger.Log(logger.Debug, "Stopping '%s'...", instance.Name())
 		instance.sendStop()
 		if instance.status != Down {
-			instance.logger.Log(logger.Debug, "Stopping '%s'...", instance.Name())
 			instance.condition.Wait(time.Duration(instance.service.config.StopWaitInSeconds) * time.Second)
 			if instance.status != Down {
 				instance.logger.Log(logger.Warning, "Service '%s' does not respond after %d seconds. Going to kill it now...", instance.Name(), instance.service.config.StopWaitInSeconds)
@@ -405,7 +405,7 @@ func (instance *Execution) sendSignal(s values.Signal) error {
 		return nil
 	}
 	if s != values.NOOP {
-		return sendSignalToService((*instance).service, process, s)
+		return sendSignalToService((*instance).service, process, s, instance.service.config.StopSignalTarget)
 	}
 	return nil
 }
