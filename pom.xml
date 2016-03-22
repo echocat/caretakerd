@@ -5,7 +5,7 @@
     <name>caretakerd</name>
     <artifactId>caretakerd</artifactId>
     <groupId>org.echocat</groupId>
-    <version>0.1.6-SNAPSHOT</version>
+    <version>0.1.6</version>
     <description>caretakerd is build for to be a minimal process supervisor, with no dependencies, optimized for containerization (such as Docker) and simple to configure.</description>
     <url>https://caretakerd.echocat.org</url>
 
@@ -397,7 +397,7 @@
         <connection>scm:git:https://github.com/echocat/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:echocat/${project.artifactId}.git</developerConnection>
         <url>https://github.com/echocat/${project.artifactId}</url>
-        <tag>v0.1.0</tag>
+        <tag>v0.1.6</tag>
     </scm>
 
 </project>
