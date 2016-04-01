@@ -72,7 +72,7 @@ func (instance *Execution) Run() (values.ExitCode, error) {
 		instance.stopOthers()
 	}
 	instance.wg.Wait()
-	exitCode := -1
+	exitCode := values.ExitCode(-1)
 	if (*instance).masterExitCode != nil {
 		exitCode = *(*instance).masterExitCode
 	}
