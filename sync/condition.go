@@ -31,10 +31,16 @@ func finalizeConditionInstance(condition *Condition) {
 // Wait waits for someone that calls Send() or Broadcast() on this Condition instance for the given maximum duration.
 // If someone calls Interrupt() or there is no trigger received within the maximum duration an error will be returned.
 func (instance *Condition) Wait(duration time.Duration) error {
+	return instance.wait(duration, true)
+}
+
+func (instance *Condition) wait(duration time.Duration, guarded bool) error {
 	sg := (*instance).sg
 	sg.append(instance)
-	instance.doUnlock()
-	defer instance.doLock()
+	if guarded {
+		instance.doUnlock()
+		defer instance.doLock()
+	}
 	select {
 	case <-time.After(duration):
 		return sg.removeAndReturn(instance, TimeoutError{})

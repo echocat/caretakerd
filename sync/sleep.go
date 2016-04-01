@@ -9,7 +9,7 @@ import (
 func (instance *Group) Sleep(duration time.Duration) error {
 	mutex := instance.NewMutex()
 	condition := instance.NewCondition(mutex)
-	err := condition.Wait(duration)
+	err := condition.wait(duration, false)
 	if _, ok := err.(TimeoutError); ok {
 		return nil
 	}
