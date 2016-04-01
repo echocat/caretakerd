@@ -33,10 +33,9 @@ type Execution struct {
 //
 // Hint: A caretakerd Execution instance could only be called once.
 func NewExecution(executable Executable) *Execution {
-	defaultExitCode := values.ExitCode(-1)
 	return &Execution{
 		executable:      executable,
-		masterExitCode:  &defaultExitCode,
+		masterExitCode:  nil,
 		executions:      map[*service.Service]*service.Execution{},
 		restartRequests: map[*service.Service]bool{},
 		stopRequests:    map[*service.Service]bool{},
@@ -73,7 +72,11 @@ func (instance *Execution) Run() (values.ExitCode, error) {
 		instance.stopOthers()
 	}
 	instance.wg.Wait()
-	return *(*instance).masterExitCode, (*instance).masterError
+	exitCode := -1
+	if (*instance).masterExitCode != nil {
+		exitCode = *(*instance).masterExitCode
+	}
+	return exitCode, (*instance).masterError
 }
 
 // GetCountOfActiveExecutions return number of active execution of services.

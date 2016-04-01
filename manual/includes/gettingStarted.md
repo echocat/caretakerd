@@ -11,7 +11,16 @@ Download your matching distribution files and extract it where you want.
 
 Linux 64-Bit example:
 ```bash
+# Download direct from GitHub...
 sudo curl -SL https://github.com/echocat/caretakerd/releases/download/v{{.Version}}/caretakerd-linux-amd64.tar.gz \
+    | tar -xz --exclude caretakerd.html -C /usr/bin
+
+# Download from caretakerd.echocat.org...   
+sudo curl -SLk https://caretakerd.echocat.org/v{{.Version}}/download/caretakerd-linux-amd64.tar.gz \
+    | tar -xz --exclude caretakerd.html -C /usr/bin
+
+# Download always the latest from caretakerd.echocat.org...   
+sudo curl -SLk https://caretakerd.echocat.org/latest/download/caretakerd-linux-amd64.tar.gz \
     | tar -xz --exclude caretakerd.html -C /usr/bin
 ```
 

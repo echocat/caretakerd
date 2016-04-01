@@ -3,7 +3,7 @@
 
 # caretakerd
 
-caretakerd is a minimal process supervisor build for easy use with no dependencies.
+We created caretakerd for being a minimal process supervisor. There are no external dependencies and is optimized for containerization (such as Docker) and simple configuration.
 
 * [Documentation](#documentation)
 * [Building](#building)
