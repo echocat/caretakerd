@@ -28,11 +28,6 @@ func (i *Logger) Stderr() io.Writer {
 	return i.NewOutputStreamWrapperFor(i.config.StderrLevel)
 }
 
-// Stdin creates a Reader to use for redirect every Stdin input.
-func (i *Logger) Stdin() io.Reader {
-	return nil
-}
-
 // Write writes given bytes to logger. It respects every new line as a new log entry.
 func (i outputStreamWrapper) Write(p []byte) (n int, err error) {
 	what := string(p)

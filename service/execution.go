@@ -79,7 +79,6 @@ func generateServiceBasedCmd(s *Service, ai *access.Access, command []values.Str
 	cmd := exec.Command(executable, getServiceBasedRunArgumentsFor(s, ai, command)...)
 	cmd.Stdout = logger.Stdout()
 	cmd.Stderr = logger.Stderr()
-	cmd.Stdin = logger.Stdin()
 	cmd.SysProcAttr = s.createSysProcAttr()
 	if !config.Directory.IsTrimmedEmpty() {
 		cmd.Dir = s.expandValue(ai, config.Directory.String())
