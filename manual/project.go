@@ -13,6 +13,7 @@ var GOPATH = os.Getenv("GOPATH")
 
 // GOROOT points the the current GOROOT.
 var GOROOT = runtime.GOROOT()
+var GOROOTSRC, _ = filepath.Abs(GOROOT + "/src/")
 
 // Project represents a Go project and its sources.
 type Project struct {

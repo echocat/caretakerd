@@ -1,21 +1,21 @@
 package main
 
 import (
-	"fmt"
 	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/panics"
-	"github.com/echocat/caretakerd/system"
 	"go/ast"
 	"go/build"
 	"go/parser"
 	"go/token"
 	"go/types"
-	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
+	"go/importer"
+	"os"
+	"github.com/echocat/caretakerd/system"
+	"github.com/echocat/caretakerd/panics"
 )
 
 var extractIDPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
@@ -101,81 +101,103 @@ func (instance *parsedPackage) commentFor(object posEnabled) (*ast.CommentGroup,
 }
 
 type extractionTask struct {
+	defaultImporter            types.Importer
 	info                       *types.Info
 	project                    Project
 	packageNameToParsedPackage map[string]*parsedPackage
 	context                    *build.Context
+	importer                   types.ImporterFrom
+	definitions                *Definitions
+	typesConfig                types.Config
 }
 
 func (instance *extractionTask) findDeclFor(object posEnabled) (*ast.Decl, error) {
 	return nil, nil
 }
 
-func (instance *extractionTask) parsePackage(packageName string) (*parsedPackage, error) {
-	result, ok := instance.packageNameToParsedPackage[packageName]
-	if instance.packageNameToParsedPackage == nil {
-		instance.packageNameToParsedPackage = map[string]*parsedPackage{}
-	}
-	if !ok {
-		sourceFiles := []*ast.File{}
-		contextPackage, err := instance.context.Import(packageName, "", build.ImportComment)
-		if err != nil {
-			if _, ok := err.(*build.NoGoError); ok {
-				return nil, nil
-			}
-			return nil, errors.New("Could not import package %v.", packageName).CausedBy(err)
-		}
-		result = &parsedPackage{
-			sourceFiles: map[string]*ast.File{},
-		}
-		result.fileSet = token.NewFileSet()
-		for _, goFile := range contextPackage.GoFiles {
-			sourceFilename := fmt.Sprintf("%v%c%v", contextPackage.Dir, filepath.Separator, goFile)
-			sourceFile, err := parser.ParseFile(result.fileSet, sourceFilename, nil, parser.ParseComments)
-			if err != nil {
-				return nil, errors.New("Could not parse source file %v.", sourceFilename).CausedBy(err)
-			}
-			sourceFiles = append(sourceFiles, sourceFile)
-			result.sourceFiles[sourceFilename] = sourceFile
-		}
-		typesConfig := types.Config{
-			Importer:                 instance,
-			FakeImportC:              true,
-			DisableUnusedImportCheck: true,
-			IgnoreFuncBodies:         true,
-		}
-		pkg, err := typesConfig.Check(packageName, result.fileSet, sourceFiles, instance.info)
-		if err != nil {
-			return nil, errors.New("Could not check package %v.", packageName).CausedBy(err)
-		}
-		result.pkg = pkg
-		instance.packageNameToParsedPackage[packageName] = result
-	}
-	return result, nil
+func (instance *extractionTask) Import(packageName string) (*types.Package, error) {
+	panic("Should not be called.")
 }
 
-func (instance *extractionTask) Import(packageName string) (*types.Package, error) {
-	pp, err := instance.parsePackage(packageName)
+func (instance *extractionTask) packageExistsInGoRootSrc(packageName string) bool {
+	targetPath := filepath.Join(GOROOTSRC, packageName)
+	info, err := os.Lstat(targetPath)
+	if err != nil {
+		return false
+	}
+	return info.IsDir()
+}
+
+func (instance *extractionTask) ImportFrom(packageName, packageSource string, mode types.ImportMode) (*types.Package, error) {
+	pp, has := instance.packageNameToParsedPackage[packageName]
+	if has {
+		return pp.pkg, nil
+	}
+
+	if instance.packageExistsInGoRootSrc(packageName) {
+		pkg, err := instance.defaultImporter.(types.ImporterFrom).ImportFrom(packageName, packageSource, mode)
+		if err == nil {
+			instance.packageNameToParsedPackage[packageName] = &parsedPackage{
+				fileSet: token.NewFileSet(),
+				sourceFiles: make(map[string]*ast.File),
+				pkg: pkg,
+			}
+		}
+		return pkg, err
+	}
+
+	buildPkg, err := build.Import(packageName, packageSource, build.ImportComment)
 	if err != nil {
 		return nil, err
 	}
-	if pp == nil {
-		return nil, errors.New("No go package.")
+
+	pp = &parsedPackage{
+		fileSet: token.NewFileSet(),
+		sourceFiles: make(map[string]*ast.File),
 	}
+
+	var astFiles []*ast.File
+	astFiles, pp.sourceFiles, err = parseAstFiles(pp.fileSet, buildPkg.Dir, buildPkg.GoFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	pp.pkg, err = instance.typesConfig.Check(buildPkg.ImportPath, pp.fileSet, astFiles, instance.info)
+	if err != nil {
+		return nil, err
+	}
+
+	instance.packageNameToParsedPackage[packageName] = pp
 	return pp.pkg, nil
+}
+
+// ParseAstFiles is a shortcut to parse files from a directory into a set of ast.Files.
+func parseAstFiles(fset *token.FileSet, dir string, files []string) (astFiles []*ast.File, sourceFiles map[string]*ast.File, err error) {
+	sourceFiles = make(map[string]*ast.File)
+	for _, filename := range files {
+		var afile *ast.File
+		fullFilename := filepath.Join(dir, filename)
+		afile, err = parser.ParseFile(fset, fullFilename, nil, parser.ParseComments)
+		if err != nil {
+			return
+		}
+		sourceFiles[fullFilename] = afile
+		astFiles = append(astFiles, afile)
+	}
+	return
 }
 
 // ParseDefinitions parses every Definitions from the given project and return it.
 // If there is any error it will be returned and the Definitions are nil.
 func ParseDefinitions(project Project) (*Definitions, error) {
-	definitions := NewDefinitions(project)
-
 	et := &extractionTask{
+		defaultImporter: importer.Default(),
 		info: &types.Info{
 			Types: make(map[ast.Expr]types.TypeAndValue),
 			Defs:  make(map[*ast.Ident]types.Object),
 			Uses:  make(map[*ast.Ident]types.Object),
 		},
+		packageNameToParsedPackage: make(map[string]*parsedPackage),
 		project: project,
 		context: &build.Context{
 			GOARCH:   runtime.GOARCH,
@@ -184,22 +206,30 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 			GOPATH:   GOPATH,
 			Compiler: runtime.Compiler,
 		},
+		definitions: NewDefinitions(project),
+		typesConfig: types.Config{
+			FakeImportC:              true,
+			DisableUnusedImportCheck: true,
+			IgnoreFuncBodies:         true,
+		},
 	}
-	exclude := project.SrcRootPath + system.PathSeparator + "target"
+	et.typesConfig.Importer = et
+
+	exclude1 := project.SrcRootPath + system.PathSeparator + "target"
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
 			if strings.HasPrefix(info.Name(), ".") {
 				// Ignore dot files and directories
 				return nil
-			} else if path == exclude || strings.HasPrefix(path, exclude+system.PathSeparator) {
+			} else if path == exclude1 || strings.HasPrefix(path, exclude1 + system.PathSeparator) {
 				// Do not try to build target directory
 				return nil
 			} else if path == project.SrcRootPath {
-				return et.parsePackageToDefinitions(project.RootPackage, definitions)
+				return et.parsePackageToDefinitions(project.RootPackage, project.SrcRootPath)
 			} else if strings.HasPrefix(path, project.GoSrcPath+system.PathSeparator) {
 				subPath := path[len(project.GoSrcPath)+1:]
 				targetPackage := strings.Replace(subPath, system.PathSeparator, "/", -1)
-				err := et.parsePackageToDefinitions(targetPackage, definitions)
+				err := et.parsePackageToDefinitions(targetPackage, path)
 				if _, ok := err.(*build.NoGoError); ok {
 					return nil
 				}
@@ -213,7 +243,7 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 		return nil, err
 	}
 
-	return definitions, nil
+	return et.definitions, nil
 }
 
 func isBasic(what types.Type) bool {
@@ -227,13 +257,14 @@ func isBasic(what types.Type) bool {
 	return false
 }
 
-func (instance *extractionTask) parsePackageToDefinitions(pkg string, definitions *Definitions) error {
-	pp, err := instance.parsePackage(pkg)
+func (instance *extractionTask) parsePackageToDefinitions(packageName string, packageSource string) error {
+	_, err := instance.ImportFrom(packageName, packageSource, 0)
 	if err != nil {
 		return err
 	}
-	if pp == nil {
-		return nil
+	pp, ok := instance.packageNameToParsedPackage[packageName]
+	if !ok {
+		return errors.New("Parsed but not found!?")
 	}
 	scope := pp.pkg.Scope()
 	for _, name := range scope.Names() {
@@ -277,11 +308,11 @@ func (instance *extractionTask) parsePackageToDefinitions(pkg string, definition
 																	if inlined {
 																		break
 																	}
-																	enumDefinition = definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
+																	enumDefinition = instance.definitions.NewEnumDefinition(pp.pkg.Path(), name, comment)
 																}
 																typeIdentifier := ParseType(eConst.Type().String())
 																elementComment, id := extractIDFrom(elementComment, eConst.Name())
-																definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, elementComment)
+																instance.definitions.NewElementDefinition(enumDefinition, eConst.Name(), id, typeIdentifier, elementComment)
 															} else {
 																break
 															}
@@ -304,7 +335,7 @@ func (instance *extractionTask) parsePackageToDefinitions(pkg string, definition
 				if enumDefinition == nil {
 					typeIdentifier := ParseType(eUnderlying.Underlying().String())
 					comment, inlined := extractInlinedFrom(comment)
-					definitions.NewSimpleDefinition(pp.pkg.Path(), name, typeIdentifier, comment, inlined)
+					instance.definitions.NewSimpleDefinition(pp.pkg.Path(), name, typeIdentifier, comment, inlined)
 				}
 			} else if eStruct, ok := eUnderlying.(*types.Struct); ok {
 				comment, err := pp.commentTextFor(element)
@@ -314,9 +345,9 @@ func (instance *extractionTask) parsePackageToDefinitions(pkg string, definition
 				comment, serializedAs := serializedAs(comment)
 				if serializedAs != nil {
 					comment, inlined := extractInlinedFrom(comment)
-					definitions.NewSimpleDefinition(pp.pkg.Path(), name, serializedAs, comment, inlined)
+					instance.definitions.NewSimpleDefinition(pp.pkg.Path(), name, serializedAs, comment, inlined)
 				} else {
-					objectDefinition := definitions.NewObjectDefinition(pp.pkg.Path(), name, comment)
+					objectDefinition := instance.definitions.NewObjectDefinition(pp.pkg.Path(), name, comment)
 					for n := 0; n < eStruct.NumFields(); n++ {
 						field := eStruct.Field(n)
 						tag := eStruct.Tag(n)
@@ -327,7 +358,7 @@ func (instance *extractionTask) parsePackageToDefinitions(pkg string, definition
 						}
 						typeIdentifier := ParseType(field.Type().String())
 						comment, defValue := extractDefaultFrom(comment)
-						definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, typeIdentifier, comment, defValue)
+						instance.definitions.NewPropertyDefinition(objectDefinition, field.Name(), targetName, typeIdentifier, comment, defValue)
 					}
 				}
 			}
