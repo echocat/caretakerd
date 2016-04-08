@@ -4,6 +4,7 @@
 * [Configuring](#gettingStarted.configuring)
 * [Run](#gettingStarted.run)
 * [Control caretakerd with caretakerctl](#gettingStarted.control-caretakerd-with-caretakerctl)
+* [See in action with Docker](#gettingStarted.see-in-action-with-docker)
 
 ## Installing {#gettingStarted.installing}
 
@@ -59,3 +60,7 @@ $ caretakerctl status peasant
 # Stop a not already running service
 $ caretakerctl stop peasant
 ```
+
+## See in action with Docker {#gettingStarted.see-in-action-with-docker}
+
+You can find on [github.com/echocat/caretakerd-docker-demos](https://github.com/echocat/caretakerd-docker-demos) a lot of working demos. Try it out!
