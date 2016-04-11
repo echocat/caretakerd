@@ -92,10 +92,10 @@ func (instance Config) Validate() error {
 		err = instance.validateRequireStringValue(instance.PemFile, "pemFile", instance.Type.IsTakingFilename)
 	}
 	if err == nil {
-		err = instance.validateStringOnlyAllowedValue(instance.PemFileUser, "pemFileUser", instance.Type.IsTakingFileUser)
+		err = instance.validateStringOnlyAllowedValue(instance.PemFileUser, "pemFileUser", instance.Type.IsTakingFileUser, values.String(""))
 	}
 	if err == nil {
-		err = instance.validateUint32OnlyAllowedValue(uint32(instance.PemFilePermission), "pemFilePermission", instance.Type.IsTakingFilePermission)
+		err = instance.validateUint32OnlyAllowedValue(uint32(instance.PemFilePermission), "pemFilePermission", instance.Type.IsTakingFilePermission, uint32(DefaultFilePermission()))
 	}
 	return err
 }
@@ -109,15 +109,15 @@ func (instance Config) validateRequireStringValue(value values.String, fieldName
 	return nil
 }
 
-func (instance Config) validateStringOnlyAllowedValue(value values.String, fieldName string, isAllowedMethod func() bool) error {
-	if !isAllowedMethod() && !value.IsEmpty() {
+func (instance Config) validateStringOnlyAllowedValue(value values.String, fieldName string, isAllowedMethod func() bool, defaultValue values.String) error {
+	if !isAllowedMethod() && value != defaultValue && !value.IsEmpty() {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil
 }
 
-func (instance Config) validateUint32OnlyAllowedValue(value uint32, fieldName string, isAllowedMethod func() bool) error {
-	if !isAllowedMethod() && value != 0 {
+func (instance Config) validateUint32OnlyAllowedValue(value uint32, fieldName string, isAllowedMethod func() bool, defaultValue uint32) error {
+	if !isAllowedMethod() && value != defaultValue && value != 0 {
 		return errors.New("There is no %s allowed for type %v.", fieldName, instance.Type)
 	}
 	return nil

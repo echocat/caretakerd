@@ -30,12 +30,8 @@ type Execution struct {
 
 // NewExecution creates a new instance of Execution.
 func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error) {
-	a, err := access.NewAccess(instance.config.Access, instance.name, sec)
-	if err != nil {
-		return nil, errors.New("Could not create caretakerd base execution.").CausedBy(err)
-	}
 	syncGroup := instance.syncGroup.NewGroup()
-	cmd := generateServiceBasedCmd(instance, a, (*instance).config.Command)
+	cmd := generateServiceBasedCmd(instance, instance.access, (*instance).config.Command)
 	lock := syncGroup.NewMutex()
 	condition := syncGroup.NewCondition(lock)
 	return &Execution{
@@ -45,7 +41,7 @@ func (instance *Service) NewExecution(sec *keyStore.KeyStore) (*Execution, error
 		status:    New,
 		lock:      lock,
 		condition: condition,
-		access:    a,
+		access:    instance.access,
 		syncGroup: syncGroup,
 	}, nil
 }

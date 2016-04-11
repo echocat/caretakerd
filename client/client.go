@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"os"
 )
 
 // AccessDeniedError represents an error that occurs if someone tries to access a
@@ -129,6 +130,10 @@ func tlsConfigFor(config *caretakerd.Config) (*tls.Config, error) {
 }
 
 func parseCertificatesInFile(filename values.String) ([]tls.Certificate, error) {
+	pemInEnv := os.Getenv("CTD_PEM")
+	if len(pemInEnv) > 0 {
+		return parseCertificates([]byte(pemInEnv))
+	}
 	fileContent, err := ioutil.ReadFile(filename.String())
 	if err != nil {
 		return nil, errors.New("Could not read pem file '%v'.", filename).CausedBy(err)
