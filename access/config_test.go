@@ -155,7 +155,9 @@ func (s *ConfigTest) TestValidateNotAllowedFilePermission(c *C) {
 			}
 			actual.PemFilePermission = FilePermission(0)
 			c.Assert(actual.Validate(), IsNil)
-			actual.PemFilePermission = FilePermission(0600)
+			actual.PemFilePermission = DefaultFilePermission()
+			c.Assert(actual.Validate(), IsNil)
+			actual.PemFilePermission = FilePermission(0611)
 			c.Assert(actual.Validate(), ErrorMatches, "There is no pemFilePermission allowed for type "+t.String()+".")
 		}
 	}
