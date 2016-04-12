@@ -167,9 +167,9 @@ func (instance *Execution) checkAfterExecutionStates(target *service.Execution, 
 		doRestart = true
 		respectDelay = false
 	} else if target.Service().Config().SuccessExitCodes.Contains(exitCode) {
-		doRestart = target.Service().Config().CronExpression.IsEnabled() && instance.masterExitCode == nil
+		doRestart = (target.Service().Config().CronExpression.IsEnabled() && instance.masterExitCode == nil) || target.Service().Config().AutoRestart.OnSuccess()
 	} else {
-		doRestart = true
+		doRestart = target.Service().Config().AutoRestart.OnFailures()
 		respectDelay = true
 	}
 	return doRestart, respectDelay
