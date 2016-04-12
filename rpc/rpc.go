@@ -135,6 +135,7 @@ func (instance *RPC) Run() {
 	ws.Route(ws.GET("/service/{serviceName}/state").To(instance.serviceStatus))
 	ws.Route(ws.GET("/service/{serviceName}/pid").To(instance.servicePid))
 
+	ws.Route(ws.POST("/service/{serviceName}/start").To(instance.serviceStart))
 	ws.Route(ws.POST("/service/{serviceName}/restart").To(instance.serviceRestart))
 	ws.Route(ws.POST("/service/{serviceName}/status").To(instance.serviceStart))
 	ws.Route(ws.POST("/service/{serviceName}/stop").To(instance.serviceStop))

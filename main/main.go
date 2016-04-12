@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"path/filepath"
 )
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BaseName + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
@@ -22,7 +23,7 @@ func main() {
 }
 
 func getExecutableType() app.ExecutableType {
-	executable := strings.ToLower(os.Args[0])
+	executable := strings.ToLower(filepath.Base(os.Args[0]))
 	match := executableNamePattern.FindStringSubmatch(executable)
 	if match != nil && len(match) == 2 {
 		switch match[1] {
