@@ -1,6 +1,6 @@
 # Environment mapping {#environmentMapping}
 
-There are several environment variables mapped to configuration parameters. There environment variables goes over configuration files.
+There are several environment variables mapped to configuration parameters. These environment variables are overwriting values from configuration files.
 
 > **Hint:** Every caretakerd environment variable starts with ``CTD`` = *CareTakerD*
 

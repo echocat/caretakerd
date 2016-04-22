@@ -66,7 +66,7 @@ mvnw release:prepare release:perform
 
 ### Build artifacts
 
-* Compiled and lined binaries can be found under ``./target/gopath/bin/caretaker*``
+* Compiled and linked binaries can be found under ``./target/gopath/bin/caretaker*``
 * Generated document can be found under ``./target/docs/caretakerd.html``
 * Packaged TARZs and ZIPs can be found under ``./target/caretakerd-*.tar.gz`` and ``./target/caretakerd-*.zip``
 
