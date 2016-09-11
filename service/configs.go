@@ -24,7 +24,7 @@ func (s *Configs) GetMasterName() (string, bool) {
 	return "", false
 }
 
-// Configure executes a configuring action for a service with given name.
+// Configure executes a configuring action for a service with the given name.
 func (s *Configs) Configure(serviceName string, value string, with func(conf *Config, value string) error) error {
 	conf, ok := (*s)[serviceName]
 	if !ok {
@@ -35,7 +35,7 @@ func (s *Configs) Configure(serviceName string, value string, with func(conf *Co
 	return err
 }
 
-// ConfigureSub executes a configuring action for a service with given name.
+// ConfigureSub executes a configuring action for a service with the given name.
 func (s *Configs) ConfigureSub(serviceName string, key string, value string, with func(conf *Config, key string, value string) error) error {
 	conf, ok := (*s)[serviceName]
 	if !ok {

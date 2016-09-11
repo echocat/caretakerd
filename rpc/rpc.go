@@ -40,20 +40,20 @@ type Execution interface {
 	Signal(*service.Service, values.Signal) error
 }
 
-// ListenerStoppedError occurs if the network listener is already stopped.
+// ListenerStoppedError occurs if the network listener already stopped.
 type ListenerStoppedError struct{}
 
 func (i ListenerStoppedError) Error() string {
 	return "stopped"
 }
 
-// StoppableListener is a reimplementation of net.TCPListener which is graceful stoppable.
+// StoppableListener is a reimplementation of net.TCPListener which is a graceful stoppable.
 type StoppableListener struct {
 	*net.TCPListener
 	stop chan int
 }
 
-// NewStoppableListener creates a new instance of StoppableListener and encapsulate the given Listener.
+// NewStoppableListener creates a new instance of StoppableListener and encapsulate the given listener.
 func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 	tcpL, ok := l.(*net.TCPListener)
 	if !ok {
@@ -66,8 +66,8 @@ func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 	return result, nil
 }
 
-// Accept returns new connection if a remote client connects to the server.
-// This method is blocking.
+// Accept returns a new connection if a remote client connects to the server.
+// This method is a blocking method.
 func (sl *StoppableListener) Accept() (net.Conn, error) {
 	for {
 		newConn, err := sl.TCPListener.Accept()
@@ -109,14 +109,14 @@ func NewRPC(conf Config, execution Execution, executable Caretakerd, log *logger
 	return &rpc
 }
 
-// Start starts the RPC instance in background.
-// This means: This method is not blocking.
+// Start starts the RPC instance in the background.
+// This means: This method is not a blocking method.
 func (instance *RPC) Start() {
 	go instance.Run()
 }
 
-// Run starts the RPC instance in foreground.
-// This means: This method is blocking.
+// Run starts the RPC instance in the foreground.
+// This means: This method is a blocking method.
 func (instance *RPC) Run() {
 	defer panics.DefaultPanicHandler()
 	container := restful.NewContainer()
@@ -192,8 +192,8 @@ func (instance *RPC) secure(in net.Listener) net.Listener {
 	return out
 }
 
-// Stop stops the current RPC instance if running.
-// This method is blocking.
+// Stop stops the current RPC instance if it is running.
+// This method is a blocking method.
 func (instance *RPC) Stop() {
 	listener := (*instance).listener
 	if listener != nil {

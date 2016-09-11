@@ -21,7 +21,7 @@ type Writer struct {
 	writer     *lumberjack.Logger
 }
 
-// NewWriter creates a new Write for given filename.
+// NewWriter creates a new Write for the given file name.
 func NewWriter(filename values.String, writer *lumberjack.Logger) *Writer {
 	writeSynchronizerLock.Lock()
 	defer writeSynchronizerLock.Unlock()
@@ -43,7 +43,7 @@ func NewWriter(filename values.String, writer *lumberjack.Logger) *Writer {
 	return result
 }
 
-// Write writes the given content to writer drain.
+// Write writes the given content to the writer drain.
 func (instance *Writer) Write(what []byte, stderr bool) (int, error) {
 	instance.lock.Lock()
 	defer instance.lock.Unlock()

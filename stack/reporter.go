@@ -65,7 +65,7 @@ func StringOf(what interface{}, framesToSkip int) string {
 	return buf.String()
 }
 
-// Print prints the given problem object (panic, error, ...) to a readable version to writer.
+// Print prints the given problem object (panic, error, ...) to a readable version to the writer.
 func Print(what interface{}, to io.Writer, framesToSkip int) {
 	prefix := ""
 	var current interface{}

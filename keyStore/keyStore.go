@@ -249,7 +249,7 @@ func newSerialNumber() *big.Int {
 	return serialNumber
 }
 
-// LoadCertificateFromFile loads a certificate from given filename and return it.
+// LoadCertificateFromFile loads a certificate from the given filename and returns it.
 func LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
 	fileContent, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -290,8 +290,8 @@ func (instance KeyStore) generateClientCertificate(name string, publicKey interf
 	return derBytes, nil
 }
 
-// GeneratePem generates a new PEM with config of current KeyStore instance and return it.
-// This PEM will be stored at the KeyStore instance by this method.
+// GeneratePem generates a new PEM with the config of the current KeyStore instance and returns it.
+// This PEM will be stored in the KeyStore instance.
 func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, error) {
 	if !instance.enabled {
 		return []byte{}, nil, errors.New("KeyStore is not enabled.")
@@ -318,13 +318,13 @@ func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, er
 	return pemBytes, cert, nil
 }
 
-// PEM returns the containing PEM instance of this KeyStore.
+// PEM returns the contained PEM instance of this KeyStore.
 // If there is no PEM the result is empty.
 func (instance KeyStore) PEM() []byte {
 	return instance.pem
 }
 
-// CA returns all containing CAs of this KeyStore.
+// CA returns all contained CAs of this KeyStore.
 func (instance KeyStore) CA() []*x509.Certificate {
 	return instance.ca
 }
@@ -339,13 +339,13 @@ func (instance KeyStore) Config() Config {
 	return instance.config
 }
 
-// IsCA returns true if the containing certificate could use to create new certificates.
+// IsCA returns "true" if the contained certificate could be used to create new certificates.
 func (instance KeyStore) IsCA() bool {
 	cert := instance.cert
 	return cert != nil && cert.IsCA
 }
 
-// IsEnabled returns true if this KeyStore is configured and usable.
+// IsEnabled returns "true" if this KeyStore is configured and usable.
 func (instance KeyStore) IsEnabled() bool {
 	return instance.enabled
 }

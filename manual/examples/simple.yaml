@@ -3,7 +3,7 @@
 # king will run for 120 seconds. If king is finished the whole careteakerd will
 # go down and also terminate queen.
 # wonderland will only be print "Follow the white rabbit." to console and exit
-# imidately.
+# imidiately.
 
 services:
     king:

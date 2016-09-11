@@ -1,4 +1,4 @@
-The way how the binary reacts depends on the command/file name it was called. A simple rename or symlink will change the behavior of the binary.
+The way how the binary reacts depends on its command/file name. A simple rename or symlink will change the behavior of the binary.
 
 | Pattern | Target command | Examples |
 | ------- | ---------------| -------- |

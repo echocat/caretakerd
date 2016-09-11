@@ -175,7 +175,7 @@ func (instance *Execution) postExecution() {
 }
 
 // Run runs this execution.
-// This method is blocking and could only be executed at this instance one time.
+// This method is a blocking method and could only be executed at this instance once.
 func (instance *Execution) Run() (values.ExitCode, error) {
 	err := instance.handleBeforeRun()
 	if err != nil {
@@ -205,7 +205,7 @@ func (instance *Execution) Run() (values.ExitCode, error) {
 	return exitCode, err
 }
 
-// UnrecoverableError indicates a problem that could not recovered with a restart of a service.
+// UnrecoverableError indicates a problem that could not be recovered by a restart of a service.
 type UnrecoverableError struct {
 	error
 }
@@ -237,8 +237,8 @@ func (instance *Execution) runBare() (values.ExitCode, Status, error) {
 	if instance.doTrySetRunningState() {
 		defer instance.doSetDownState()
 		exitCode, err := instance.runCommand((*instance).cmd)
-		// This little sleep is required because if the routines are interrupted
-		// there is no guarantee anymore that every lock is respected.
+		// This little sleep is required because there is no guarantee anymore that every lock is 
+		// respected if the routines are interrupted.
 		time.Sleep(5 * time.Millisecond)
 		return exitCode, instance.getSyncedCurrentStatus(), err
 	}
@@ -295,8 +295,8 @@ func (instance *Execution) Name() string {
 	return (*instance).service.name
 }
 
-// Stop stops this execution instance if running.
-// This method block until the execution is done.
+// Stop stops this execution instance if it is running.
+// This method blocks until the execution is done.
 func (instance *Execution) Stop() {
 	instance.syncGroup.Interrupt()
 	if instance.doLock() != nil {
@@ -337,8 +337,8 @@ func (instance *Execution) sendStop() {
 	}
 }
 
-// Kill kills a this execution if running.
-// This method block until the execution is done.
+// Kill kills this execution if it is running.
+// This method blocks until the execution is done.
 func (instance *Execution) Kill() error {
 	instance.syncGroup.Interrupt()
 	if err := instance.doLock(); err != nil {
@@ -363,8 +363,8 @@ func (instance *Execution) sendKill() {
 	}
 }
 
-// Signal sends the given signal to this execution if running.
-// This method is not blocking.
+// Signal sends the given signal to this execution if it is running.
+// This method is not a blocking method.
 func (instance *Execution) Signal(what values.Signal) error {
 	if err := instance.doLock(); err != nil {
 		return err
@@ -421,7 +421,7 @@ func (instance *Execution) doUnlock() {
 	instance.lock.Unlock()
 }
 
-// PID returns the PID of this execution if running - otherwise 0.
+// PID returns the PID of this execution if it is running - otherwise, it returns "0".
 func (instance *Execution) PID() int {
 	if instance.doLock() != nil {
 		return 0

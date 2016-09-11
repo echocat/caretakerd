@@ -88,15 +88,15 @@ func (instance *Condition) send() (bool, error) {
 }
 
 // Send sends ONE trigger to the condition.
-// If there are more then one listener only one of them will receive the trigger.
-// This method is not blocking.
+// If there are more than one listener, only one of them will receive the trigger.
+// This method is not a blocking method.
 func (instance *Condition) Send() error {
 	_, err := instance.send()
 	return err
 }
 
 // Broadcast broadcast trigger to the condition.
-// If there are more then one listener every of them will receive the trigger.
+// If there are more then one listener, every of them will receive the trigger.
 // This method is not blocking.
 func (instance *Condition) Broadcast() error {
 	var err error
@@ -108,7 +108,7 @@ func (instance *Condition) Broadcast() error {
 }
 
 // Interrupt interrupts every possible current running Wait() method of this instance.
-// Nobody is able to call Wait() from this moment on anymore of this instance.
+// In this instance, nobody will be able to call Wait() from this moment on.
 func (instance *Condition) Interrupt() {
 	closeChannel(instance.channel)
 	instance.mutex.Interrupt()

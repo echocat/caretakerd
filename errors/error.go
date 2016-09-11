@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-// Error represents a GO error but with some more features
+// Error represents a GO error but with more features
 // - such as a cause and a call stack.
 type Error struct {
 	message string
@@ -37,18 +37,18 @@ func (instance Error) Error() string {
 	return stack.ErrorMessageFor(instance)
 }
 
-// Message returns the error message.
+// Message queries the error message.
 func (instance Error) Message() string {
 	return instance.message
 }
 
-// Cause returns the cause that causes this error.
+// Cause queries the cause that causes this error.
 // If there is no cause nil is returned.
 func (instance Error) Cause() interface{} {
 	return instance.cause
 }
 
-// Stack returns the stack at the point this Error instance was created.
+// Stack queries the stack at the point this Error instance was created.
 func (instance Error) Stack() stack.Stack {
 	return instance.stack
 }

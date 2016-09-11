@@ -20,12 +20,12 @@ sudo curl -SL https://github.com/echocat/caretakerd/releases/download/v{{.Versio
 sudo curl -SL https://caretakerd.echocat.org/v{{.Version}}/download/caretakerd-linux-amd64.tar.gz \
     | tar -xz --exclude caretakerd.html -C /usr/bin
 
-# Download always the latest version from caretakerd.echocat.org...   
+# Download the latest version from caretakerd.echocat.org...   
 sudo curl -SL https://caretakerd.echocat.org/latest/download/caretakerd-linux-amd64.tar.gz \
     | tar -xz --exclude caretakerd.html -C /usr/bin
 ```
 
-> Hint: You can use exactly this command in a [Dockerfile](https://docs.docker.com/engine/reference/builder/)
+> Hint: You can use this command in a [Dockerfile](https://docs.docker.com/engine/reference/builder/)
 > to create caretakerd in a docker container.
 
 See [Downloads](#downloads) for all possible download locations.
@@ -48,7 +48,7 @@ caretakerd run
 
 ## Control caretakerd with caretakerctl {#gettingStarted.control-caretakerd-with-caretakerctl}
 
-> Precondition: RPC is enabled. See [RPC enabled configuration example](#configuration.examples.rpcEnabled) how to done this.
+> Precondition: RPC is enabled. See [RPC enabled configuration example](#configuration.examples.rpcEnabled) on how to do this.
 
 ```bash
 # Start a service that is not already running 
@@ -63,4 +63,4 @@ $ caretakerctl stop peasant
 
 ## See in action with Docker {#gettingStarted.see-in-action-with-docker}
 
-You can find on [github.com/echocat/caretakerd-docker-demos](https://github.com/echocat/caretakerd-docker-demos) lots of working demos. Try it out!
+You can find lots of working demos on [github.com/echocat/caretakerd-docker-demos](https://github.com/echocat/caretakerd-docker-demos). Try it out!

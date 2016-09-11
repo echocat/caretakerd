@@ -79,7 +79,7 @@ const (
 	XFSZ = Signal(0x19)
 )
 
-// SignalToName contains all possible variants of Signal and their name
+// SignalToName contains all possible variants of Signal and their names
 var SignalToName = map[Signal]string{
 	NOOP:   "NOOP",
 	ABRT:   "ABRT",
@@ -132,7 +132,7 @@ func (instance Signal) String() string {
 	return result
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance Signal) CheckedString() (string, error) {
 	if name, ok := SignalToName[instance]; ok {
@@ -141,8 +141,8 @@ func (instance Signal) CheckedString() (string, error) {
 	return "", errors.New("Illegal signal: %d", instance)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *Signal) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		candidate := Signal(valueAsInt)
@@ -164,12 +164,12 @@ func (instance *Signal) Set(value string) error {
 	return errors.New("Illegal signal: " + value)
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance Signal) MarshalYAML() (interface{}, error) {
 	return instance.CheckedString()
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -178,7 +178,7 @@ func (instance *Signal) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return instance.Set(value)
 }
 
-// MarshalJSON is used until json marshalling. Do not call directly.
+// MarshalJSON is used until json marshalling. Do not call this method directly.
 func (instance Signal) MarshalJSON() ([]byte, error) {
 	s, err := instance.CheckedString()
 	if err != nil {
@@ -187,7 +187,7 @@ func (instance Signal) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+// UnmarshalJSON is used until json unmarshalling. Do not call this method directly.
 func (instance *Signal) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -196,7 +196,7 @@ func (instance *Signal) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance Signal) Validate() error {
 	_, err := instance.CheckedString()
 	return err

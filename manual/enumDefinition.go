@@ -22,7 +22,7 @@ func (instance EnumDefinition) TypeName() string {
 	return "enum"
 }
 
-// IsTopLevel returns true if this element is a top level Definition.
+// IsTopLevel returns "true" if this element is a top level Definition.
 func (instance EnumDefinition) IsTopLevel() bool {
 	return true
 }

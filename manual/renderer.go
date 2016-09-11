@@ -60,13 +60,13 @@ func (instance *Renderer) Execute() (template.HTML, error) {
 	return instance.Template.Execute(instance)
 }
 
-// Template represents a HTML template with its name.
+// Template represents an HTML template with its name.
 type Template struct {
 	tmpl *template.Template
 	name string
 }
 
-// Execute executes the rendering of this template with given data.
+// Execute executes the rendering of this template with the given data.
 func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 	uncompressed := new(bytes.Buffer)
 	err := instance.tmpl.ExecuteTemplate(uncompressed, instance.name, data)
@@ -87,7 +87,7 @@ func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 	return template.HTML(compressed.String()), nil
 }
 
-// NewRendererFor creates a new renderer for given parameters.
+// NewRendererFor creates a new renderer for the given parameters.
 func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*cli.App) (*Renderer, error) {
 	renderer := &Renderer{
 		Project:           project,

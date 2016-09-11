@@ -16,7 +16,7 @@ type Config struct {
 	Access access.Config `json:"access" yaml:"access,omitempty"`
 }
 
-// NewConfig creates a new instance of Config
+// NewConfig creates a new instance of Config.
 func NewConfig() Config {
 	result := Config{}
 	result.init()
@@ -27,13 +27,13 @@ func (instance *Config) init() {
 	(*instance).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilename())
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates the action on this object and returns an error object if there are any.
 func (instance Config) Validate() error {
 	return instance.Access.Validate()
 }

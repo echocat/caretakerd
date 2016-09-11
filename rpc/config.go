@@ -12,7 +12,7 @@ var defaultValues = map[string]interface{}{
 
 // # Description
 //
-// Defines how caretakerd could be accessed remotely.
+// Defines the remote access to caretakerd.
 type Config struct {
 	// @default false
 	//
@@ -20,8 +20,8 @@ type Config struct {
 	// This includes the [``caretakerctl``](#commands.caretakerctl) command and also
 	// by the services itself.
 	//
-	// > **Hint:** This does **NOT** give automatically access each of it access rights to caretakerd.
-	// > This is separately handled by access properties:
+	// > **Hint:** This does **NOT** automatically grants each of it caretakerd access rights.
+	// > This is separately handled by the following access properties:
 	// >
 	// > * {@ref github.com/echocat/caretakerd/control.Config#Access Control.access} for caretakerctl
 	// > * {@ref github.com/echocat/caretakerd/service.Config#Access Services.access} for services
@@ -29,7 +29,7 @@ type Config struct {
 
 	// @default "tcp://localhost:57955"
 	//
-	// Address where caretakerd RPC interface is listen to.
+	// Address where caretakerd RPC interface is listened to.
 	//
 	// For details of possible values see {@ref github.com/echocat/caretakerd/values.SocketAddress}.
 	Listen values.SocketAddress `json:"listen" yaml:"listen"`
@@ -46,13 +46,13 @@ func (instance *Config) init() {
 	values.SetDefaultsTo(defaultValues, instance)
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object there are any.
 func (instance Config) Validate() error {
 	err := instance.Enabled.Validate()
 	if err == nil {
