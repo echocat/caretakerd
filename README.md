@@ -3,7 +3,7 @@
 
 # caretakerd
 
-We created caretakerd for being a minimal process supervisor. There are no external dependencies and is optimized for containerization (such as Docker) and simple configuration.
+caretakerd is a simple process supervisor. There are no external dependencies and it is optimized for containerization (as used in Docker) and simple configuration.
 
 * [Documentation](#documentation)
 * [Building](#building)
@@ -13,26 +13,26 @@ We created caretakerd for being a minimal process supervisor. There are no exter
 
 ## Documentation
 
-For general documentation please refer the official homepage: [caretakerd.echocat.org](https://caretakerd.echocat.org).
+For general documentation, please refer to [caretakerd.echocat.org](https://caretakerd.echocat.org).
 
-For specific versions refer: [caretakerd.echocat.org/all](https://caretakerd.echocat.org/all).
+For specific versions, please refer to [caretakerd.echocat.org/all](https://caretakerd.echocat.org/all).
 
 ## Building
 
-### Precondition
+### Requirements
 
-For building caretakerd there is only:
+To build caretakerd, you only need:
 
-1. a compatible operating system (Linux, Windows or Mac OS X)
-2. and a working Java 8 installation required.
+* a compatible operating system (Linux, Windows or Mac OS X)
+* a working Java 8 installation
 
-There is no need for a working and installed Go installation (or anything else). The build system will download every dependency and build it if necessary.
+The build system will download every dependency and build it if necessary.
 
-> **Hint:** The Go runtime build by the build system will be placed under ``~/.go-bootstrap``.
+> **Hint:** The Go runtime build by the build system will be stored under ``~/.go-bootstrap``.
 
 ### Run
 
-On Linux and Mac OS X:
+To run caretakerd on Linux and Mac OS X, invoke the following:
 ```bash
 # Build binaries only
 ./mvnw compile
@@ -40,7 +40,7 @@ On Linux and Mac OS X:
 # Run tests (includes compile)
 ./mvnw test
 
-# Build resulting packages (including documentation - includes compile)
+# Build resulting packages (includes documentation - includes compile)
 ./mvnw package
 
 # Set the target version number, increase the version number, do mvnw package,
@@ -48,7 +48,7 @@ On Linux and Mac OS X:
 ./mvnw release:prepare release:perform
 ```
 
-On Windows:
+To run caretakerd on Windows, invoke the following:
 ```bash
 # Build binaries only
 mvnw compile
@@ -56,7 +56,7 @@ mvnw compile
 # Run tests (includes compile)
 mvnw test
 
-# Build resulting packages (including documentation - includes compile)
+# Build resulting packages (includes documentation - includes compile)
 mvnw package
 
 # Set the target version number, increase the version number, do mvnw package,
@@ -66,23 +66,23 @@ mvnw release:prepare release:perform
 
 ### Build artifacts
 
-* Compiled and linked binaries can be found under ``./target/gopath/bin/caretaker*``
-* Generated document can be found under ``./target/docs/caretakerd.html``
-* Packaged TARZs and ZIPs can be found under ``./target/caretakerd-*.tar.gz`` and ``./target/caretakerd-*.zip``
+* You can find the compiled and linked binaries under ``./target/gopath/bin/caretaker*``
+* You can find the generated document under ``./target/docs/caretakerd.html``
+* You can find the packaged TARZs and ZIPs under ``./target/caretakerd-*.tar.gz`` and ``./target/caretakerd-*.zip``
 
 ## Contributing
 
-caretakerd is an open source project of [echocat](https://echocat.org).
+caretakerd is an open source project by [echocat](https://echocat.org).
 So if you want to make this project even better, you can contribute to this project on [Github](https://github.com/echocat/caretakerd)
 by [fork us](https://github.com/echocat/caretakerd/fork).
 
-If you commit code to this project you have to accept that this code will be released under the [license](#license) of this project.
+If you commit code to this project, you have to accept that this code will be released under the [license](#license) of this project.
 
 ## Support
 
-If you need support you can file a ticket at our [issue tracker](https://github.com/echocat/caretakerd/issues)
+If you need support you can create a ticket in our [issue tracker](https://github.com/echocat/caretakerd/issues)
 or join our chat at [echocat.slack.com/messages/caretakerd](https://echocat.slack.com/messages/caretakerd/).
 
 ## License
 
-See [LICENSE](LICENSE) file.
+See the [LICENSE](LICENSE) file.

@@ -65,8 +65,8 @@ func (instance *Mutex) Unlock() {
 }
 
 // TryLock tries to locks the current thread to this mutex.
-// This method will wait for maximum of given duration to get the lock
-// - in this case true is returned.
+// This method will wait for a maximum of the given duration to get the lock
+// - in this case "true" is returned.
 func (instance *Mutex) TryLock(timeout time.Duration) bool {
 	timer := time.NewTimer(timeout)
 	defer func() {
@@ -81,7 +81,7 @@ func (instance *Mutex) TryLock(timeout time.Duration) bool {
 }
 
 // Interrupt interrupts every possible current running Lock() and TryLock() method of this instance.
-// Nobody is able to call Lock() and TryLock() from this moment on anymore of this instance.
+// In this instance, nobody will be able to call Lock() and TryLock() from this moment on.
 func (instance *Mutex) Interrupt() {
 	closeChannel(instance.channel)
 }

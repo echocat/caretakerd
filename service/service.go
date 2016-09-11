@@ -22,7 +22,7 @@ func finalize(what *Service) {
 	what.Close()
 }
 
-// NewService creates a new service instance from given Config.
+// NewService creates a new service instance from the given Config.
 func NewService(conf Config, name string, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Service, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -61,7 +61,7 @@ func (instance Service) Name() string {
 	return instance.name
 }
 
-// Config returns the config this services was created from.
+// Config returns the config that was used to create this service.
 func (instance Service) Config() Config {
 	return instance.config
 }

@@ -5,7 +5,7 @@ import (
 	"sort"
 )
 
-// PickedDefinitions represents every Definition that are picked for rendering.
+// PickedDefinitions represents every Definition that is picked for rendering.
 type PickedDefinitions struct {
 	// RootId is the ID of the root.
 	RootID IDType
@@ -77,8 +77,8 @@ func enrichWithElementAndItsChildren(pd *PickedDefinitions, elementID IDType) er
 	return nil
 }
 
-// GetSourceElementBy returns the original Definition for the given id.
-// nil is returned if this Definition is a primitive one or an error is returned if the Definition does not exist.
+// GetSourceElementBy returns the original Definition for the given ID.
+// Returns nil if this Definition is a primitive one or an error if the Definition does not exist.
 func (instance *PickedDefinitions) GetSourceElementBy(id IDType) (Definition, error) {
 	if id.Primitive {
 		return nil, nil
@@ -90,7 +90,7 @@ func (instance *PickedDefinitions) GetSourceElementBy(id IDType) (Definition, er
 	return result, nil
 }
 
-// FindInlinedFor returns the original inlined Definition for given id.
+// FindInlinedFor returns the original inlined Definition for the given ID.
 // nil is returned if this Definition does not exist.
 func (instance *PickedDefinitions) FindInlinedFor(id IDType) WithInlinedMarker {
 	result, ok := instance.IDToInlinedMarker[id.String()]

@@ -7,21 +7,21 @@ import (
 	"strings"
 )
 
-// Permission represents the permission a service/node have to caretakerd.
+// Permission represents the service's/node's permissions in caretakerd.
 type Permission int
 
 const (
 	// @id forbidden
 	//
-	// The remote control/service does not have any permission to caretakerd.
+	// The remote control/service does not have any permissions in caretakerd.
 	Forbidden Permission = 0
 	// @id readOnly
 	//
-	// The remote control/service does only have read permission to caretakerd.
+	// The remote control/service does only have read permissions in caretakerd.
 	ReadOnly Permission = 1
 	// @id readWrite
 	//
-	// The remote control/service does have read and write permission to caretakerd.
+	// The remote control/service does have read and write permissions in caretakerd.
 	ReadWrite Permission = 2
 )
 
@@ -40,7 +40,7 @@ func (instance Permission) String() string {
 	return s
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString - Same as String but also returns an optional error message if errors occur.
 // validation errors.
 func (instance Permission) CheckedString() (string, error) {
 	switch instance {
@@ -108,7 +108,7 @@ func (instance *Permission) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on the given object and returns an error object if errors occur.
 func (instance Permission) Validate() error {
 	_, err := instance.CheckedString()
 	return err

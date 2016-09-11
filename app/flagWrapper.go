@@ -11,7 +11,7 @@ type FlagWrapper struct {
 	explicitSet bool
 }
 
-// NewFlagWrapper creates a new instance of FlagWrapper
+// NewFlagWrapper creates a new instance of FlagWrapper.
 func NewFlagWrapper(initialValue cli.Generic) *FlagWrapper {
 	return &FlagWrapper{
 		value:       initialValue,
@@ -23,8 +23,8 @@ func (instance FlagWrapper) String() string {
 	return instance.value.String()
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to the current object from a string.
+// Returns an error object if there are problems while transforming the string.
 func (instance *FlagWrapper) Set(value string) error {
 	err := instance.value.Set(value)
 	if err != nil {
@@ -34,7 +34,7 @@ func (instance *FlagWrapper) Set(value string) error {
 	return nil
 }
 
-// IsExplicitSet returns true if someone called the Set(string) method before.
+// IsExplicitSet returns true if the Set(string) method has been called before.
 func (instance FlagWrapper) IsExplicitSet() bool {
 	return instance.explicitSet
 }
@@ -44,8 +44,8 @@ func (instance FlagWrapper) Value() cli.Generic {
 	return instance.value
 }
 
-// AssignIfExplicitSet will assign the wrapped value to given object
-// if it was explicit set before.
+// AssignIfExplicitSet assigns the wrapped value to given object
+// if it was explicitly set before.
 func (instance FlagWrapper) AssignIfExplicitSet(to interface{}) {
 	if instance.explicitSet {
 		v := reflect.ValueOf(instance.value)

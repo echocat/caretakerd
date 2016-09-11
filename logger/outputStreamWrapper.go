@@ -10,7 +10,7 @@ type outputStreamWrapper struct {
 	level  Level
 }
 
-// NewOutputStreamWrapperFor creates a writer to use for redirect every output to a logger.
+// NewOutputStreamWrapperFor creates a writer to redirect every output to a logger.
 func (i *Logger) NewOutputStreamWrapperFor(l Level) io.Writer {
 	return &outputStreamWrapper{
 		logger: i,
@@ -18,17 +18,17 @@ func (i *Logger) NewOutputStreamWrapperFor(l Level) io.Writer {
 	}
 }
 
-// Stdout creates a writer to use for redirect every Stdout output to a logger.
+// Stdout creates a writer to redirect every Stdout output to a logger.
 func (i *Logger) Stdout() io.Writer {
 	return i.NewOutputStreamWrapperFor(i.config.StdoutLevel)
 }
 
-// Stderr creates a writer to use for redirect every Stderr output to a logger.
+// Stderr creates a writer to redirect every Stderr output to a logger.
 func (i *Logger) Stderr() io.Writer {
 	return i.NewOutputStreamWrapperFor(i.config.StderrLevel)
 }
 
-// Write writes given bytes to logger. It respects every new line as a new log entry.
+// Write writes given bytes to logger. It treats every new line as a new log entry.
 func (i outputStreamWrapper) Write(p []byte) (n int, err error) {
 	what := string(p)
 	lines := strings.Split(what, "\n")

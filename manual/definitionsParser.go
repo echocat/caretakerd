@@ -187,7 +187,7 @@ func parseAstFiles(fset *token.FileSet, dir string, files []string) (astFiles []
 	return
 }
 
-// ParseDefinitions parses every Definitions from the given project and return it.
+// ParseDefinitions parses every Definitions from the given project and returns it.
 // If there is any error it will be returned and the Definitions are nil.
 func ParseDefinitions(project Project) (*Definitions, error) {
 	et := &extractionTask{

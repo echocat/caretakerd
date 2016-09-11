@@ -102,12 +102,12 @@ func (i *Logger) write(level Level, message []byte) {
 	i.writeSynchronizer.Write(message, level.IsIndicatingProblem())
 }
 
-// IsOpen returns true if the current logger is still open and usable.
+// IsOpen returns "true" if the current logger is still open and usable.
 func (i Logger) IsOpen() bool {
 	return i.open
 }
 
-// Close will close this logger and all of its resources.
+// Close closes this logger and all of its resources.
 func (i *Logger) Close() {
 	i.lock.Lock()
 	defer i.unlocker()
@@ -130,7 +130,7 @@ func (i Logger) Uptime() time.Duration {
 	return time.Since(i.created)
 }
 
-// EntryFor creates a new entry for given parameters using the current Logger instance.
+// EntryFor creates a new entry for the given parameters using the current Logger instance.
 func (i *Logger) EntryFor(framesToSkip int, problem interface{}, priority Level, time time.Time, message string) Entry {
 	uptime := i.Uptime()
 	return NewEntry(framesToSkip+1, problem, i.name, priority, time, message, uptime)

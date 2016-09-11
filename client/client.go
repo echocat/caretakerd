@@ -18,7 +18,7 @@ import (
 )
 
 // AccessDeniedError represents an error that occurs if someone tries to access a
-// resource that he is not allowed to access.
+// resource without appropriate permissions.
 type AccessDeniedError struct {
 	url string
 }
@@ -27,7 +27,7 @@ func (instance AccessDeniedError) Error() string {
 	return "Access to " + instance.url + " is denied."
 }
 
-// ConflictError represents an error that occurs if someone tries to do an action
+// ConflictError represents an error that occurs if someone tries to perform an action
 // on an entity that is in a different state.
 type ConflictError struct {
 	error string
@@ -45,7 +45,7 @@ func (instance ServiceNotFoundError) Error() string {
 	return "Service not found."
 }
 
-// Factory is used to create new instances of the caretakerd Client.
+// Factory creates new instances of the caretakerd client.
 type Factory struct {
 	config *caretakerd.Config
 }
@@ -57,7 +57,7 @@ func NewFactory(config *caretakerd.Config) *Factory {
 	}
 }
 
-// NewClient creates a new Client.
+// NewClient creates a new client.
 func (instance *Factory) NewClient() (*Client, error) {
 	return NewClient(instance.config)
 }

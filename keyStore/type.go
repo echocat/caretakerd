@@ -20,12 +20,12 @@ const (
 
 	// @id fromFile
 	// Load keyStore from a provided PEM file.
-	// If instance type is selected instance file have to be provided.
+	// If this instance type is selected, the instance file have to be provided.
 	FromFile Type = 1
 
 	// @id fromEnvironment
-	// Load keyStore from the environment variable ``CTD_PEM`` in PEM format.
-	// If instance type is selected instance variable have to be provided.
+	// Load the KeyStore from the environment variable ``CTD_PEM`` in PEM format.
+	// If this instance type is selected, the instance variable have to be provided.
 	FromEnvironment Type = 2
 )
 
@@ -44,7 +44,7 @@ func (instance Type) String() string {
 	return result
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance Type) CheckedString() (string, error) {
 	switch instance {
@@ -58,8 +58,8 @@ func (instance Type) CheckedString() (string, error) {
 	return "", errors.New("Illegal keyStore type: %d", instance)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *Type) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllTypes {
@@ -80,12 +80,12 @@ func (instance *Type) Set(value string) error {
 	return errors.New("Illegal keyStore type: " + value)
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance Type) MarshalYAML() (interface{}, error) {
 	return instance.String(), nil
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -94,7 +94,7 @@ func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return instance.Set(value)
 }
 
-// MarshalJSON is used until json marshalling. Do not call directly.
+// MarshalJSON is used until json marshalling. Do not call this method directly.
 func (instance Type) MarshalJSON() ([]byte, error) {
 	s, err := instance.CheckedString()
 	if err != nil {
@@ -103,7 +103,7 @@ func (instance Type) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+// UnmarshalJSON is used until json unmarshalling. Do not call this method directly.
 func (instance *Type) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -112,22 +112,22 @@ func (instance *Type) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// IsTakingFilename returns true if the KeyStore instance created with this type is created from file.
+// IsTakingFilename returns "true" if the KeyStore instance created with this type is created from file.
 func (instance Type) IsTakingFilename() bool {
 	return instance == FromFile
 }
 
-// IsGenerating returns true if the KeyStore instance created with this type will be generated.
+// IsGenerating returns "true" if the KeyStore instance created with this type will be generated.
 func (instance Type) IsGenerating() bool {
 	return instance == Generated
 }
 
-// IsConsumingCAFile returns true if the KeyStore instance created with this type can consumes a CA bundle file.
+// IsConsumingCAFile returns "true" if the KeyStore instance created with this type can consume a CA bundle file.
 func (instance Type) IsConsumingCAFile() bool {
 	return instance == FromFile || instance == FromEnvironment
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object there are any.
 func (instance Type) Validate() error {
 	_, err := instance.CheckedString()
 	return err

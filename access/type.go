@@ -7,26 +7,27 @@ import (
 	"strings"
 )
 
-// Type represents the type how the access of a service/node to caretakerd will be trusted/validated.
+// Type indicates the validation type for the access of a service/node to caretakerd.
+
 type Type int
 
 const (
 	// @id none
 	//
-	// Like the name said.
+	// No ID given
 	None Type = 0
 	// @id trusted
 	//
-	// Means that caretakerd trust the remote connection based on remote name and configured {@ref github.com/echocat/caretakerd/keyStore.Config#CaFile}.
-	// Or if {@ref github.com/echocat/caretakerd/access.Config#PemFile} is specified expect exact this identity.
+	// caretakerd trusts the remote connection based on the remote name and the configured {@ref github.com/echocat/caretakerd/keyStore.Config#CaFile}.
+	// or if the {@ref github.com/echocat/caretakerd/access.Config#PemFile} is specified to expect exactly this identity.
 	Trusted Type = 1
 	// @id generateToEnvironment
 	//
-	// Generate a new certificate to environment variable ``CTD_PEM`` and trust it.
+	// Generates a new certificate to the environment variable ``CTD_PEM`` and trusts it.
 	GenerateToEnvironment Type = 2
 	// @id generateToFile
 	//
-	// Generate a new certificate to configured {@ref github.com/echocat/caretakerd/access.Config#PemFile} and trust it.
+	// Generates a new certificate to the configured {@ref github.com/echocat/caretakerd/access.Config#PemFile} and trusts it.
 	GenerateToFile Type = 3
 )
 
@@ -46,7 +47,7 @@ func (instance Type) String() string {
 	return s
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are
 // validation errors.
 func (instance Type) CheckedString() (string, error) {
 	switch instance {
@@ -62,8 +63,8 @@ func (instance Type) CheckedString() (string, error) {
 	return "", errors.New("Illegal access type: %d", instance)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to the current object from a string.
+// Returns an error object if there are problems while transforming the string.
 func (instance *Type) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllTypes {
@@ -84,12 +85,12 @@ func (instance *Type) Set(value string) error {
 	return errors.New("Illegal access type: " + value)
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance Type) MarshalYAML() (interface{}, error) {
 	return instance.CheckedString()
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -98,7 +99,7 @@ func (instance *Type) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return instance.Set(value)
 }
 
-// MarshalJSON is used until json marshalling. Do not call directly.
+// MarshalJSON is used until json marshalling. Do not call this method directly.
 func (instance Type) MarshalJSON() ([]byte, error) {
 	s, err := instance.CheckedString()
 	if err != nil {
@@ -107,7 +108,7 @@ func (instance Type) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+// UnmarshalJSON is used until json unmarshalling. Do not call this method directly.
 func (instance *Type) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -116,7 +117,7 @@ func (instance *Type) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// IsTakingFilename returns true if this Type indicates that it accepts a filename.
+// IsTakingFilename returns true if this Type indicates that it accepts a file name.
 func (instance Type) IsTakingFilename() bool {
 	return instance == GenerateToFile
 }
@@ -141,7 +142,7 @@ func (instance Type) IsGenerating() bool {
 	return instance == GenerateToFile || instance == GenerateToEnvironment
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates an action on this object and returns an error object if there are any.
 func (instance Type) Validate() error {
 	_, err := instance.CheckedString()
 	return err

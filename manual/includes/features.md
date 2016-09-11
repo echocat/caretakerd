@@ -3,11 +3,11 @@
 * **[Simple configuration](#configuration.examples)**<br>
   Configure everything via one [YAML](https://en.wikipedia.org/wiki/YAML) file. Every configuration could also be overwritten via
   [environment variables](#configuration.environmentMapping) and the master service could
-  [receive its command line also from the command line of caretakerd itself](#configuration.dataType.service.Service.command.special-master-handling).
+  [also receive its command line from the command line of caretakerd itself](#configuration.dataType.service.Service.command.special-master-handling).
   
 * **Optimized for containerization**<br>
-  cratekerd was designed to be a simple and small process supervisor for containerization environments (such as [Docker](https://en.wikipedia.org/wiki/Docker_\(software\))).
-  It is explicitly not a replacement for host process supervisors like [systemd](https://en.wikipedia.org/wiki/Systemd).
+  caretakerd was designed to be a simple and small process supervisor for containerization environments (such as [Docker](https://en.wikipedia.org/wiki/Docker_\(software\))).
+  It is no replacement for host process supervisors like [systemd](https://en.wikipedia.org/wiki/Systemd).
   
 * **No dependencies**<br>
   Just [download the binary](#downloads) and use it. caretakerd is a [fat binary](https://en.wikipedia.org/wiki/Fat_binary) ready to use.
@@ -18,9 +18,9 @@
   
 * **[Custom logging](#configuration.dataType.logger.Logger)**<br>
   You can log to your liking. It is possible to [log to files](#configuration.dataType.logger.Logger.filename)
-  per service, to just one log file for all services or also directly to [console](#configuration.dataType.logger.Logger.filename).
+  per service, to just log one file for all services or to directly log to the [console](#configuration.dataType.logger.Logger.filename).
   Also log rotation based on [max file size](#configuration.dataType.logger.Logger.maxSizeInMb) and [age of](#configuration.dataType.logger.Logger.maxAgeInDays)
-  log files are builtin.
+  log files are built in.
   
 * **[Builtin cron](#configuration.dataType.service.CronExpression)**<br>
   Execute services when and how often you want.

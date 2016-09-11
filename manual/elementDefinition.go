@@ -33,7 +33,7 @@ func (instance ElementDefinition) TypeName() string {
 	return "element"
 }
 
-// IsTopLevel returns true if this element is a top level Definition.
+// IsTopLevel returns "true" if this element is a top level Definition.
 func (instance ElementDefinition) IsTopLevel() bool {
 	return false
 }

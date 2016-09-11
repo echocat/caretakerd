@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// UsageError represents an error if control process of caretakerd is used in the wrong way.
+// UsageError represents an error if the control process of caretakerd is used in the wrong way.
 type UsageError struct {
 	error string
 }

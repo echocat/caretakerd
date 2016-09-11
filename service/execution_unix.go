@@ -54,7 +54,7 @@ func sendSignalToProcess(process *os.Process, what values.Signal, tryGroup bool)
 }
 
 func (instance *Service) createSysProcAttr() *syscall.SysProcAttr {
-	// Prevent that a created process receives signals for caretakerd
+	// Prevents that a created process receives signals for caretakerd
 	return &syscall.SysProcAttr{
 		Setpgid: true,
 		Pgid:    0,

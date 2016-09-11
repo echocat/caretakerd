@@ -37,7 +37,7 @@ func NewIDType(packageName string, name string, primitive bool) IDType {
 	}
 }
 
-// MapType is a type definition in the source code which references map type that contains other types.
+// MapType is a type definition in the source code which references the map type that contains other types.
 type MapType struct {
 	Key   Type
 	Value Type
@@ -55,7 +55,7 @@ func NewMapType(key Type, value Type) MapType {
 	}
 }
 
-// ArrayType is a type definition in the source code which references array type that contains another type.
+// ArrayType is a type definition in the source code which references the array type that contains another type.
 type ArrayType struct {
 	Value Type
 }
@@ -64,14 +64,14 @@ func (instance ArrayType) String() string {
 	return "[]" + instance.Value.String()
 }
 
-// NewArrayType creates a new instance of ArrayType
+// NewArrayType creates a new instance of ArrayType.
 func NewArrayType(value Type) ArrayType {
 	return ArrayType{
 		Value: value,
 	}
 }
 
-// PointerType is a type definition in the source code which references pointer type that contains another type.
+// PointerType is a type definition in the source code which references the pointer type that contains another type.
 type PointerType struct {
 	Value Type
 }
@@ -80,7 +80,7 @@ func (instance PointerType) String() string {
 	return "*" + instance.Value.String()
 }
 
-// NewPointerType creates a new instance of PointerType
+// NewPointerType creates a new instance of PointerType.
 func NewPointerType(value Type) PointerType {
 	return PointerType{
 		Value: value,
@@ -121,7 +121,7 @@ func ParseType(plain string) Type {
 	return NewIDType(packageName, name, false)
 }
 
-// ExtractAllIDTypesFrom extracts all referenced ID types from given type as an array.
+// ExtractAllIDTypesFrom extracts all referenced ID types from the given type as an array.
 func ExtractAllIDTypesFrom(t Type) []IDType {
 	if idType, ok := t.(IDType); ok {
 		return []IDType{idType}
@@ -138,7 +138,7 @@ func ExtractAllIDTypesFrom(t Type) []IDType {
 	panic(panics.New("Unknown type %v.", reflect.TypeOf(t)))
 }
 
-// ExtractValueIDType extracts the value ID types from given type.
+// ExtractValueIDType extracts the value ID types from the given type.
 func ExtractValueIDType(t Type) IDType {
 	if idType, ok := t.(IDType); ok {
 		return idType

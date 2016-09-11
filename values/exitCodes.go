@@ -19,8 +19,8 @@ func (i ExitCodes) String() string {
 	return result
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (i *ExitCodes) Set(value string) error {
 	candidates := strings.Split(value, ",")
 	result := ExitCodes{}
@@ -38,10 +38,10 @@ func (i *ExitCodes) Set(value string) error {
 	return nil
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (i ExitCodes) Validate() {}
 
-// Contains return true if the given exitCode (what) is contained in this exitCodes.
+// Contains returns "true" if the given exitCode (what) is contained in this exitCodes.
 func (i ExitCodes) Contains(what ExitCode) bool {
 	for _, candidate := range i {
 		if candidate == what {
