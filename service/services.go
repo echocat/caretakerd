@@ -9,7 +9,7 @@ import (
 // Services is a couple of services with their names.
 type Services map[string]*Service
 
-// NewServices creates a new instance of Services from given Configs.
+// NewServices creates a new instance of Services from the given Configs.
 func NewServices(configs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore) (*Services, error) {
 	err := configs.Validate()
 	if err != nil {
@@ -26,14 +26,14 @@ func NewServices(configs Configs, syncGroup *usync.Group, sec *keyStore.KeyStore
 	return &result, nil
 }
 
-// Get returns a service for the give name if exists.
-// If no service for the given name could be found nil is returned.
+// Get returns a service for the given name if a service exists.
+// If no service for the given name could be found, "nil" is returned.
 func (instance Services) Get(name string) *Service {
 	return instance[name]
 }
 
 // GetMaster returns the master of this instance.
-// If there is no master nil is returned.
+// If there is no master, "nil" is returned.
 func (instance Services) GetMaster() *Service {
 	for _, service := range instance {
 		if service.config.Type != Master {
@@ -43,7 +43,7 @@ func (instance Services) GetMaster() *Service {
 	return nil
 }
 
-// GetMasterOrFail returns the master if exists.
+// GetMasterOrFail returns the master, if a master exists.
 // Otherwise it will fail with a panic.
 func (instance Services) GetMasterOrFail() *Service {
 	master := instance.GetMaster()
@@ -75,7 +75,7 @@ func (instance Services) GetAllAutoStartable() Services {
 	return result
 }
 
-// Close closes this instance all of the services.
+// Close closes this instance and all of the services.
 func (instance Services) Close() {
 	for _, service := range instance {
 		service.Close()

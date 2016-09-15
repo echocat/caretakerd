@@ -34,7 +34,7 @@ func (instance PropertyDefinition) TypeName() string {
 	return "property"
 }
 
-// IsTopLevel returns true if this element is a top level Definition.
+// IsTopLevel returns "true" if this element is a top level Definition.
 func (instance PropertyDefinition) IsTopLevel() bool {
 	return false
 }

@@ -29,7 +29,7 @@ type Execution struct {
 	wg              *ssync.WaitGroup
 }
 
-// NewExecution create a new Execution instance of caretakerd.
+// NewExecution creates a new Execution instance of caretakerd.
 //
 // Hint: A caretakerd Execution instance could only be called once.
 func NewExecution(executable Executable) *Execution {
@@ -44,11 +44,11 @@ func NewExecution(executable Executable) *Execution {
 	}
 }
 
-// Run starts the caretakerd Execution and start also every service and required resource.
-// This method is blocking.
+// Run starts the caretakerd execution, every service and required resource.
+// This is a blocking method.
 func (instance *Execution) Run() (values.ExitCode, error) {
 	autoStartableServices := instance.executable.Services().GetAllAutoStartable()
-	// Start all not master services at first. Because this are the dependencies for the master...
+	// Start all non-master services first to start the master properly.
 	for _, target := range autoStartableServices {
 		if target.Config().Type != service.Master {
 			instance.startAndLogProblemsIfNeeded(target)
@@ -79,7 +79,7 @@ func (instance *Execution) Run() (values.ExitCode, error) {
 	return exitCode, (*instance).masterError
 }
 
-// GetCountOfActiveExecutions return number of active execution of services.
+// GetCountOfActiveExecutions returns the number of active executions of all services.
 func (instance *Execution) GetCountOfActiveExecutions() int {
 	instance.doRLock()
 	defer instance.doRUnlock()
@@ -93,8 +93,8 @@ func (instance *Execution) startAndLogProblemsIfNeeded(target *service.Service) 
 	}
 }
 
-// Start start the given service.
-// This method is not blocking.
+// Start starts the given service.
+// This is not a blocking method.
 func (instance *Execution) Start(target *service.Service) error {
 	execution, err := instance.createAndRegisterNotExistingExecutionFor(target)
 	if err != nil {
@@ -187,7 +187,7 @@ func (instance *Execution) doAfterExecution(target *service.Execution, exitCode 
 func (instance *Execution) stopOthers() {
 	others := instance.allExecutionsButMaster()
 	if len(others) > 0 {
-		instance.executable.Logger().Log(logger.Debug, "Master is down. Stopping all left services...")
+		instance.executable.Logger().Log(logger.Debug, "Master is down. Stopping all remaining services...")
 		for _, other := range others {
 			go instance.Stop(other.Service())
 		}
@@ -197,9 +197,9 @@ func (instance *Execution) stopOthers() {
 func (instance *Execution) delayedStartIfNeeded(target *service.Execution, currentRun int) bool {
 	config := target.Service().Config()
 	if currentRun == 1 {
-		return instance.delayedStartIfNeededFor(target, config.StartDelayInSeconds, "Wait %d seconds before start...")
+		return instance.delayedStartIfNeededFor(target, config.StartDelayInSeconds, "Wait %d seconds before starting...")
 	}
-	return instance.delayedStartIfNeededFor(target, config.RestartDelayInSeconds, "Wait %d seconds before restart...")
+	return instance.delayedStartIfNeededFor(target, config.RestartDelayInSeconds, "Wait %d seconds before restarting...")
 }
 
 func (instance *Execution) delayedStartIfNeededFor(target *service.Execution, delayInSeconds values.NonNegativeInteger, messagePattern string) bool {
@@ -232,15 +232,15 @@ func (instance *Execution) registerStopRequestsFor(executions ...*service.Execut
 func (instance *Execution) StopAll() {
 	for _, execution := range instance.allExecutions() {
 		if execution.Service().Config().Type == service.Master {
-			// Hint: Stop of the master should also trigger the shutdown of all other services.
-			// This is the reason why we only shutdown the master at this point.
+			// Hint: Stopping the master should also trigger the shutdown of all other services.
+			// This is the reason why at this point only the master is shut down.
 			instance.Stop(execution.Service())
 		}
 	}
 	instance.wg.Wait()
 }
 
-// Restart stops and starts the given service.
+// Restart stops and restarts the given service.
 func (instance *Execution) Restart(target *service.Service) error {
 	instance.doRLock()
 	if stopRequested, ok := instance.stopRequests[target]; ok && stopRequested {
@@ -357,14 +357,14 @@ func (instance *Execution) doRUnlock() {
 	instance.lock.RUnlock()
 }
 
-// GetFor get the current active service exectuion for the given service.
-// Return false if there is no current matching execution.
+// GetFor queries the current active service execution for the given service.
+// Returns "false" if no current execution matches.
 func (instance *Execution) GetFor(s *service.Service) (*service.Execution, bool) {
 	result, ok := instance.executions[s]
 	return result, ok
 }
 
-// Information return an information object that contain an information for every
+// Information returns an information object that contains information for every
 // configured service.
 func (instance *Execution) Information() map[string]service.Information {
 	result := map[string]service.Information{}
@@ -374,7 +374,7 @@ func (instance *Execution) Information() map[string]service.Information {
 	return result
 }
 
-// InformationFor return an information object for given service.
+// InformationFor returns an information object for the given service.
 func (instance *Execution) InformationFor(s *service.Service) service.Information {
 	if result, ok := instance.GetFor(s); ok {
 		return service.NewInformationForExecution(result)

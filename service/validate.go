@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance Configs) Validate() error {
 	for name, service := range instance {
 		err := instance.validateService(service, name)
@@ -16,7 +16,7 @@ func (instance Configs) Validate() error {
 	return nil
 }
 
-// ValidateMaster do validate if there is exact one valid master or return an error object.
+// ValidateMaster validates whether there is exactly one service defined as master. Returns an error object if there are more services defined as masters.
 func (instance Configs) ValidateMaster() error {
 	masters := []string{}
 	for name, service := range instance {
@@ -41,7 +41,7 @@ func (instance Configs) validateService(service Config, name string) error {
 	return nil
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance Config) Validate() error {
 	err := instance.Logger.Validate()
 	if err == nil {

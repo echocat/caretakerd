@@ -20,14 +20,14 @@ var defaults = map[string]interface{}{
 type Config struct {
 	// @default generated
 	//
-	// Defines the type of instance keyStore.
+	// Defines the type of the instance keyStore.
 	Type Type `json:"type" yaml:"type"`
 
 	// @default ""
 	//
-	// Defines the pemFile which contains the key and certificate to use.
-	// This have to be of type PEM and have to contain the certificate and private key.
-	// Currently the private key is only supported of type RSA.
+	// Defines the pemFile which contains the key and certificate to be used.
+	// This has to be of type PEM and has to contain the certificate and private key.
+	// Currently only private keys of type RSA are supported.
 	//
 	// This property is only evaluated and required if {@ref #Type type} is set to
 	// {@ref .Type#FromFile fromFile}.
@@ -35,16 +35,16 @@ type Config struct {
 
 	// @default "algorithm:`rsa` bits:`1024`"
 	//
-	// Defines some hints for instance store in format ``[<key:`value`>...]``.
+	// Defines some hints, for example to store in the format ``[<key:`value`>...]``.
 	// Possible hints are:
 	//
-	// * ``algorithm``: Algorithm to use for creation of new keys. Currently only ``rsa`` is supported.
+	// * ``algorithm``: Algorithm to be used to create new keys. Currently only ``rsa`` is supported.
 	// * ``bits``: Number of bits to create a new key with.
 	Hints values.String `json:"hints,omitempty" yaml:"hints"`
 
 	// @default ""
 	//
-	// File where trusted certificates are stored in. This have to be in PEM format.
+	// File where trusted certificates are stored in. This has to be in PEM format.
 	CaFile values.String `json:"caFile,omitempty" yaml:"caFile"`
 }
 
@@ -55,7 +55,7 @@ func NewConfig() Config {
 	return result
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates an action on this object and returns an error object if there are any.
 func (instance Config) Validate() error {
 	err := instance.Type.Validate()
 	if err == nil {

@@ -27,7 +27,7 @@ func (instance Project) String() string {
 	return string(b)
 }
 
-// DeterminateProject determinates the Project for the given package name it return it.
+// DeterminateProject determinates the Project for the given package name and returns it.
 func DeterminateProject(packageName string) (Project, error) {
 	result, err := determinateProjectIn(GOPATH+"/src", packageName)
 	if err != nil {

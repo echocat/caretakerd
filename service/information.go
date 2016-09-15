@@ -4,7 +4,7 @@ import (
 	"github.com/echocat/caretakerd/values"
 )
 
-// Information represents the current status of a running execution.
+// Information represents the current status of a running execution of a service.
 type Information struct {
 	Config Config         `json:"config"`
 	Status Status         `json:"status"`

@@ -14,7 +14,7 @@ var uriPattern = regexp.MustCompile("^([a-zA-Z0-9]+)://(.*)$")
 // @serializedAs string
 // # Description
 //
-// SocketAddress represents a socket address in format ``<protocol>://<target>``.
+// SocketAddress represents a socket address in the format ``<protocol>://<target>``.
 //
 // # Protocols
 //
@@ -33,12 +33,12 @@ type SocketAddress struct {
 	Port     int
 }
 
-// AsScheme return a string that represents this SocketAddress as scheme.
+// AsScheme returns a string that represents this SocketAddress as scheme.
 func (instance SocketAddress) AsScheme() string {
 	return instance.Protocol.String()
 }
 
-// AsAddress return a string that represents this SocketAddress an socket address.
+// AsAddress returns a string that represents this SocketAddress as socket address.
 func (instance SocketAddress) AsAddress() string {
 	s, err := instance.checkedStringWithoutProtocol()
 	if err != nil {
@@ -64,7 +64,7 @@ func validateHost(host string) error {
 	return err
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance SocketAddress) CheckedString() (string, error) {
 	s, err := instance.checkedStringWithoutProtocol()
@@ -96,8 +96,8 @@ func (instance SocketAddress) checkedStringWithoutProtocol() (string, error) {
 	return "", errors.New("Unknown protocol: %v", instance.Protocol)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *SocketAddress) Set(value string) error {
 	match := uriPattern.FindStringSubmatch(value)
 	if match != nil && len(match) == 3 {
@@ -146,12 +146,12 @@ func (instance *SocketAddress) SetUnix(value string) error {
 	return nil
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance SocketAddress) MarshalYAML() (interface{}, error) {
 	return instance.String(), nil
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -160,7 +160,7 @@ func (instance *SocketAddress) UnmarshalYAML(unmarshal func(interface{}) error) 
 	return instance.Set(value)
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance SocketAddress) Validate() error {
 	_, err := instance.CheckedString()
 	return err

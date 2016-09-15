@@ -23,7 +23,7 @@ func (instance SimpleDefinition) Description() string {
 	return instance.comment
 }
 
-// Inlined returns true if this Definition should be inlined.
+// Inlined returns "true" if this Definition should be inlined.
 func (instance SimpleDefinition) Inlined() bool {
 	return instance.inlined
 }
@@ -33,7 +33,7 @@ func (instance SimpleDefinition) TypeName() string {
 	return "simple"
 }
 
-// IsTopLevel returns true if this element is a top level Definition.
+// IsTopLevel returns "true" if this element is a top level Definition.
 func (instance SimpleDefinition) IsTopLevel() bool {
 	return true
 }

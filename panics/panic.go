@@ -14,7 +14,7 @@ type Panic struct {
 	stack   stack.Stack
 }
 
-// New creates a new Panic instance with given message.
+// New creates a new Panic instance with the given message.
 func New(message string, a ...interface{}) Panic {
 	var targetMessage string
 	if len(a) == 0 {
@@ -66,7 +66,7 @@ func (i Panic) Throw() {
 
 // DefaultPanicHandler could be used as panic handler on top method like
 //     defer panics.DefaultPanicHandler()
-// ...to handle every panic in a nicer way.
+// ...to handle every panic in a better way.
 func DefaultPanicHandler() {
 	if r := recover(); r != nil {
 		stack.Print(r, os.Stderr, 4)
@@ -76,7 +76,7 @@ func DefaultPanicHandler() {
 
 // HandlePanicOfPresent could be used as panic handler on top method like
 //     defer panics.HandlePanicOfPresent(2)
-// ...to handle every panic in a nicer way.
+// ...to handle every panic in a better way.
 func HandlePanicOfPresent(framesToSkip int) {
 	if r := recover(); r != nil {
 		stack.Print(r, os.Stderr, 4+framesToSkip)

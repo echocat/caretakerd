@@ -1,16 +1,16 @@
 package caretakerd
 
 const (
-	// Version contains the current version of caretakerd
+	// Version indicates the current version of caretakerd
 	Version = "${project.version}"
-	// BaseName contains the base name of caretaker executable
+	// BaseName indicates the base name of the caretaker executable
 	BaseName = "caretaker"
-	// DaemonName contains the name of caretakerd executable
+	// DaemonName indicates the name of the caretakerd executable
 	DaemonName = "caretakerd"
-	// ControlName contains the name of caretakerctl executable
+	// ControlName indicates the name of the caretakerctl executable
 	ControlName = "caretakerctl"
-	// Description contains the description of caretakerd.
+	// Description indicates the description of caretakerd.
 	Description = "${project.description}"
-	// URL contains the URL of caretakerd project page.
+	// URL indicates the URL of the caretakerd project page.
 	URL = "${project.url}"
 )

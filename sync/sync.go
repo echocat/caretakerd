@@ -24,7 +24,7 @@ func (instance TimeoutError) Error() string {
 	return "Timeout."
 }
 
-// InterruptedError occurs if someone has called Interrupt() method.
+// InterruptedError occurs if someone has called the Interrupt() method.
 type InterruptedError struct{}
 
 func (instance InterruptedError) Error() string {
@@ -46,7 +46,7 @@ func finalizeSyncGroup(instance *Group) {
 }
 
 // Interrupt interrupts every action on this SyncGroup.
-// After calling this method is instance is not longer usable anymore.
+// After calling this method the instance is no longer usable anymore.
 func (instance *Group) Interrupt() {
 	for interruptable := range instance.interruptables {
 		interruptable.Interrupt()

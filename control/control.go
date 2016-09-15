@@ -6,7 +6,7 @@ import (
 	"github.com/echocat/caretakerd/keyStore"
 )
 
-// Control represents how a remote caretakerctl/control process is able to control
+// Control indicates how a remote caretakerctl/control process is able to control
 // the current caretakerd instance.
 type Control struct {
 	config Config

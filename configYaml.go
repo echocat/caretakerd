@@ -14,12 +14,12 @@ type ConfigDoesNotExistError struct {
 	fileName string
 }
 
-// Error return the error message.
+// Error returns the error message.
 func (instance ConfigDoesNotExistError) Error() string {
 	return fmt.Sprintf("Config '%v' does not exist.", instance.fileName)
 }
 
-// LoadFromYamlFile loads caretakerd config from given yaml file.
+// LoadFromYamlFile loads the caretakerd config from the given yaml file.
 func LoadFromYamlFile(fileName values.String) (Config, error) {
 	result := NewConfig()
 	content, err := ioutil.ReadFile(fileName.String())
@@ -35,7 +35,7 @@ func LoadFromYamlFile(fileName values.String) (Config, error) {
 	return result, nil
 }
 
-// WriteToYamlFile write the config of current instance to given yaml file.
+// WriteToYamlFile writes the config of the current instance to the given yaml file.
 func (instance Config) WriteToYamlFile(fileName values.String) error {
 	content, err := yaml.Marshal(instance)
 	if err != nil {

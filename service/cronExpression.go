@@ -25,20 +25,20 @@ import (
 // # Special Characters
 //
 // * **Asterisk** (``*``)
-// The asterisk indicates that the cron expression will match for all values of the field; e.g., using an asterisk in the
-// 5th field (month) would indicate every month.
+// The asterisk indicates that the cron expression will match all values of the field; e.g., using an asterisk in the
+// 5th field (month) would match every month.
 // * **Slash** (``/``)
-// Slashes are used to describe increments of ranges. For example ``3-59/15`` in the 1st field (minutes) would indicate the
+// Slashes are used to describe increments of ranges. For example ``3-59/15`` in the 1st field (minutes) would match the
 // 3rd minute of the hour and every 15 minutes thereafter. The form ``*\/...`` is equivalent to the form ``first-last/...``, that is, an increment
 // over the largest possible range of the field. The form ``N/...`` is accepted as meaning ``N-MAX/...``, that is, starting at N, use the increment
 // until the end of that specific range. It does not wrap around.
 // * **Comma** (``,``)
-// Commas are used to separate items of a list. For example, using ``MON,WED,FRI`` in the 5th field (day of week) would mean Mondays,
+// Commas are used to separate items of a list. For example, using ``MON,WED,FRI`` in the 5th field (day of week) would match Mondays,
 // Wednesdays and Fridays.
 // * **Hyphen** (``-``)
-// Hyphens are used to define ranges. For example, ``9-17`` would indicate every hour between 9am and 5pm inclusive.
+// Hyphens are used to define ranges. For example, ``9-17`` would match every hour between 9am and 5pm (inclusive).
 // * **Question mark** (``?``)
-// Question mark may be used instead of ``*`` for leaving either day-of-month or day-of-week blank.
+// Question marks may be used instead of ``*`` for leaving either day-of-month or day-of-week blank.
 //
 // # Predefined schedules
 //
@@ -54,7 +54,7 @@ import (
 //
 // # Intervals
 //
-// You may also schedule a job to execute at fixed intervals. This is supported by formatting the cron spec like this:
+// You may also schedule a job to be executed at fixed intervals. This is supported by formatting the cron spec as follows:
 // ```
 // @every <duration>
 // ```
@@ -62,7 +62,7 @@ import (
 //
 // For example, ``@every 1h30m10s`` would indicate a schedule that activates every 1 hour, 30 minutes, 10 seconds.
 //
-// > **Hint:** The interval does not take the job runtime into account. For example, if a job takes 3 minutes to run, and it
+// > **Hint:** The interval does not take the job runtime into account. For example, if a job takes 3 minutes to run and it
 // is scheduled to run every 5 minutes, it will have only 2 minutes of idle time between each run.
 type CronExpression struct {
 	spec     string
@@ -81,8 +81,8 @@ func (instance CronExpression) String() string {
 	return instance.spec
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *CronExpression) Set(value string) error {
 	if len(strings.TrimSpace(value)) > 0 {
 		schedule, err := cron.Parse(value)
@@ -98,12 +98,12 @@ func (instance *CronExpression) Set(value string) error {
 	return nil
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance CronExpression) MarshalYAML() (interface{}, error) {
 	return instance.String(), nil
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -112,7 +112,7 @@ func (instance *CronExpression) UnmarshalYAML(unmarshal func(interface{}) error)
 	return instance.Set(value)
 }
 
-// IsEnabled returns true if this expression is valid and enabled.
+// IsEnabled returns "true" if this expression is valid and enabled.
 func (instance CronExpression) IsEnabled() bool {
 	return instance.schedule != nil
 }

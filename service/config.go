@@ -10,19 +10,19 @@ import (
 type Config struct {
 	// @default autoStart
 	//
-	// Defines how this service will run by caretakerd.
+	// Defines how this service will be run by caretakerd.
 	//
 	// For details of possible values see {@ref github.com/echocat/caretakerd/values.RestartType}.
 	//
-	// > **Important**: Exact one of the services have to be configured as
+	// > **Important**: Exactly one of the services have to be configured as
 	// > {@ref github.com/echocat/caretakerd/service.Type#Master master}.
 	Type Type `json:"type" yaml:"type"`
 
 	// @default []
 	//
-	// The command the service process has to start with. The called command have to be run in foreground - or in other words: Should not daemonize.
+	// The command the service process has to start with. The called command has to be run in the foreground - or in other words: Should not daemonize.
 	//
-	// > **Hint**: If there is no command line provided this service cannot be started and caretakerd will
+	// > **Hint**: If there is no command line provided, this service cannot be started and caretakerd will
 	// > fail.
 	//
 	// # PATH expansion
@@ -68,12 +68,12 @@ type Config struct {
 	//
 	// Commands to be executed before execution of the actual {@ref #Command command}.
 	//
-	// If one of these commands fails also the whole service is marked as failed. The actual
+	// If one of these commands fails, the whole service will also marked as failed. The actual
 	// {@ref #Command command} will not be invoked and the {@ref #AutoRestart autoRestart} handling will be initiated.
 	//
 	// Only exit codes of value ``0`` will be accepted as success.
 	//
-	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	// If there is a minus (``-``) provided as first item of the command, every error of this command will be ignored.
 	//
 	// Example:
 	// ```yaml
@@ -88,11 +88,11 @@ type Config struct {
 	//
 	// Commands to be executed after execution of the actual {@ref #Command command}.
 	//
-	// Every result of these commands are ignored and will not force another beauvoir - except: an error is logged.
+	// Every result of these commands are ignored and will not force another behaviour - Exception: an error is logged.
 	//
 	// Only exit codes of value ``0`` will be accepted as success.
 	//
-	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	// If there is a minus (``-``) provided as first item of the command, every error of this command will be ignored.
 	//
 	// Example:
 	// ```yaml
@@ -120,7 +120,7 @@ type Config struct {
 
 	// @default [0]
 	//
-	// Every of these values represents an expected success exit codes.
+	// Every of these values represents an expected success exit code.
 	// If a service ends with one of these values, the service will not be restarted.
 	// Other values will trigger a auto restart if configured.
 	//
@@ -137,28 +137,28 @@ type Config struct {
 	//
 	// Defines who have to receive the stop signal.
 	//
-	// > **Hint:** If the service have to be killed always ``processGroup`` is used.
+	// > **Hint:** If the service have to be killed, always ``processGroup`` is used.
 	StopSignalTarget values.SignalTarget `json:"stopSignalTarget" yaml:"stopSignalTarget"`
 
 	// @default []
 	//
-	// Command to be execute to stop the service.
+	// Command to be executed to stop the service.
 	//
-	// From the moment on this command is called the {@ref #StopWaitInSeconds stopWaitInSeconds} are running.
+	// From the moment on this command is called, the {@ref #StopWaitInSeconds stopWaitInSeconds} are running.
 	// It is not important when this stopCommand ends or what is the exit code.
-	// If this command is executed and the service does not end within the configured {@ref #StopWaitInSeconds stopWaitInSeconds}
+	// If this command is executed and the service does not end within the configured {@ref #StopWaitInSeconds stopWaitInSeconds},
 	// the service will be killed.
 	//
 	// Only exit codes of value ``0`` will be accepted as success. Other codes are logged as error.
 	//
-	// If there is a minus (``-``) provided as first item of the command every error of this command will be ignored.
+	// If there is a minus (``-``) provided as first item of the command, every error of this command will be ignored.
 	//
-	// > **Hint:** If this property is configured {@ref #StopSignal stopSignal} will not be evaluated.
+	// > **Hint:** If this property is configured, {@ref #StopSignal stopSignal} will not be evaluated.
 	StopCommand []values.String `json:"stopCommand" yaml:"stopCommand,flow"`
 
 	// @default 30
 	//
-	// Timeout to wait before kill the service process after a stop is requested.
+	// Timeout to wait before killing the service process after a stop is requested.
 	StopWaitInSeconds values.NonNegativeInteger `json:"stopWaitInSeconds" yaml:"stopWaitInSeconds"`
 
 	// @default ""
@@ -173,7 +173,7 @@ type Config struct {
 
 	// @default true
 	//
-	// Pass the environment variables started with caretakerd also to the service process.
+	// Additionally pass the environment variables started with caretakerd to the service process.
 	InheritEnvironment values.Boolean `json:"inheritEnvironment" yaml:"inheritEnvironment"`
 
 	// @default ""
@@ -193,7 +193,7 @@ type Config struct {
 	//
 	// Seconds to wait before restart of a process.
 	//
-	// If a process should be restarted (because of {@ref #AutoRestart autoRestart}) caretakerd will wait this seconds before restart is initiated.
+	// If a process should be restarted (because of {@ref #AutoRestart autoRestart}), caretakerd will wait this seconds before restart is initiated.
 	RestartDelayInSeconds values.NonNegativeInteger `json:"restartDelayInSeconds" yaml:"restartDelayInSeconds"`
 
 	// Configures the permission of this service to control caretakerd remotely
@@ -243,7 +243,7 @@ func (instance *Config) init() {
 	(*instance).Access = access.NewNoneConfig()
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil

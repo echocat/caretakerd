@@ -35,7 +35,7 @@ func finalize(what *Caretakerd) {
 	what.Close()
 }
 
-// NewCaretakerd create a new Caretakerd instance from given config
+// NewCaretakerd creates a new Caretakerd instance from the given config
 func NewCaretakerd(conf Config, syncGroup *usync.Group) (*Caretakerd, error) {
 	err := conf.Validate()
 	if err != nil {
@@ -72,13 +72,13 @@ func NewCaretakerd(conf Config, syncGroup *usync.Group) (*Caretakerd, error) {
 	return &result, nil
 }
 
-// IsOpen return true if caretakerd is still open. This should be false after Close() was called.
+// IsOpen returns "true" if caretakerd is still open. This should return "false" after Close() was called.
 func (instance Caretakerd) IsOpen() bool {
 	return instance.open
 }
 
-// Close close the caretakerd instance and free resoruces.
-// After call of this method it is not longer possible to use this instance.
+// Close closes the caretakerd instance and clears resources.
+// After calling this method it is no longer possible to use this instance.
 func (instance *Caretakerd) Close() {
 	defer func() {
 		instance.open = false
@@ -88,33 +88,33 @@ func (instance *Caretakerd) Close() {
 	instance.logger.Close()
 }
 
-// Logger return instantiated logger that belongs to this instance.
+// Logger returns the instantiated logger that belongs to this instance.
 func (instance Caretakerd) Logger() *logger.Logger {
 	return instance.logger
 }
 
-// Control return instantiated control that belongs to this instance.
+// Control returns the instantiated control that belongs to this instance.
 func (instance *Caretakerd) Control() *control.Control {
 	return instance.control
 }
 
-// Services return instantiated services that belongs to this instance.
+// Services returns the instantiated services that belong to this instance.
 func (instance *Caretakerd) Services() *service.Services {
 	return instance.services
 }
 
-// KeyStore return instantiated keyStore that belongs to this instance.
+// KeyStore returns the instantiated keyStore that belongs to this instance.
 func (instance *Caretakerd) KeyStore() *keyStore.KeyStore {
 	return instance.keyStore
 }
 
-// ConfigObject return config this instances was created with.
+// ConfigObject returns the config that was used to create this instances.
 func (instance *Caretakerd) ConfigObject() interface{} {
 	return instance.config
 }
 
-// Run starts every services and requird resources of caretakerd.
-// This method is blocking.
+// Run starts every services and required resources of caretakerd.
+// This is a blocking method.
 func (instance *Caretakerd) Run() (values.ExitCode, error) {
 	var r *rpc.RPC
 	defer func() {
@@ -134,7 +134,7 @@ func (instance *Caretakerd) Run() (values.ExitCode, error) {
 	return execution.Run()
 }
 
-// Stop stops this instance (if running).
+// Stop stops this instance (if it is running).
 // This method is blocking until every service and resource is stopped.
 func (instance *Caretakerd) Stop() {
 	defer func() {

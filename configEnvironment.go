@@ -68,17 +68,17 @@ var serviceSubEnvKeyToFunction = map[string]func(*service.Config, string, string
 	"ENVIRONMENT": handleEnvironmentEnv,
 }
 
-// Appendable indicates an instance where a string could be appended.
+// Appendable indicates an instance where a string can be appended.
 type Appendable interface {
 	Append(value string) error
 }
 
-// Putable indicates an instance a kind of map where a value with a key could be putted to.
+// Putable indicates an instance of a kind of map where a value with a key could be putted to.
 type Putable interface {
 	Put(key string, value string) error
 }
 
-// EnrichFromEnvironment enrich the current Config instance with configuration from the environment
+// EnrichFromEnvironment enriches the current Config instance with configuration from the environment
 // variables.
 func (instance Config) EnrichFromEnvironment() Config {
 	result := &instance

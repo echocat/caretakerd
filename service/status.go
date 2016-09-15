@@ -11,15 +11,15 @@ import (
 type Status int
 
 const (
-	// New indicates that the execution was created but not run.
+	// New indicates that the service was executed but does not run.
 	New = Status(0)
-	// Down indicates that the execution was executed and is now done regularly.
+	// Down indicates that the service was executed and is now done regularly.
 	Down = Status(1)
-	// Running indicates that the execution is still running.
+	// Running indicates that the service is still running.
 	Running = Status(2)
-	// Stopped indicates that the execution is still running but a stop was initiated.
+	// Stopped indicates that the service is still running but a stop was initiated.
 	Stopped = Status(3)
-	// Killed indicates that the execution is still running but a kill was initiated.
+	// Killed indicates that the service is still running but a kill was initiated.
 	Killed = Status(4)
 	// Unknown indicates nothing useful.
 	Unknown = Status(5)
@@ -43,7 +43,7 @@ func (instance Status) String() string {
 	return s
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance Status) CheckedString() (string, error) {
 	switch instance {
@@ -63,8 +63,8 @@ func (instance Status) CheckedString() (string, error) {
 	return "", errors.New("Illegal status: %d", instance)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to the current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *Status) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllStatus {
@@ -85,12 +85,12 @@ func (instance *Status) Set(value string) error {
 	return errors.New("Illegal status: " + value)
 }
 
-// MarshalJSON is used until json marshalling. Do not call directly.
+// MarshalJSON is used until json marshalling. Do not call this method directly.
 func (instance Status) MarshalJSON() ([]byte, error) {
 	return json.Marshal(instance.String())
 }
 
-// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+// UnmarshalJSON is used until json unmarshalling. Do not call this method directly.
 func (instance *Status) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -99,13 +99,13 @@ func (instance *Status) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance Status) Validate() error {
 	_, err := instance.CheckedString()
 	return err
 }
 
-// IsGoDownRequest returns true if the status indicates that the execution have to come to the end now.
+// IsGoDownRequest returns "true" if the status indicates that the service must be stopped.
 func (instance Status) IsGoDownRequest() bool {
 	switch instance {
 	case Stopped:

@@ -5,20 +5,20 @@ import (
 	"github.com/echocat/caretakerd/values"
 )
 
-// Config for access to caretakerd.
+// Config to access caretakerd.
 type Config struct {
 	// @default "generateToFile" (for control/caretakerctl) "none" (for services)
 	//
 	// Defines how this access will be ensured.
 	//
-	// For details see for possible values {@ref github.com/echocat/caretakerd/access.Type}.
+	// For details see possible values {@ref github.com/echocat/caretakerd/access.Type}.
 	Type Type `json:"type" yaml:"type"`
 
 	// @default "readWrite" (for control/caretakerctl) "forbidden" (for services)
 	//
 	// Defines what the control/service can do with caretakerd.
 	//
-	// For details see for possible values {@ref github.com/echocat/caretakerd/access.Permission}.
+	// For details see possible values {@ref github.com/echocat/caretakerd/access.Permission}.
 	Permission Permission `json:"permission" yaml:"permission"`
 
 	// @default ""
@@ -40,12 +40,12 @@ type Config struct {
 
 	// @default ""
 	//
-	// If set this user owns the generated {@ref #PemFile pem file}.
+	// If set, this user owns the generated {@ref #PemFile pem file}.
 	// Otherwise it is owned by the user caretakerd is running with.
 	PemFileUser values.String `json:"pemFileUser,omitempty" yaml:"pemFileUser"`
 }
 
-// NewNoneConfig create a new Config that grant no access to anything.
+// NewNoneConfig creates a new Config that denies access for anything.
 func NewNoneConfig() Config {
 	return Config{
 		Type:       None,
@@ -53,7 +53,7 @@ func NewNoneConfig() Config {
 	}
 }
 
-// NewTrustedConfig create a new Config with the given Permission based on Trusted rules.
+// NewTrustedConfig creates a new config with the given Permission based on Trusted rules.
 func NewTrustedConfig(permission Permission) Config {
 	return Config{
 		Type:       Trusted,
@@ -61,7 +61,7 @@ func NewTrustedConfig(permission Permission) Config {
 	}
 }
 
-// NewGenerateToEnvironmentConfig create a new Config with the given Permission based
+// NewGenerateToEnvironmentConfig creates a new config with the given permission
 // and will force a creation of certificates to environment variables.
 func NewGenerateToEnvironmentConfig(permission Permission) Config {
 	return Config{
@@ -70,8 +70,8 @@ func NewGenerateToEnvironmentConfig(permission Permission) Config {
 	}
 }
 
-// NewGenerateToFileConfig create a new Config with the given Permission based
-// and will force a creation of certificates to given pemFile.
+// NewGenerateToFileConfig creates a new config with the given permission
+// and will force a creation of certificates to the given pemFile.
 func NewGenerateToFileConfig(permission Permission, pemFile values.String) Config {
 	return Config{
 		Type:              GenerateToFile,
@@ -82,7 +82,7 @@ func NewGenerateToFileConfig(permission Permission, pemFile values.String) Confi
 	}
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates an action on this object and returns an error object if there is any.
 func (instance Config) Validate() error {
 	err := instance.Type.Validate()
 	if err == nil {

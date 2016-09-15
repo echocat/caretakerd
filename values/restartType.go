@@ -38,7 +38,7 @@ func (instance RestartType) String() string {
 	return result
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance RestartType) CheckedString() (string, error) {
 	switch instance {
@@ -52,8 +52,8 @@ func (instance RestartType) CheckedString() (string, error) {
 	return "", errors.New("Illegal restart type: %v", instance)
 }
 
-// Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Sets the given string to current object from a string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *RestartType) Set(value string) error {
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllRestartTypes {
@@ -65,12 +65,12 @@ func (instance *RestartType) Set(value string) error {
 	return errors.New("Illegal restart type: %s", value)
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance RestartType) MarshalYAML() (interface{}, error) {
 	return instance.CheckedString()
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *RestartType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -79,7 +79,7 @@ func (instance *RestartType) UnmarshalYAML(unmarshal func(interface{}) error) er
 	return instance.Set(value)
 }
 
-// MarshalJSON is used until json marshalling. Do not call directly.
+// MarshalJSON is used until json marshalling. Do not call this method directly.
 func (instance RestartType) MarshalJSON() ([]byte, error) {
 	s, err := instance.CheckedString()
 	if err != nil {
@@ -88,7 +88,7 @@ func (instance RestartType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// UnmarshalJSON is used until json unmarshalling. Do not call directly.
+// UnmarshalJSON is used until json unmarshalling. Do not call this method directly.
 func (instance *RestartType) UnmarshalJSON(b []byte) error {
 	var value string
 	if err := json.Unmarshal(b, &value); err != nil {
@@ -97,17 +97,17 @@ func (instance *RestartType) UnmarshalJSON(b []byte) error {
 	return instance.Set(value)
 }
 
-// OnSuccess returns true of the current RestartType tells to restart on success.
+// OnSuccess returns "true" of the current RestartType tells to restart on success.
 func (instance RestartType) OnSuccess() bool {
 	return instance == Always
 }
 
-// OnFailures returns true of the current RestartType tells to restart on failures.
+// OnFailures returns "true" of the current RestartType tells to restart on failures.
 func (instance RestartType) OnFailures() bool {
 	return instance == OnFailures || instance == Always
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates actions on this object and returns an error object if there are any.
 func (instance RestartType) Validate() error {
 	_, err := instance.CheckedString()
 	return err

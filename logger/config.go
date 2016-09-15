@@ -21,24 +21,24 @@ var defaults = map[string]interface{}{
 type Config struct {
 	// @default info
 	//
-	// Minimal log level the logger will output its messages. All below will be ignored.
+	// Minimal log level the logger uses to log error messages. All levels below are ignored.
 	Level Level `json:"level" yaml:"level"`
 
 	// @default info
 	//
-	// If the service prints something to ``stdout`` instance will logged with instance level.
+	// If the service prints something to ``stdout``, the instance will be logged with the corresponding instance level.
 	StdoutLevel Level `json:"stdoutLevel" yaml:"stdoutLevel"`
 
 	// @default error
 	//
-	// If the service prints something to ``stderr`` instance will logged with instance level.
+	// If the service prints something to ``stderr``, the instance will be logged with the corresponding instance level.
 	StderrLevel Level `json:"stderrLevel" yaml:"stderrLevel"`
 
 	// @default "console"
 	//
-	// Target file of the logger. The file will be created if not exist - but not the parent directory.
+	// Target file of the logger. The file will be created if it does not exist - but not the parent directory.
 	//
-	// If instance value is set to ``console`` the whole output will go to ``stdout`` or to ``stderr`` on every log level
+	// If the instance value is set to ``console``, the whole output will go to ``stdout`` or to ``stderr`` on every log level
 	// above or equal to {@ref .Level#Warning warning}.
 	Filename values.String `json:"filename" yaml:"filename"`
 
@@ -46,14 +46,14 @@ type Config struct {
 	//
 	// Maximum size in megabytes of the log file before it gets rotated.
 	//
-	// This is ignored if {@ref #Filename filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} is set to ``console``.
 	MaxSizeInMb values.NonNegativeInteger `json:"maxSizeInMb" yaml:"maxSizeInMb"`
 
 	// @default 500
 	//
 	// Maximum number of old log files to retain.
 	//
-	// This is ignored if {@ref #Filename filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} is set to ``console``.
 	MaxBackups values.NonNegativeInteger `json:"maxBackups" yaml:"maxBackups"`
 
 	// @default 1
@@ -61,9 +61,9 @@ type Config struct {
 	// Maximum number of days to retain old log files based on the
 	// timestamp encoded in their filename.  Note that a day is defined as 24
 	// hours and may not exactly correspond to calendar days due to daylight
-	// savings, leap seconds, etc.
+	// savings, leap seconds etc.
 	//
-	// This is ignored if {@ref #Filename filename} os set to ``console``.
+	// This is ignored if {@ref #Filename filename} is set to ``console``.
 	MaxAgeInDays values.NonNegativeInteger `json:"maxAgeInDays" yaml:"maxAgeInDays"`
 
 	// @default "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] [%c] %m%n%P{%m}"
@@ -79,7 +79,7 @@ func NewConfig() Config {
 	return result
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates action on this object and return an error object if there are any.
 func (instance Config) Validate() error {
 	err := instance.StdoutLevel.Validate()
 	if err == nil {
@@ -92,7 +92,7 @@ func (instance *Config) init() {
 	values.SetDefaultsTo(defaults, instance)
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
 	instance.init()
 	return nil

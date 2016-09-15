@@ -31,7 +31,7 @@ GLOBAL OPTIONS:
 `
 }
 
-// NewApps will create new instances of command line parser (cli.App) for every ExecutableType.
+// NewApps creates new instances of the command line parser (cli.App) for every ExecutableType.
 func NewApps() map[ExecutableType]*cli.App {
 	result := map[ExecutableType]*cli.App{}
 	for _, executableType := range AllExecutableTypes {
@@ -40,7 +40,7 @@ func NewApps() map[ExecutableType]*cli.App {
 	return result
 }
 
-// NewAppFor will create new instance of command line parser (cli.App) for given executableType.
+// NewAppFor creates a new instance of the command line parser (cli.App) for the given executableType.
 func NewAppFor(executableType ExecutableType) *cli.App {
 	app := newAppFor(executableType)
 	registerCommandsFor(executableType, app)

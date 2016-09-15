@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Definitions contains all Definitions of a projects.
+// Definitions contains all Definitions of the given project.
 type Definitions struct {
 	project                Project
 	identifierToDefinition map[string]Definition

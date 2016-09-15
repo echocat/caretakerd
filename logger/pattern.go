@@ -13,13 +13,13 @@ package logger
 // type of data, e.g. category, priority, date, thread name. The format modifiers control such things as field width, padding, left and right justification.
 // The following is a simple example.
 //
-// Let the conversion pattern be "%d{YYYY-MM-DD HH:mm:ss} [%-5p]: %m%n" and assume that the log4j environment was set to use a PatternLayout. Then the statements:
+// The conversion pattern is "%d{YYYY-MM-DD HH:mm:ss} [%-5p]: %m%n" and the log4j environment has been set to use a PatternLayout. Then the statement will be:
 // ```
 // LOG debug Message 1
 // LOG warn Message 2
 // ```
 //
-// would yield the output
+// and would yield the output
 // ```
 // 2016-01-09 14:59:30 [DEBUG] Message 1
 // 2016-01-09 14:59:31 [WARN ] Message 2
@@ -31,7 +31,7 @@ package logger
 //
 // # Conversion patterns
 //
-// * ``%d[{<dateFormat>}]``: Prints out the date of when the log event was created. Possible patterns:
+// * ``%d[{<dateFormat>}]``: Prints out the log's creation date. Possible patterns are:
 //    * Month
 //       * ``M``: 1 2 ... 12
 //       * ``MM``: 01 01 ... 12
@@ -66,14 +66,14 @@ package logger
 //       * ``Z``: -07:00 -06:00 ... +07:00
 //       * ``ZZ``: -0700 -0600 ... +0700
 // * ``%m``: The log message.
-// * ``%c[{<maximumNumberOfElements>}]``: Holds the logging category. Normally instance is the name of the logger or the service. If you do not specify ``maximumNumberOfElements`` the full name is displayed. If instance is for example ``%c{2}`` and the name of the category is ``a.b.c`` then the output result is ``b.c``.
-// * ``%F[{<maximumNumberOfPathElements>}]``: Holds the source file that logs instance event. If you do not specify ``maximumNumberOfPathElements`` the full file name is displayed. If instance is for example ``%F{2}`` and the file name is ``/a/b/c.go`` then the output result is ``b/c.go``.
+// * ``%c[{<maximumNumberOfElements>}]``: Holds the logging category. Normally the instance is the name of the logger or the service. If you do not specify ``maximumNumberOfElements`` the full name is displayed. For example, if the instance is  ``%c{2}`` and the name of the category is ``a.b.c`` then the output result is ``b.c``.
+// * ``%F[{<maximumNumberOfPathElements>}]``: Holds the source file that logs the instance event. If you do not specify ``maximumNumberOfPathElements`` the full file name is displayed. For example, if the instance is ``%F{2}`` and the file name is ``/a/b/c.go`` then the output result is ``b/c.go``.
 // * ``%l``: Holds the source location of the log event.
 // * ``%L``: Holds the line number where the log event was created.
-// * ``%C[{<maximumNumberOfElements>}]``: Holds the source code package. If you do not specify ``maximumNumberOfElements`` the full name is displayed. If instance is for example ``%C{2}`` and the name of the package is ``a.b.c`` then the output result is ``b.c``.
+// * ``%C[{<maximumNumberOfElements>}]``: Holds the source code package. If you do not specify ``maximumNumberOfElements`` the full name is displayed. For example, if the instance is ``%C{2}`` and the name of the package is ``a.b.c`` then the output result is ``b.c``.
 // * ``%M``: Holds the method name where the log event was created.
 // * ``%p``: Holds the priority or better called log level.
-// * ``%P[{<subFormatPattern>}]``: Stacktrace of the location where a problem was raised that caused instance log message.
+// * ``%P[{<subFormatPattern>}]``: Stacktrace of the location where a problem was raised that caused the instance log message.
 // * ``%r``: Uptime of the logger.
 // * ``%n``: Prints out a new line character.
 // * ``%%``: Prints out a ``%`` character.
@@ -87,25 +87,25 @@ func (instance Pattern) String() string {
 	return s
 }
 
-// CheckedString is like String but return also an optional error if there are some
+// CheckedString is like String but also returns an optional error if there are any
 // validation errors.
 func (instance Pattern) CheckedString() (string, error) {
 	return string(instance), nil
 }
 
 // Set the given string to current object from a string.
-// Return an error object if there are some problems while transforming the string.
+// Returns an error object if there are any problems while transforming the string.
 func (instance *Pattern) Set(value string) error {
 	(*instance) = Pattern(value)
 	return nil
 }
 
-// MarshalYAML is used until yaml marshalling. Do not call directly.
+// MarshalYAML is used until yaml marshalling. Do not call this method directly.
 func (instance Pattern) MarshalYAML() (interface{}, error) {
 	return string(instance), nil
 }
 
-// UnmarshalYAML is used until yaml unmarshalling. Do not call directly.
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var value string
 	if err := unmarshal(&value); err != nil {
@@ -114,7 +114,7 @@ func (instance *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error 
 	return instance.Set(value)
 }
 
-// Validate do validate action on this object and return an error object if any.
+// Validate validates action on this object and returns an error object if there are  any.
 func (instance Pattern) Validate() error {
 	_, err := instance.CheckedString()
 	return err
