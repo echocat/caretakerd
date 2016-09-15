@@ -3,10 +3,10 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd/client"
 	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/values"
+	"github.com/urfave/cli"
 	"os"
 	"strings"
 )

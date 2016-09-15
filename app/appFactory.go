@@ -2,10 +2,10 @@ package app
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/errors"
+	"github.com/urfave/cli"
 	"os"
 )
 
@@ -181,8 +181,8 @@ func ensureConfig(daemonChecks bool) error {
 	return nil
 }
 
-func onUsageErrorFor(commandName string) func(context *cli.Context, err error) error {
-	return func(context *cli.Context, err error) error {
+func onUsageErrorFor(commandName string) func(context *cli.Context, err error, isSubcommand bool) error {
+	return func(context *cli.Context, err error, isSubcommand bool) error {
 		fmt.Fprintf(context.App.Writer, "Error: %v\n\n", err)
 		cli.ShowCommandHelp(context, commandName)
 		return err

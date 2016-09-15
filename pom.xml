@@ -74,7 +74,7 @@
                                     gopkg.in/blaubaer/goyaml.v66
                                     gopkg.in/natefinch/lumberjack.v2
                                     gopkg.in/robfig/cron.v2
-                                    github.com/codegangsta/cli
+                                    github.com/urfave/cli
                                     gopkg.in/jmcvetta/napping.v3
                                     github.com/russross/blackfriday
                                     github.com/tdewolff/minify

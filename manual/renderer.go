@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/errors"
@@ -11,6 +10,7 @@ import (
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/html"
 	"github.com/tdewolff/minify/js"
+	"github.com/urfave/cli"
 	"html/template"
 	"io/ioutil"
 	"os"

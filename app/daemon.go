@@ -1,12 +1,12 @@
 package app
 
 import (
-	"github.com/codegangsta/cli"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/sync"
 	"github.com/echocat/caretakerd/values"
+	"github.com/urfave/cli"
 	"os"
 )
 

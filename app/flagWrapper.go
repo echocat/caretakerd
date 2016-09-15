@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 	"reflect"
 )
 
