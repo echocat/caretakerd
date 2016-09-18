@@ -23,7 +23,7 @@ func (instance Integer) CheckedString() (string, error) {
 	return strconv.Itoa(int(instance)), nil
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *Integer) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)

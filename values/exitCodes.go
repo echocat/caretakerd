@@ -19,7 +19,7 @@ func (i ExitCodes) String() string {
 	return result
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (i *ExitCodes) Set(value string) error {
 	candidates := strings.Split(value, ",")

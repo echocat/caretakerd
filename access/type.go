@@ -63,7 +63,7 @@ func (instance Type) CheckedString() (string, error) {
 	return "", errors.New("Illegal access type: %d", instance)
 }
 
-// Sets the given string to the current object from a string.
+// Set sets the given string to the current object from a string.
 // Returns an error object if there are problems while transforming the string.
 func (instance *Type) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {

@@ -81,7 +81,7 @@ func (instance CronExpression) String() string {
 	return instance.spec
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *CronExpression) Set(value string) error {
 	if len(strings.TrimSpace(value)) > 0 {

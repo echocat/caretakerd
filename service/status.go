@@ -11,17 +11,17 @@ import (
 type Status int
 
 const (
-	// New indicates that the service was executed but does not run.
+	// New indicates that the service execution was created but not yet started.
 	New = Status(0)
-	// Down indicates that the service was executed and is now done regularly.
+	// Down indicates that the service execution was run and is now done.
 	Down = Status(1)
-	// Running indicates that the service is still running.
+	// Running indicates that the service execution is still running.
 	Running = Status(2)
-	// Stopped indicates that the service is still running but a stop was initiated.
+	// Stopped indicates that the service execution is still running but a stop was initiated.
 	Stopped = Status(3)
-	// Killed indicates that the service is still running but a kill was initiated.
+	// Killed indicates that the service execution is still running but a kill was initiated.
 	Killed = Status(4)
-	// Unknown indicates nothing useful.
+	// Unknown indicates a status that should never happen. Please consult the log for more information.
 	Unknown = Status(5)
 )
 
@@ -63,7 +63,7 @@ func (instance Status) CheckedString() (string, error) {
 	return "", errors.New("Illegal status: %d", instance)
 }
 
-// Sets the given string to the current object from a string.
+// Set sets the given string to the current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *Status) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {

@@ -13,7 +13,7 @@ package logger
 // type of data, e.g. category, priority, date, thread name. The format modifiers control such things as field width, padding, left and right justification.
 // The following is a simple example.
 //
-// The conversion pattern is "%d{YYYY-MM-DD HH:mm:ss} [%-5p]: %m%n" and the log4j environment has been set to use a PatternLayout. Then the statement will be:
+// If the conversion pattern is "%d{YYYY-MM-DD HH:mm:ss} [%-5p]: %m%n" and the log4j environment has been set to use a PatternLayout. Then the statement will be:
 // ```
 // LOG debug Message 1
 // LOG warn Message 2

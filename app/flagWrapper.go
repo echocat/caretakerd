@@ -23,7 +23,7 @@ func (instance FlagWrapper) String() string {
 	return instance.value.String()
 }
 
-// Sets the given string to the current object from a string.
+// Set sets the given string to the current object from a string.
 // Returns an error object if there are problems while transforming the string.
 func (instance *FlagWrapper) Set(value string) error {
 	err := instance.value.Set(value)

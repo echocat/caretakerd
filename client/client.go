@@ -12,9 +12,9 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
-	"os"
 )
 
 // AccessDeniedError represents an error that occurs if someone tries to access a
@@ -57,7 +57,7 @@ func NewFactory(config *caretakerd.Config) *Factory {
 	}
 }
 
-// NewClient creates a new client.
+// NewClient creates a new Client.
 func (instance *Factory) NewClient() (*Client, error) {
 	return NewClient(instance.config)
 }

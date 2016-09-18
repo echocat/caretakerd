@@ -23,7 +23,7 @@ func (i NonNegativeInteger) CheckedString() (string, error) {
 	return strconv.Itoa(int(i)), nil
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (i *NonNegativeInteger) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
