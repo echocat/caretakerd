@@ -35,33 +35,33 @@ The build system will download every dependency and build it if necessary.
 To run caretakerd on Linux and Mac OS X, invoke the following:
 ```bash
 # Build binaries only
-./mvnw compile
+./gradlew compile
 
 # Run tests (includes compile)
-./mvnw test
+./gradlew test
 
 # Build resulting packages (includes documentation - includes compile)
-./mvnw package
+./gradlew package
 
-# Set the target version number, increase the version number, do mvnw package,
+# Set the target version number, increase the version number, do gradlew package,
 # deploy everything to GitHub releases and set next development version number.
-./mvnw release:prepare release:perform
+./gradlew release:prepare release:perform
 ```
 
 To run caretakerd on Windows, invoke the following:
 ```bash
 # Build binaries only
-mvnw compile
+gradlew compile
 
 # Run tests (includes compile)
-mvnw test
+gradlew test
 
 # Build resulting packages (includes documentation - includes compile)
-mvnw package
+gradlew package
 
-# Set the target version number, increase the version number, do mvnw package,
+# Set the target version number, increase the version number, do gradlew package,
 # deploy everything to GitHub releases and set next development version number.
-mvnw release:prepare release:perform
+gradlew release:prepare release:perform
 ```
 
 ### Build artifacts
