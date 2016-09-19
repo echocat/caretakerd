@@ -5,14 +5,20 @@ import (
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/panics"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
-	"path/filepath"
 )
+
+var version string
+var packageName string
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BaseName + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
 
 func main() {
+	caretakerd.Version = version
+	caretakerd.PackageName = packageName
+
 	defer panics.DefaultPanicHandler()
 	app := app.NewAppFor(getExecutableType())
 

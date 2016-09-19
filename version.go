@@ -1,8 +1,6 @@
 package caretakerd
 
 const (
-	// Version indicates the current version of caretakerd
-	Version = "${project.version}"
 	// BaseName indicates the base name of the caretaker executable
 	BaseName = "caretaker"
 	// DaemonName indicates the name of the caretakerd executable
@@ -10,7 +8,13 @@ const (
 	// ControlName indicates the name of the caretakerctl executable
 	ControlName = "caretakerctl"
 	// Description indicates the description of caretakerd.
-	Description = "${project.description}"
+	Description = "caretakerd is a simple process supervisor. There are no external dependencies and it is optimized for containerization (as used in Docker) and simple configuration."
 	// URL indicates the URL of the caretakerd project page.
-	URL = "${project.url}"
+	URL = "https://caretakerd.echocat.org"
 )
+
+// Version indicates the current version of caretakerd
+var Version string
+
+// PackageName indicates the full package name of caretakerd
+var PackageName string

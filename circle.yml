@@ -1,12 +1,13 @@
 general:
   artifacts:
-    - "target"
+    - "build"
 
 dependencies:
     cache_directories:
     - ~/.m2/repository
-    - ~/.go-bootstrap
+    - ~/.gradle
+    - ~/.go
 
 test:
   override:
-    - mvn clean package
+    - ./gradlew build

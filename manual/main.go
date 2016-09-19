@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
@@ -9,6 +10,9 @@ import (
 	"os"
 	"path/filepath"
 )
+
+var version string
+var packageName string
 
 var log, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
@@ -32,6 +36,9 @@ func getSrcRootPath() string {
 }
 
 func main() {
+	caretakerd.Version = version
+	caretakerd.PackageName = packageName
+
 	defer panicHandler()
 	srcRootPath := getSrcRootPath()
 	project, err := DeterminateProject(srcRootPath)

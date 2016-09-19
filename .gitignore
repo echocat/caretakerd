@@ -1,5 +1,8 @@
 *.iml
-.idea
+/.idea
 *.pem
 *.log
-target
+/.gradle
+/build
+/target
+/vendor

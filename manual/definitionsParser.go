@@ -2,20 +2,21 @@ package main
 
 import (
 	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/system"
 	"go/ast"
 	"go/build"
+	"go/importer"
 	"go/parser"
 	"go/token"
 	"go/types"
+	"os"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
-	"go/importer"
-	"os"
-	"github.com/echocat/caretakerd/system"
-	"github.com/echocat/caretakerd/panics"
 )
 
 var extractIDPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
@@ -138,9 +139,9 @@ func (instance *extractionTask) ImportFrom(packageName, packageSource string, mo
 		pkg, err := instance.defaultImporter.(types.ImporterFrom).ImportFrom(packageName, packageSource, mode)
 		if err == nil {
 			instance.packageNameToParsedPackage[packageName] = &parsedPackage{
-				fileSet: token.NewFileSet(),
+				fileSet:     token.NewFileSet(),
 				sourceFiles: make(map[string]*ast.File),
-				pkg: pkg,
+				pkg:         pkg,
 			}
 		}
 		return pkg, err
@@ -152,7 +153,7 @@ func (instance *extractionTask) ImportFrom(packageName, packageSource string, mo
 	}
 
 	pp = &parsedPackage{
-		fileSet: token.NewFileSet(),
+		fileSet:     token.NewFileSet(),
 		sourceFiles: make(map[string]*ast.File),
 	}
 
@@ -198,7 +199,7 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 			Uses:  make(map[*ast.Ident]types.Object),
 		},
 		packageNameToParsedPackage: make(map[string]*parsedPackage),
-		project: project,
+		project:                    project,
 		context: &build.Context{
 			GOARCH:   runtime.GOARCH,
 			GOOS:     runtime.GOOS,
@@ -215,15 +216,21 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 	}
 	et.typesConfig.Importer = et
 
-	exclude1 := project.SrcRootPath + system.PathSeparator + "target"
+	excludedPaths := []string{
+		project.SrcRootPath + system.PathSeparator + "build",
+		project.SrcRootPath + system.PathSeparator + "vendor",
+		project.SrcRootPath + system.PathSeparator + "manual",
+		project.SrcRootPath + system.PathSeparator + "gradle",
+		project.SrcRootPath + system.PathSeparator + "target",
+	}
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
 			if strings.HasPrefix(info.Name(), ".") {
-				// Ignore dot files and directories
-				return nil
-			} else if path == exclude1 || strings.HasPrefix(path, exclude1 + system.PathSeparator) {
-				// Do not try to build target directory
-				return nil
+				log.Log(logger.Debug, "Skipping dotted path: %v", path)
+				return filepath.SkipDir
+			} else if matchesPaths(path, excludedPaths) {
+				log.Log(logger.Debug, "Skipping exluded path: %v", path)
+				return filepath.SkipDir
 			} else if path == project.SrcRootPath {
 				return et.parsePackageToDefinitions(project.RootPackage, project.SrcRootPath)
 			} else if strings.HasPrefix(path, project.GoSrcPath+system.PathSeparator) {
@@ -244,6 +251,15 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 	}
 
 	return et.definitions, nil
+}
+
+func matchesPaths(path string, candidatePaths []string) bool {
+	for _, candidate := range candidatePaths {
+		if path == candidate || strings.HasPrefix(path, candidate+system.PathSeparator) {
+			return true
+		}
+	}
+	return false
 }
 
 func isBasic(what types.Type) bool {
