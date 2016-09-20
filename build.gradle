@@ -271,11 +271,11 @@ afterReleaseBuild.dependsOn("githubRelease")
 
 github {
     owner = 'echocat'
-    repo = name
+    repo = project.name
     token = "${System.getenv('GITHUB_TOKEN')}"
-    tagName = "v${version}"
+    tagName = "v${project.version}"
     targetCommitish = 'master'
-    name = version
+    name = project.version
     assets = [
             "${project.buildDir}/distribution/${project.name}-linux-386.tar.gz",
             "${project.buildDir}/distribution/${project.name}-linux-amd64.tar.gz",
