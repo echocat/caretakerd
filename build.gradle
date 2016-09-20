@@ -4,6 +4,8 @@ import org.echocat.gradle.plugins.golang.model.Platform
 
 plugins {
     id 'org.echocat.golang' version '0.1.10'
+    id 'net.researchgate.release' version '2.4.0'
+    id 'co.riiid.gradle' version '0.4.2'
 }
 
 /*apply plugin: 'org.echocat.golang'
@@ -256,3 +258,31 @@ task packageDarwinAmd64(
         rename("${project.name}.html", "caretakerd.html")
     }
 }
+
+
+release {
+    preTagCommitMessage = 'Preapre release of '
+    tagCommitMessage = 'Release version '
+    newVersionCommitMessage = 'Prepare next development version '
+    tagTemplate = 'v${version}'
+    buildTasks = ['package']
+}
+afterReleaseBuild.dependsOn("githubRelease")
+
+github {
+    owner = 'echocat'
+    repo = name
+    token = "${System.getenv('GITHUB_TOKEN')}"
+    tagName = "v${version}"
+    targetCommitish = 'master'
+    name = version
+    assets = [
+            "${project.buildDir}/distribution/${project.name}-linux-386.tar.gz",
+            "${project.buildDir}/distribution/${project.name}-linux-amd64.tar.gz",
+            "${project.buildDir}/distribution/${project.name}-windows-386.zip",
+            "${project.buildDir}/distribution/${project.name}-windows-amd64.zip",
+            "${project.buildDir}/distribution/${project.name}-darwin-amd64.tar.gz",
+            "${project.buildDir}/docs/${project.name}.html",
+    ]
+}
+githubRelease.dependsOn("package")

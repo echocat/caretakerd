@@ -4,7 +4,7 @@ general:
 
 dependencies:
     override:
-    - exit 0
+    - rm -f ~/.gitconfig
     cache_directories:
     - ~/.m2/repository
     - ~/.gradle
