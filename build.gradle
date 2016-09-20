@@ -2,11 +2,11 @@ import org.echocat.gradle.plugins.golang.tasks.*
 import org.echocat.gradle.plugins.golang.utils.Executor
 import org.echocat.gradle.plugins.golang.model.Platform
 
-/*plugins {
-    id 'org.echocat.golang' version '0.1.7'
-}*/
+plugins {
+    id 'org.echocat.golang' version '0.1.9'
+}
 
-apply plugin: 'org.echocat.golang'
+/*apply plugin: 'org.echocat.golang'
 
 buildscript {
     repositories {
@@ -14,9 +14,9 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.8-SNAPSHOT"
+        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.10-SNAPSHOT"
     }
-}
+}*/
 
 group 'github.com/echocat/caretakerd'
 
@@ -54,21 +54,21 @@ task buildManual(
         group: "build"
 ) {
     action {
-        // Build manual to caretakerd.html (for Linux and macOS)
-        Executor.executor("${project.buildDir}/out/caretakerd-manual-generator${build.currentPlatformExtension}", logger)
-                .arguments("${project.group}", "${project.buildDir}/out/caretakerd.html")
+        Executor.executor("${project.buildDir}/out/${project.name}-manual-generator${build.currentPlatformExtension}", logger)
+                .arguments("${project.group}", "${project.buildDir}/docs/${project.name}.html")
                 .env("GOOS", "linux")
                 .env("GOROOT", toolchain.goroot)
                 .env("GOPATH", build.gopath)
                 .execute()
+        println("${project.buildDir}/docs/${project.name}.html build.")
 
-        // Build manual to caretakerd-windows.html (for Windows)
-        Executor.executor("${project.buildDir}/out/caretakerd-manual-generator${build.currentPlatformExtension}", logger)
-                .arguments("${project.group}", "${project.buildDir}/out/caretakerd-windows.html")
+        Executor.executor("${project.buildDir}/out/${project.name}-manual-generator${build.currentPlatformExtension}", logger)
+                .arguments("${project.group}", "${project.buildDir}/docs/${project.name}-windows.html")
                 .env("GOOS", "windows")
                 .env("GOROOT", toolchain.goroot)
                 .env("GOPATH", build.gopath)
                 .execute()
+        println("${project.buildDir}/docs/${project.name}-windows.html build.")
     }
 }
 
@@ -83,9 +83,176 @@ task buildManualGeneratorBinaries(
         // Manual sources are located in manual sub directory
         packageName = "${project.group}/manual"
         build {
-            outputFilenamePattern = "${project.buildDir}/out/caretakerd-manual-generator%{extension}"
+            outputFilenamePattern = "${project.buildDir}/out/${project.name}-manual-generator%{extension}"
         }
     }
 }
 
+baseBuild.golang.packageName = "${project.group}/main"
 build.dependsOn("buildManual")
+
+task "package"(
+        group: "distribution",
+        dependsOn: ["packageLinux386","packageLinuxAmd64","packageWindows386","packageWindowsAmd64","packageDarwinAmd64"]
+)
+
+task packageLinux386(
+        type: Tar,
+        group: "distribution",
+        dependsOn: ["build"]
+) {
+    onlyIf = { golang.parsedPlatforms.contains(Platform.LINUX_X86) }
+    destinationDir = new File("${project.buildDir}/distribution")
+    compression = Compression.GZIP
+    baseName = project.name
+    appendix = 'linux-386'
+    extension = 'tar.gz'
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-linux-386")
+        rename("${project.name}-linux-386", "caretakerd")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-linux-386")
+        rename("${project.name}-linux-386", "caretakerctl")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/docs") {
+        into("/")
+        include("${project.name}.html")
+        rename("${project.name}.html", "caretakerd.html")
+    }
+}
+
+task packageLinuxAmd64(
+        type: Tar,
+        group: "distribution",
+        dependsOn: ["build"]
+) {
+    onlyIf = { golang.parsedPlatforms.contains(Platform.LINUX_AMD64) }
+    destinationDir = new File("${project.buildDir}/distribution")
+    compression = Compression.GZIP
+    baseName = project.name
+    appendix = 'linux-amd64'
+    extension = 'tar.gz'
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-linux-amd64")
+        rename("${project.name}-linux-amd64", "caretakerd")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-linux-amd64")
+        rename("${project.name}-linux-amd64", "caretakerctl")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/docs") {
+        into("/")
+        include("${project.name}.html")
+        rename("${project.name}.html", "caretakerd.html")
+    }
+}
+
+task packageWindows386(
+        type: Zip,
+        group: "distribution",
+        dependsOn: ["build"]
+) {
+    onlyIf = { golang.parsedPlatforms.contains(Platform.LINUX_X86) }
+    destinationDir = new File("${project.buildDir}/distribution")
+    baseName = project.name
+    appendix = 'windows-386'
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-windows-386.exe")
+        rename("${project.name}-windows-386.exe", "caretakerd.exe")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-windows-386.exe")
+        rename("${project.name}-windows-386.exe", "caretakerctl.exe")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/docs") {
+        into("/")
+        include("${project.name}.html")
+        rename("${project.name}.html", "caretakerd.html")
+    }
+}
+
+task packageWindowsAmd64(
+        type: Zip,
+        group: "distribution",
+        dependsOn: ["build"]
+) {
+    onlyIf = { golang.parsedPlatforms.contains(Platform.LINUX_AMD64) }
+    destinationDir = new File("${project.buildDir}/distribution")
+    baseName = project.name
+    appendix = 'windows-amd64'
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-windows-amd64.exe")
+        rename("${project.name}-windows-amd64.exe", "caretakerd.exe")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-windows-amd64.exe")
+        rename("${project.name}-windows-amd64.exe", "caretakerctl.exe")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/docs") {
+        into("/")
+        include("${project.name}-windows.html")
+        rename("${project.name}-windows.html", "caretakerd.html")
+    }
+}
+
+task packageDarwinAmd64(
+        type: Tar,
+        group: "distribution",
+        dependsOn: ["build"]
+) {
+    onlyIf = { golang.parsedPlatforms.contains(Platform.DARWIN_AMD64) }
+    destinationDir = new File("${project.buildDir}/distribution")
+    compression = Compression.GZIP
+    baseName = project.name
+    appendix = 'darwin-amd64'
+    extension = 'tar.gz'
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-darwin-amd64")
+        rename("${project.name}-darwin-amd64", "caretakerd")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/out") {
+        into("/")
+        include("${project.name}-darwin-amd64")
+        rename("${project.name}-darwin-amd64", "caretakerctl")
+        fileMode = 755
+    }
+
+    from("${project.buildDir}/docs") {
+        into("/")
+        include("${project.name}.html")
+        rename("${project.name}.html", "caretakerd.html")
+    }
+}
