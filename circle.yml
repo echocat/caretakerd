@@ -3,6 +3,8 @@ general:
     - "build"
 
 dependencies:
+    override:
+    - true
     cache_directories:
     - ~/.m2/repository
     - ~/.gradle
@@ -10,4 +12,4 @@ dependencies:
 
 test:
   override:
-    - ./gradlew build
+    - ./gradlew --stracktrace package

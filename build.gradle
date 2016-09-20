@@ -3,7 +3,7 @@ import org.echocat.gradle.plugins.golang.utils.Executor
 import org.echocat.gradle.plugins.golang.model.Platform
 
 plugins {
-    id 'org.echocat.golang' version '0.1.9'
+    id 'org.echocat.golang' version '0.1.10'
 }
 
 /*apply plugin: 'org.echocat.golang'
@@ -14,7 +14,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.10-SNAPSHOT"
+        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.11-SNAPSHOT"
     }
 }*/
 
