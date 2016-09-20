@@ -4,7 +4,7 @@ general:
 
 dependencies:
     override:
-    - true
+
     cache_directories:
     - ~/.m2/repository
     - ~/.gradle
