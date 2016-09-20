@@ -12,4 +12,4 @@ dependencies:
 
 test:
   override:
-    - ./gradlew --stracktrace package
+    - ./gradlew --stacktrace package
