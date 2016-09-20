@@ -10,4 +10,4 @@ dependencies:
 
 test:
   override:
-    - bash ./gradlew build
+    - ./gradlew build
