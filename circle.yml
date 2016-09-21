@@ -1,6 +1,8 @@
 general:
   artifacts:
-    - "build"
+    - build/distribution
+    - build/docs
+    - build/out
 
 dependencies:
     override:

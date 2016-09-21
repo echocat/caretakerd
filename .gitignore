@@ -4,5 +4,4 @@
 *.log
 /.gradle
 /build
-/target
 /vendor

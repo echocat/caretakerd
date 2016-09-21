@@ -28,14 +28,14 @@ To build caretakerd, you only need:
 
 The build system will download every dependency and build it if necessary.
 
-> **Hint:** The Go runtime build by the build system will be stored under ``~/.go-bootstrap``.
+> **Hint:** The Go runtime build by the build system will be stored under ``~/.go``.
 
 ### Run
 
 To run caretakerd on Linux and Mac OS X, invoke the following:
 ```bash
 # Build binaries only
-./gradlew compile
+./gradlew build
 
 # Run tests (includes compile)
 ./gradlew test
@@ -45,13 +45,13 @@ To run caretakerd on Linux and Mac OS X, invoke the following:
 
 # Set the target version number, increase the version number, do gradlew package,
 # deploy everything to GitHub releases and set next development version number.
-./gradlew release:prepare release:perform
+./gradlew release
 ```
 
 To run caretakerd on Windows, invoke the following:
 ```bash
 # Build binaries only
-gradlew compile
+gradlew build
 
 # Run tests (includes compile)
 gradlew test
@@ -61,14 +61,14 @@ gradlew package
 
 # Set the target version number, increase the version number, do gradlew package,
 # deploy everything to GitHub releases and set next development version number.
-gradlew release:prepare release:perform
+gradlew release
 ```
 
 ### Build artifacts
 
-* You can find the compiled and linked binaries under ``./target/gopath/bin/caretaker*``
-* You can find the generated document under ``./target/docs/caretakerd.html``
-* You can find the packaged TARZs and ZIPs under ``./target/caretakerd-*.tar.gz`` and ``./target/caretakerd-*.zip``
+* You can find the compiled and linked binaries under ``./build/out/caretaker*``
+* You can find the generated document under ``./build/docs/caretakerd.html`` and ``./build/docs/caretakerd-windows.html`` 
+* You can find the packaged TARZs and ZIPs under ``./build/distribution/caretakerd-*.tar.gz`` and ``./build/distribution/caretakerd-*.zip``
 
 ## Contributing
 
