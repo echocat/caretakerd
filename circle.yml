@@ -6,6 +6,7 @@ dependencies:
     override:
     - rm -f ~/.gitconfig
     cache_directories:
+    - .gradle
     - ~/.m2/repository
     - ~/.gradle
     - ~/.go

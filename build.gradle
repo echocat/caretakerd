@@ -1,45 +1,42 @@
-import org.echocat.gradle.plugins.golang.tasks.*
-import org.echocat.gradle.plugins.golang.utils.Executor
-import org.echocat.gradle.plugins.golang.model.Platform
-
-plugins {
-    id 'org.echocat.golang' version '0.1.10'
-    id 'net.researchgate.release' version '2.4.0'
-    id 'co.riiid.gradle' version '0.4.2'
-}
-
-/*apply plugin: 'org.echocat.golang'
-
-buildscript {
+/*buildscript {
     repositories {
         mavenCentral()
         mavenLocal()
     }
     dependencies {
-        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.11-SNAPSHOT"
+        classpath "org.echocat.gradle.plugins:gradle-golang-plugin:0.1.12-SNAPSHOT"
     }
-}*/
+}
+apply plugin: 'org.echocat.golang'
+*/
+import org.echocat.gradle.plugins.golang.tasks.*
+import org.echocat.gradle.plugins.golang.utils.Executor
+import org.echocat.gradle.plugins.golang.model.Platform
+
+plugins {
+    id 'org.echocat.golang' version '0.1.11'
+    id 'net.researchgate.release' version '2.4.0'
+    id 'co.riiid.gradle' version '0.4.2'
+}
 
 group 'github.com/echocat/caretakerd'
 
-dependencies {
-    build 'github.com/eknkc/dateformat'
-    build 'github.com/emicklei/go-restful'
-    build 'gopkg.in/blaubaer/goyaml.v66'
-    build 'gopkg.in/natefinch/lumberjack.v2'
-    build 'gopkg.in/robfig/cron.v2'
-    build 'github.com/urfave/cli'
-    build 'gopkg.in/jmcvetta/napping.v3'
-    build 'github.com/russross/blackfriday'
-    build 'github.com/tdewolff/minify'
-    build 'gopkg.in/check.v1'
-
-    test 'github.com/stretchr/testify'
-}
-
 golang {
-    // Overwritable via -Dplatforms=<..>
     platforms = System.getProperty("platforms", "linux-386,linux-amd64,windows-386,windows-amd64,darwin-amd64")
+    dependencies {
+        build 'github.com/eknkc/dateformat'
+        build 'github.com/emicklei/go-restful'
+        build 'gopkg.in/blaubaer/goyaml.v66'
+        build 'gopkg.in/natefinch/lumberjack.v2'
+        build 'gopkg.in/robfig/cron.v2'
+        build 'github.com/urfave/cli'
+        build 'gopkg.in/jmcvetta/napping.v3'
+        build 'github.com/russross/blackfriday'
+        build 'github.com/tdewolff/minify'
+        build 'gopkg.in/check.v1'
+
+        test 'github.com/stretchr/testify'
+    }
     build {
         useTemporaryGopath = true
         definitions = [
