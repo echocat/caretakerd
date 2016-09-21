@@ -33,7 +33,7 @@ func evaluate(value string) (map[string]string, error) {
 	return result, nil
 }
 
-// Sets the given string to a current object from a string.
+// Set sets the given string to a current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (i *Environments) Set(value string) error {
 	values, err := evaluate(value)

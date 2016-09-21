@@ -25,7 +25,7 @@ func (instance Boolean) CheckedString() (string, error) {
 	return "false", nil
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 func (instance *Boolean) Set(value string) error {
 	switch strings.ToLower(value) {
 	case "1":

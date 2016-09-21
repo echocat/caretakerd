@@ -52,7 +52,7 @@ func (instance RestartType) CheckedString() (string, error) {
 	return "", errors.New("Illegal restart type: %v", instance)
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *RestartType) Set(value string) error {
 	lowerValue := strings.ToLower(value)

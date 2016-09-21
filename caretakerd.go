@@ -165,7 +165,7 @@ func (instance *Caretakerd) terminationNotificationHandler() {
 		osSignal, channelReady := <-instance.signalChannel
 		if channelReady {
 			signal := values.Signal(osSignal.(syscall.Signal))
-			instance.Logger().Log(logger.Debug, "Received shudown signal: %v", signal)
+			instance.Logger().Log(logger.Debug, "Received shutdown signal: %v", signal)
 			instance.Stop()
 		} else {
 			break

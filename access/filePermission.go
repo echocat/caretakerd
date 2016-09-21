@@ -18,7 +18,7 @@ func (instance FilePermission) String() string {
 	return fmt.Sprintf("%04o", instance)
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are problems while transforming the string.
 func (instance *FilePermission) Set(value string) error {
 	if filePermissionOctPattern.MatchString(value) {

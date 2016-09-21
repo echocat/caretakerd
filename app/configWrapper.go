@@ -29,7 +29,7 @@ func (instance ConfigWrapper) String() string {
 	return instance.filename.String()
 }
 
-// Sets the given string to the current object from a string.
+// Set sets the given string to the current object from a string.
 // Returns an error object if there are problems while transforming the string.
 func (instance *ConfigWrapper) Set(value string) error {
 	if len(value) == 0 {

@@ -52,7 +52,7 @@ func (instance SignalTarget) CheckedString() (string, error) {
 	return "", errors.New("Illegal signal target: %d", instance)
 }
 
-// Sets the given string to current object from a string.
+// Set sets the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *SignalTarget) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {

@@ -3,7 +3,7 @@
 
 # caretakerd
 
-caretakerd is a simple process supervisor. There are no external dependencies and it is optimized for containerization (as used in Docker) and simple configuration.
+caretakerd is a simple process supervisor. There are no external dependencies and it is optimized for containerization (like Docker) and simple configuration.
 
 * [Documentation](#documentation)
 * [Building](#building)
