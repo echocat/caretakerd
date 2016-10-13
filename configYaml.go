@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/values"
-	"gopkg.in/blaubaer/goyaml.v66"
+	"gopkg.in/blaubaer/yaml.v66"
 	"io/ioutil"
 	"os"
 )
