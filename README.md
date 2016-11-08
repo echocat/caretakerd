@@ -1,5 +1,7 @@
 [![Circle CI](https://circleci.com/gh/echocat/caretakerd.svg?style=svg)](https://circleci.com/gh/echocat/caretakerd)
-[![Go Report Card](https://goreportcard.com/badge/github.com/echocat/caretakerd)](https://goreportcard.com/report/github.com/echocat/caretakerd) [![Gitter](https://badges.gitter.im/echocat/caretakerd.svg)](https://gitter.im/echocat/caretakerd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Go Report Card](https://goreportcard.com/badge/github.com/echocat/caretakerd)](https://goreportcard.com/report/github.com/echocat/caretakerd)
+[![Code Climate](https://codeclimate.com/github/echocat/caretakerd/badges/gpa.svg)](https://codeclimate.com/github/echocat/caretakerd)
+[![Gitter](https://badges.gitter.im/echocat/caretakerd.svg)](https://gitter.im/echocat/caretakerd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # caretakerd
 
@@ -33,6 +35,7 @@ The build system will download every dependency and build it if necessary.
 ### Run
 
 To run caretakerd on Linux and Mac OS X, invoke the following:
+
 ```bash
 # Build binaries only
 ./gradlew build
@@ -49,6 +52,7 @@ To run caretakerd on Linux and Mac OS X, invoke the following:
 ```
 
 To run caretakerd on Windows, invoke the following:
+
 ```bash
 # Build binaries only
 gradlew build
