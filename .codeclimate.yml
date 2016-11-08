@@ -1,0 +1,6 @@
+exclude_paths:
+- "manual/templates/scripts/**.pack.js"
+- "manual/templates/styles/highlight-github.css"
+- "manual/templates/styles/markdown.css"
+- "**/vendor/"
+- "**/build/"
