@@ -1,6 +1,9 @@
 engines:
   golint:
     enabled: true
+    checks:
+      GoLint/Comments/DocComments:
+        enabled: false
   gofmt:
     enabled: true
   govet:
@@ -9,8 +12,9 @@ engines:
     enabled: true
   csslint:
     enabled: true
-  markdownlint:
-    enabled: true
+    checks:
+      box-sizing:
+        enabled: false
   duplication:
     enabled: true
     config:
@@ -30,3 +34,6 @@ exclude_paths:
 - "manual/templates/styles/markdown.css"
 - "**/vendor/"
 - "**/build/"
+- "**_test.go"
+- "testing/**"
+
