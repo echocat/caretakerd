@@ -13,19 +13,20 @@ cache:
     - $HOME/gopath/pkg/mod
 script: skip
 install: skip
-before_install:
-  - mkdir $HOME/go
-  - export GOPATH=$HOME/go
 
 jobs:
   include:
     - stage: test
       name: Run Tests
+      before_script:
+        - go mod vendor
       script:
         - go run ./build test
     - stage: release
       name: Release
       if: tag =~ ^v\d+\.\d+\.\d+|snapshot-.+$
+      before_script:
+        - go mod vendor
       script:
         - go run ./build build
       deploy:
