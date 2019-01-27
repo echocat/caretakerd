@@ -20,6 +20,8 @@ jobs:
   include:
     - stage: test
       name: Run Tests
+      before_script:
+        - go get -u github.com/emicklei/go-restful
       script:
         - go run ./build test
     - stage: release
