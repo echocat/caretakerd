@@ -1,9 +1,10 @@
 language: go
 go:
-  - 1.11.x
-install: skip
+  - 1.11
 os:
   - linux
+install: true
+sudo: false
 env:
   global:
     - GO111MODULE=on
@@ -20,8 +21,6 @@ jobs:
   include:
     - stage: test
       name: Run Tests
-      before_script:
-        - go get -u github.com/emicklei/go-restful
       script:
         - go run ./build test
     - stage: release
