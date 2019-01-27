@@ -2,38 +2,56 @@ package app
 
 import (
 	"fmt"
+	"github.com/alecthomas/kingpin"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/defaults"
-	"github.com/echocat/caretakerd/errors"
-	"github.com/urfave/cli"
 	"os"
+	"runtime"
+	"time"
 )
 
-var conf = NewConfigWrapper()
-var defaultListenAddress = defaults.ListenAddress()
-var defaultPemFile = defaults.AuthFileKeyFilename()
-var listenAddress = NewFlagWrapper(&defaultListenAddress)
-var pemFile = NewFlagWrapper(&defaultPemFile)
+const (
+	timeFormat = "2006-01-02T15:04:05Z"
+)
+
+var (
+	version  = "development"
+	revision = "development"
+	compiled = ""
+
+	config               = NewConfigWrapper()
+	defaultListenAddress = defaults.ListenAddress()
+	defaultPemFile       = defaults.AuthFileKeyFilename()
+	listenAddress        = NewFlagWrapper(&defaultListenAddress)
+	pemFile              = NewFlagWrapper(&defaultPemFile)
+)
 
 func init() {
-	cli.AppHelpTemplate = `NAME:
-   {{.Name}} - {{.Usage}}
+	if compiled == "" {
+		compiled = time.Now().Format(timeFormat)
+	}
+}
 
-USAGE:
-   {{.HelpName}} {{if .Flags}}[global options]{{end}} command ...
-{{if .Commands}}
-COMMANDS:
-   {{range .Commands}}{{join .Names ", "}}{{ "\t" }}{{.Usage}}
-   {{end}}{{end}}{{if .Flags}}
-GLOBAL OPTIONS:
-   {{range .Flags}}{{.}}
-   {{end}}{{end}}
-`
+func handleVersion(name string) func(*kingpin.ParseContext) error {
+	return func(*kingpin.ParseContext) error {
+		_, err := fmt.Fprintf(os.Stderr, `%s
+ Version:      %s
+ Git revision: %s
+ Built:        %s
+ Go version:   %s
+ OS/Arch:      %s/%s
+`,
+			name, version, revision, compiled, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+		if err == nil {
+			os.Exit(0)
+		}
+		return err
+	}
 }
 
 // NewApps creates new instances of the command line parser (cli.App) for every ExecutableType.
-func NewApps() map[ExecutableType]*cli.App {
-	result := map[ExecutableType]*cli.App{}
+func NewApps() map[ExecutableType]*kingpin.Application {
+	result := map[ExecutableType]*kingpin.Application{}
 	for _, executableType := range AllExecutableTypes {
 		result[executableType] = NewAppFor(executableType)
 	}
@@ -41,90 +59,68 @@ func NewApps() map[ExecutableType]*cli.App {
 }
 
 // NewAppFor creates a new instance of the command line parser (cli.App) for the given executableType.
-func NewAppFor(executableType ExecutableType) *cli.App {
+func NewAppFor(executableType ExecutableType) *kingpin.Application {
 	app := newAppFor(executableType)
 	registerCommandsFor(executableType, app)
 
-	app.CommandNotFound = func(c *cli.Context, command string) {
-		fmt.Fprintf(os.Stderr, "Command does not exist: %v\n\n", command)
-		cli.HelpPrinter(os.Stderr, cli.AppHelpTemplate, app)
+	return app
+}
+
+func newAppFor(executableType ExecutableType) *kingpin.Application {
+	var app *kingpin.Application
+	switch executableType {
+	case Daemon:
+		app = kingpin.New(caretakerd.DaemonName, "Simple control daemon for processes.")
+		app.Flag("config", "Configuration file for daemon.").
+			Short('c').
+			Envar("CTD_CONFIG").
+			PlaceHolder(defaults.ConfigFilename().String()).
+			SetValue(config)
+	case Control:
+		app = kingpin.New(caretakerd.ControlName, "Remote control for "+caretakerd.DaemonName)
+		app.Flag("config", "Configuration file for control.").
+			Short('c').
+			Envar("CTCTL_CONFIG").
+			PlaceHolder(defaults.ConfigFilename().String()).
+			SetValue(config)
+	default:
+		app = kingpin.New(caretakerd.BaseName, "Simple control daemon for processes including remote control for itself.")
+		app.Flag("config", "Configuration file for daemon and control.").
+			Short('c').
+			Envar("CT_CONFIG").
+			PlaceHolder(defaults.ConfigFilename().String()).
+			SetValue(config)
 	}
+
+	app.Flag("address", "Listen address of the daemon.").
+		Short('a').
+		PlaceHolder(listenAddress.String()).
+		SetValue(listenAddress)
+
+	if executableType == Daemon {
+		config.forDaemon = true
+	} else {
+		app.Flag("pem", "Location of PEM file which contains the private public key pair for access to the daemon.").
+			Short('p').
+			PlaceHolder(pemFile.String()).
+			SetValue(pemFile)
+	}
+
+	app.Command("version", "Print the actual version and other useful information.").
+		Action(handleVersion(app.Name))
 
 	return app
 }
 
-func newAppFor(executableType ExecutableType) *cli.App {
-	var configDescription string
-	var configEnvVar string
-	switch executableType {
-	case Daemon:
-		configDescription = "Configuration file for daemon."
-		configEnvVar = "CTD_CONFIG"
-	case Control:
-		configDescription = "Configuration file for control."
-		configEnvVar = "CTCTL_CONFIG"
-	default:
-		configDescription = "Configuration file for daemon and control."
-		configEnvVar = "CT_CONFIG"
-	}
-
-	app := cli.NewApp()
-	app.Version = caretakerd.Version
-	app.Commands = []cli.Command{}
-	app.OnUsageError = func(context *cli.Context, err error, isSubcommand bool) error {
-		fmt.Fprintf(app.Writer, "Error: %v\n\n", err)
-		if isSubcommand {
-			cli.ShowSubcommandHelp(context)
-		} else {
-			cli.ShowAppHelp(context)
-		}
-		return err
-	}
-	app.Flags = []cli.Flag{
-		cli.GenericFlag{
-			Name:   "config,c",
-			Value:  conf,
-			Usage:  configDescription,
-			EnvVar: configEnvVar,
-		},
-		cli.GenericFlag{
-			Name:  "address,a",
-			Value: listenAddress,
-			Usage: "Listen address of the daemon.",
-		},
-	}
-
-	if executableType != Daemon {
-		app.Flags = append(app.Flags, cli.GenericFlag{
-			Name:  "pem,p",
-			Value: pemFile,
-			Usage: "Location of PEM file which contains the private public key pair for access to the daemon.",
-		})
-	}
-
-	switch executableType {
-	case Daemon:
-		app.Name = caretakerd.DaemonName
-		app.Usage = "Simple control daemon for processes."
-	case Control:
-		app.Name = caretakerd.ControlName
-		app.Usage = "Remote control for " + caretakerd.DaemonName
-	default:
-		app.Name = caretakerd.BaseName
-		app.Usage = "Simple control daemon for processes including remote control for itself."
-	}
-	return app
-}
-
-func registerCommandsFor(executableType ExecutableType, at *cli.App) {
+func registerCommandsFor(executableType ExecutableType, at *kingpin.Application) {
 	switch executableType {
 	case Daemon:
 		registerDaemonCommandsAt(executableType, at)
 	case Control:
-		registerControlCommandsAt(at)
+		registerControlCommands(at)
 	default:
 		registerDaemonCommandsAt(executableType, at)
-		registerControlCommandsAt(at)
+		registerControlCommands(at)
 	}
 }
 
@@ -156,35 +152,4 @@ func (instance ExecutableType) String() string {
 		return caretakerd.ControlName
 	}
 	return caretakerd.BaseName
-}
-
-func ensureConfig(daemonChecks bool) error {
-	if conf.explicitSet {
-		return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
-	}
-	newConf := NewConfigWrapper()
-	err := newConf.Set(newConf.String())
-	if err != nil {
-		if _, ok := err.(caretakerd.ConfigDoesNotExistError); ok {
-			if daemonChecks {
-				return errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", newConf.String())
-			}
-			return conf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
-		}
-		return err
-	}
-	err = newConf.ConfigureAndValidate(listenAddress, pemFile, daemonChecks)
-	if err != nil {
-		return err
-	}
-	conf = newConf
-	return nil
-}
-
-func onUsageErrorFor(commandName string) func(context *cli.Context, err error, isSubcommand bool) error {
-	return func(context *cli.Context, err error, isSubcommand bool) error {
-		fmt.Fprintf(context.App.Writer, "Error: %v\n\n", err)
-		cli.ShowCommandHelp(context, commandName)
-		return err
-	}
 }

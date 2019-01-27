@@ -3,46 +3,27 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alecthomas/kingpin"
 	"github.com/echocat/caretakerd/client"
 	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/values"
-	"github.com/urfave/cli"
 	"os"
-	"strings"
 )
 
-// UsageError represents an error if the control process of caretakerd is used in the wrong way.
-type UsageError struct {
-	error string
-}
-
-func (instance UsageError) Error() string {
-	return instance.error
-}
-
-func actionWrapper(clientFactory *client.Factory, command func(context *cli.Context, client *client.Client) error) func(context *cli.Context) {
-	return func(context *cli.Context) {
+func actionWrapper(clientFactory *client.Factory, command func(client *client.Client) error) func(context *kingpin.ParseContext) error {
+	return func(*kingpin.ParseContext) error {
 		cli, err := clientFactory.NewClient()
-		if err != nil {
-			stack.Print(err, os.Stderr, 0)
-			os.Exit(1)
+		if err == nil {
+			err = command(cli)
 		}
-		err = command(context, cli)
-		if de, ok := err.(UsageError); ok {
-			fmt.Fprintln(os.Stderr, de.Error())
-			os.Exit(1)
-		} else if _, ok := err.(client.ConflictError); ok {
-			os.Exit(1)
-		} else if ade, ok := err.(client.AccessDeniedError); ok {
-			fmt.Fprintln(os.Stderr, ade.Error())
-			os.Exit(1)
-		} else if snfe, ok := err.(client.ServiceNotFoundError); ok {
-			fmt.Fprintln(os.Stderr, snfe.Error())
-			os.Exit(1)
-		} else if err != nil {
+		switch err.(type) {
+		case client.ConflictError, client.AccessDeniedError, client.ServiceNotFoundError:
+			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+		default:
 			stack.Print(err, os.Stderr, 0)
-			os.Exit(1)
 		}
+		os.Exit(1)
+		return nil
 	}
 }
 
@@ -51,308 +32,144 @@ func handleJSONResponse(response interface{}, err error) error {
 		return err
 	}
 	if s, ok := response.(string); ok {
-		fmt.Fprintln(os.Stdout, s)
+		_, err := fmt.Fprintln(os.Stdout, s)
+		return err
 	} else if i, ok := response.(values.Integer); ok {
-		fmt.Fprintln(os.Stdout, i)
+		_, err := fmt.Fprintln(os.Stdout, i)
+		return err
 	} else {
 		jConf, err := json.MarshalIndent(response, "", "   ")
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(os.Stdout, string(jConf))
+		_, err = fmt.Fprintln(os.Stdout, string(jConf))
+		return err
 	}
-	return nil
 }
 
-func globalSpecificGetActionWrapper(clientFactory *client.Factory, action func(client *client.Client) (interface{}, error)) func(context *cli.Context) {
-	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
-		return globalSpecificGetAction(context, client, action)
+func getActionWrapper(clientFactory *client.Factory, action func(client *client.Client) (interface{}, error)) func(context *kingpin.ParseContext) error {
+	return actionWrapper(clientFactory, func(client *client.Client) error {
+		return handleJSONResponse(action(client))
 	})
 }
 
-func globalSpecificGetAction(context *cli.Context, client *client.Client, action func(client *client.Client) (interface{}, error)) error {
-	response, err := action(client)
-	return handleJSONResponse(response, err)
-}
+func registerConfigCommand(app *kingpin.Application, clientFactory *client.Factory) {
+	cmd := app.Command("config", "Returns configurations for defined service, '!daemon' or '!control'.")
 
-func serviceSpecificGetActionWrapper(clientFactory *client.Factory, action func(name string, client *client.Client) (interface{}, error)) func(context *cli.Context) {
-	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
-		return serviceSpecificGetAction(context, client, action)
-	})
-}
+	target := cmd.Arg("target", "Could be either '!daemon' for the daemon itself, '!control' for the control of the daemon or each name of a configuration service.").
+		Required().
+		String()
 
-func serviceSpecificGetAction(context *cli.Context, client *client.Client, action func(name string, client *client.Client) (interface{}, error)) error {
-	args := context.Args()
-	if len(args) != 1 {
-		return UsageError{error: fmt.Sprintf("Illegal number of arguments (%d) for command %v", len(args), context.Command.Name)}
-	}
-	response, err := action(args[0], client)
-	return handleJSONResponse(response, err)
-}
-
-func serviceSpecificTriggerActionWrapper(clientFactory *client.Factory, action func(name string, client *client.Client) error) func(context *cli.Context) {
-	return actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
-		return serviceSpecificTriggerAction(context, client, action)
-	})
-}
-
-func serviceSpecificTriggerAction(context *cli.Context, client *client.Client, action func(name string, client *client.Client) error) error {
-	args := context.Args()
-	return action(args[0], client)
-}
-
-func baseControlEnsure(context *cli.Context) error {
-	return ensureConfig(false)
-}
-
-func ensureNoControlArgument(context *cli.Context) error {
-	err := baseControlEnsure(context)
-	if err != nil {
-		return err
-	}
-	if len(context.Args()) != 0 {
-		return UsageError{error: "There is only no argument allowed."}
-	}
-	return nil
-}
-
-func ensureServiceNameArgument(context *cli.Context) error {
-	err := baseControlEnsure(context)
-	if err != nil {
-		return err
-	}
-	args := context.Args()
-	if (len(args) <= 0) || (len(strings.TrimSpace(args[0])) == 0) {
-		return UsageError{error: "There is no service name provided."}
-	}
-	if len(args) > 1 {
-		return UsageError{error: "There is only one argument allowed."}
-	}
-	return nil
-}
-
-func ensureServiceNameAndSignalArgument(context *cli.Context) error {
-	err := baseControlEnsure(context)
-	if err != nil {
-		return err
-	}
-	args := context.Args()
-	if (len(args) <= 0) || (len(strings.TrimSpace(args[0])) == 0) {
-		return UsageError{error: "There is no service name provided."}
-	}
-	if (len(args) <= 1) || (len(strings.TrimSpace(args[1])) == 0) {
-		return UsageError{error: "There is no signal provided."}
-	}
-	var sig values.Signal
-	err = sig.Set(args[1])
-	if err != nil {
-		return UsageError{error: err.Error()}
-	}
-	if len(args) > 2 {
-		return UsageError{error: "There are only two arguments allowed."}
-	}
-	return nil
-}
-
-func createConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "config",
-		Flags:     commonClientFlags,
-		ArgsUsage: " ",
-		Usage:     "Query whole daemon configuration.",
-		Before:    ensureNoControlArgument,
-		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+	cmd.Action(getActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+		if *target == "!daemon" {
 			return client.GetConfig()
-		}),
-		OnUsageError: onUsageErrorFor("config"),
-	}
-}
-
-func createControlConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "controlConfig",
-		Flags:     commonClientFlags,
-		ArgsUsage: " ",
-		Usage:     "Query control configuration.",
-		Before:    ensureNoControlArgument,
-		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+		}
+		if *target == "!control" {
 			return client.GetControlConfig()
-		}),
-		OnUsageError: onUsageErrorFor("controlConfig"),
-	}
+		}
+		return client.GetServiceConfig(*target)
+	}))
 }
 
-func createServicesCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "services",
-		Flags:     commonClientFlags,
-		ArgsUsage: " ",
-		Usage:     "Query whole daemon configuration with all its actual service stats.",
-		Before:    ensureNoControlArgument,
-		Action: globalSpecificGetActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
-			return client.GetServices()
-		}),
-		OnUsageError: onUsageErrorFor("services"),
-	}
+func registerGetCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd := at.Command("get", "Query states for given service or if nothing specified for all services.")
+
+	target := cmd.Arg("target", "If specified this service will be queried otherwise all services will be queried.").
+		String()
+
+	cmd.Action(getActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+		if target != nil && len(*target) > 0 {
+			return client.GetService(*target)
+		}
+		return client.GetServices()
+	}))
 }
 
-func createServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "service",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Usage:     "Query service configuration and its actual stats.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
-			return client.GetService(name)
-		}),
-		OnUsageError: onUsageErrorFor("service"),
-	}
+func registerStatusCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd := at.Command("status", "Query status of a service.")
+
+	target := cmd.Arg("service", "Service to be queried.").
+		Required().
+		String()
+
+	cmd.Action(getActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+		return client.GetServiceStatus(*target)
+	}))
 }
 
-func createServiceConfigCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceConfig",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Usage:     "Query service configuration.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
-			return client.GetServiceConfig(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceConfig"),
-	}
+func registerPidCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "pid", "Query pid of a service.")
+
+	cmd.Action(getActionWrapper(clientFactory, func(client *client.Client) (interface{}, error) {
+		return client.GetServicePid(*serviceName)
+	}))
 }
 
-func createServiceStatusCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceStatus",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"status"},
-		Usage:     "Query service status.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
-			return client.GetServiceStatus(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceStatus"),
-	}
+func registerStartCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "start", "Starts a service.")
+
+	cmd.Action(actionWrapper(clientFactory, func(client *client.Client) error {
+		return client.StartService(*serviceName)
+	}))
 }
 
-func createServicePidCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "servicePid",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"pid"},
-		Usage:     "Query service pid.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificGetActionWrapper(clientFactory, func(name string, client *client.Client) (interface{}, error) {
-			return client.GetServicePid(name)
-		}),
-		OnUsageError: onUsageErrorFor("servicePid"),
-	}
+func registerRestartCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "restart", "Restarts a service.")
+
+	cmd.Action(actionWrapper(clientFactory, func(client *client.Client) error {
+		return client.RestartService(*serviceName)
+	}))
 }
 
-func createStartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceStart",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"start"},
-		Usage:     "Start a service.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
-			return client.StartService(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceStart"),
-	}
+func registerStopCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "stop", "Stops a service.")
+
+	cmd.Action(actionWrapper(clientFactory, func(client *client.Client) error {
+		return client.StopService(*serviceName)
+	}))
 }
 
-func createRestartServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceRestart",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"restart"},
-		Usage:     "Restart a service.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
-			return client.RestartService(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceRestart"),
-	}
+func registerKillCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "kill", "Kills a service.")
+
+	cmd.Action(actionWrapper(clientFactory, func(client *client.Client) error {
+		return client.KillService(*serviceName)
+	}))
 }
 
-func createStopServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceStop",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"stop"},
-		Usage:     "Stop a service.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
-			return client.StopService(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceStop"),
-	}
+func registerSignalCommand(at *kingpin.Application, clientFactory *client.Factory) {
+	cmd, serviceName := registerServiceNameEnabledCommand(at, "signal", "Send a signal to service.")
+
+	var signal values.Signal
+	cmd.Arg("signal", "Signal to be send").
+		Required().
+		SetValue(&signal)
+
+	cmd.Action(actionWrapper(clientFactory, func(client *client.Client) error {
+		return client.SignalService(*serviceName, signal)
+	}))
 }
 
-func createKillServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceKill",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name>",
-		Aliases:   []string{"kill"},
-		Usage:     "Kill a service.",
-		Before:    ensureServiceNameArgument,
-		Action: serviceSpecificTriggerActionWrapper(clientFactory, func(name string, client *client.Client) error {
-			return client.KillService(name)
-		}),
-		OnUsageError: onUsageErrorFor("serviceKill"),
-	}
+func registerServiceNameEnabledCommand(at *kingpin.Application, name, description string) (cmd *kingpin.CmdClause, serviceName *string) {
+	cmd = at.Command(name, description)
+
+	serviceName = cmd.Arg("service", "Service to execute the action on.").
+		Required().
+		String()
+
+	return
 }
 
-func createSignalServiceCommand(commonClientFlags []cli.Flag, clientFactory *client.Factory) cli.Command {
-	return cli.Command{
-		Name:      "serviceSignal",
-		Flags:     commonClientFlags,
-		ArgsUsage: "<service name> <signal>",
-		Aliases:   []string{"signal"},
-		Usage:     "Send a signal to service.",
-		Before:    ensureServiceNameAndSignalArgument,
-		Action: actionWrapper(clientFactory, func(context *cli.Context, client *client.Client) error {
-			args := context.Args()
-			name := args[0]
-			var sig values.Signal
-			err := sig.Set(args[1])
-			if err != nil {
-				return UsageError{error: err.Error()}
-			}
-			return client.SignalService(name, sig)
-		}),
-		OnUsageError: onUsageErrorFor("serviceSignal"),
-	}
-}
+func registerControlCommands(at *kingpin.Application) {
+	clientFactory := client.NewFactory(config)
 
-func registerControlCommandsAt(app *cli.App) {
-	clientFactory := client.NewFactory(conf.Instance())
-
-	commonClientFlags := []cli.Flag{}
-
-	app.Commands = append(app.Commands,
-		createConfigCommand(commonClientFlags, clientFactory),
-		createControlConfigCommand(commonClientFlags, clientFactory),
-		createServicesCommand(commonClientFlags, clientFactory),
-		createServiceCommand(commonClientFlags, clientFactory),
-		createServiceConfigCommand(commonClientFlags, clientFactory),
-		createServiceStatusCommand(commonClientFlags, clientFactory),
-		createServicePidCommand(commonClientFlags, clientFactory),
-		createStartServiceCommand(commonClientFlags, clientFactory),
-		createRestartServiceCommand(commonClientFlags, clientFactory),
-		createStopServiceCommand(commonClientFlags, clientFactory),
-		createKillServiceCommand(commonClientFlags, clientFactory),
-		createSignalServiceCommand(commonClientFlags, clientFactory),
-	)
+	registerConfigCommand(at, clientFactory)
+	registerGetCommand(at, clientFactory)
+	registerStatusCommand(at, clientFactory)
+	registerPidCommand(at, clientFactory)
+	registerStartCommand(at, clientFactory)
+	registerRestartCommand(at, clientFactory)
+	registerStopCommand(at, clientFactory)
+	registerKillCommand(at, clientFactory)
+	registerSignalCommand(at, clientFactory)
 }

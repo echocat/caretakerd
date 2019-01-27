@@ -17,6 +17,10 @@ import (
 	"time"
 )
 
+type ConfigProvider interface {
+	ProvideConfig() (*caretakerd.Config, error)
+}
+
 // AccessDeniedError represents an error that occurs if someone tries to access a
 // resource without appropriate permissions.
 type AccessDeniedError struct {
@@ -47,19 +51,23 @@ func (instance ServiceNotFoundError) Error() string {
 
 // Factory creates new instances of the caretakerd client.
 type Factory struct {
-	config *caretakerd.Config
+	configProvider ConfigProvider
 }
 
 // NewFactory creates a new instance of Factory.
-func NewFactory(config *caretakerd.Config) *Factory {
+func NewFactory(configProvider ConfigProvider) *Factory {
 	return &Factory{
-		config: config,
+		configProvider: configProvider,
 	}
 }
 
 // NewClient creates a new Client.
 func (instance *Factory) NewClient() (*Client, error) {
-	return NewClient(instance.config)
+	config, err := instance.configProvider.ProvideConfig()
+	if err != nil {
+		return nil, err
+	}
+	return NewClient(config)
 }
 
 // Client is used to access caretakerd remotely.
@@ -174,7 +182,7 @@ func dialTLSWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net
 	}
 
 	if err = tlsConn.Handshake(); err != nil {
-		tlsConn.Close()
+		_ = tlsConn.Close()
 		return nil, err
 	}
 
@@ -195,7 +203,7 @@ func dialTLSWithOwnChecks(config *caretakerd.Config, tlsConfig *tls.Config) (net
 
 	_, err = certs[0].Verify(opts)
 	if err != nil {
-		tlsConn.Close()
+		_ = tlsConn.Close()
 		return nil, err
 	}
 

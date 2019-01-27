@@ -1,5 +1,5 @@
 [![Circle CI](https://circleci.com/gh/echocat/caretakerd.svg?style=svg)](https://circleci.com/gh/echocat/caretakerd)
-[![Go Report Card](https://goreportcard.com/badge/github.com/echocat/caretakerd)](https://goreportcard.com/report/github.com/echocat/caretakerd)
+[![Build Status](https://travis-ci.org/echocat/caretakerd.svg?branch=master)](https://travis-ci.org/echocat/caretakerd)
 [![Code Climate](https://codeclimate.com/github/echocat/caretakerd/badges/gpa.svg)](https://codeclimate.com/github/echocat/caretakerd)
 [![Gitter](https://badges.gitter.im/echocat/caretakerd.svg)](https://gitter.im/echocat/caretakerd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
@@ -26,53 +26,27 @@ For specific versions, please refer to [caretakerd.echocat.org/all](https://care
 To build caretakerd, you only need:
 
 * a compatible operating system (Linux, Windows or Mac OS X)
-* a working Java 8 installation
+* a working Go (at least version 1.11)
 
 The build system will download every dependency and build it if necessary.
 
-> **Hint:** The Go runtime build by the build system will be stored under ``~/.go``.
-
 ### Run
 
-To run caretakerd on Linux and Mac OS X, invoke the following:
+To run caretakerd, invoke the following:
 
 ```bash
-# Build binaries only
-./gradlew build
+# Build binaries
+go run ./build build
 
-# Run tests (includes compile)
-./gradlew test
-
-# Build resulting packages (includes documentation - includes compile)
-./gradlew package
-
-# Set the target version number, increase the version number, do gradlew package,
-# deploy everything to GitHub releases and set next development version number.
-./gradlew release
-```
-
-To run caretakerd on Windows, invoke the following:
-
-```bash
-# Build binaries only
-gradlew build
-
-# Run tests (includes compile)
-gradlew test
-
-# Build resulting packages (includes documentation - includes compile)
-gradlew package
-
-# Set the target version number, increase the version number, do gradlew package,
-# deploy everything to GitHub releases and set next development version number.
-gradlew release
+# Run all tests
+go run ./build test
 ```
 
 ### Build artifacts
 
-* You can find the compiled and linked binaries under ``./build/out/caretaker*``
-* You can find the generated document under ``./build/docs/caretakerd.html`` and ``./build/docs/caretakerd-windows.html`` 
-* You can find the packaged TARZs and ZIPs under ``./build/distribution/caretakerd-*.tar.gz`` and ``./build/distribution/caretakerd-*.zip``
+* You can find the compiled and linked binaries under ``./dist/caretaker*``
+* You can find the generated document under ``./dist/caretakerd*.html``
+* You can find the packaged TARZs and ZIPs under ``./dist/packages/*``
 
 ## Contributing
 

@@ -1,18 +1,22 @@
 package app
 
 import (
-	"github.com/urfave/cli"
 	"reflect"
 )
 
+type Stringer interface {
+	Set(value string) error
+	String() string
+}
+
 // FlagWrapper wraps generic command line flags.
 type FlagWrapper struct {
-	value       cli.Generic
+	value       Stringer
 	explicitSet bool
 }
 
 // NewFlagWrapper creates a new instance of FlagWrapper.
-func NewFlagWrapper(initialValue cli.Generic) *FlagWrapper {
+func NewFlagWrapper(initialValue Stringer) *FlagWrapper {
 	return &FlagWrapper{
 		value:       initialValue,
 		explicitSet: false,
@@ -40,7 +44,7 @@ func (instance FlagWrapper) IsExplicitSet() bool {
 }
 
 // Value returns the wrapped generic command line flag.
-func (instance FlagWrapper) Value() cli.Generic {
+func (instance FlagWrapper) Value() Stringer {
 	return instance.value
 }
 

@@ -12,9 +12,3 @@ const (
 	// URL indicates the URL of the caretakerd project page.
 	URL = "https://caretakerd.echocat.org"
 )
-
-// Version indicates the current version of caretakerd
-var Version string
-
-// PackageName indicates the full package name of caretakerd
-var PackageName string

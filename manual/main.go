@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
-
-var version string
-var packageName string
 
 var log, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
@@ -22,26 +19,24 @@ var log, _ = logger.NewLogger(logger.Config{
 
 func panicHandler() {
 	if r := recover(); r != nil {
-		log.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
+		log.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occurred.")
 		os.Exit(2)
 	}
 }
 
-func getSrcRootPath() string {
+func main() {
 	if len(os.Args) < 2 || len(os.Args[1]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
+		_, _ = fmt.Fprintf(os.Stderr, "Usage: %v <version> <output>\n", os.Args[0])
 		os.Exit(1)
 	}
-	return os.Args[1]
-}
-
-func main() {
-	caretakerd.Version = version
-	caretakerd.PackageName = packageName
+	version := os.Args[1]
+	if strings.HasPrefix(version, "v") {
+		version = version[1:]
+	}
+	plainFile := os.Args[2]
 
 	defer panicHandler()
-	srcRootPath := getSrcRootPath()
-	project, err := DeterminateProject(srcRootPath)
+	project, err := DeterminateProject("github.com/echocat/caretakerd")
 	if err != nil {
 		panic(err)
 	}
@@ -59,14 +54,9 @@ func main() {
 
 	apps := app.NewApps()
 
-	renderer, err := NewRendererFor(project, pd, apps)
+	renderer, err := NewRendererFor(version, project, pd, apps)
 	if err != nil {
 		panic(err)
-	}
-
-	if len(os.Args) < 3 || len(os.Args[2]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
-		os.Exit(1)
 	}
 
 	content, err := renderer.Execute()
@@ -74,7 +64,6 @@ func main() {
 		panic(err)
 	}
 
-	plainFile := os.Args[2]
 	file, err := filepath.Abs(plainFile)
 	if err != nil {
 		panic(err)

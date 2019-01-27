@@ -6,6 +6,7 @@ import (
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/rpc"
 	"github.com/echocat/caretakerd/service"
+	"github.com/echocat/caretakerd/values"
 )
 
 // Root configuration of caretakerd.
@@ -40,6 +41,9 @@ type Config struct {
 	//
 	// For details see {@ref github.com/echocat/caretakerd/service.Config}.
 	Services service.Configs `json:"services" yaml:"services,omitempty"`
+
+	// Contains the source where this config comes from.
+	Source values.String `json:"-" yaml:"-"`
 }
 
 // NewConfig create a new config instance.
