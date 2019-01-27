@@ -5,8 +5,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/sync"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -18,10 +19,16 @@ import (
 
 var (
 	startTime = time.Now()
+
+	log, _ = logger.NewLogger(logger.Config{
+		Level:    logger.Info,
+		Filename: "console",
+		Pattern:  "%d{YYYY-MM-DD HH:mm:ss} [%-5.5p] %m%n%P{%m}",
+	}, "manual", sync.NewGroup())
 )
 
 func download(url string, to string, mode os.FileMode) {
-	log.Printf("Download %s to %s(%v)...", url, to, mode)
+	log.Log(logger.Info, "Download %s to %s(%v)...", url, to, mode)
 	body := startDownload(url)
 	//noinspection GoUnhandledErrorResult
 	defer body.Close()
@@ -29,7 +36,7 @@ func download(url string, to string, mode os.FileMode) {
 }
 
 func downloadFromTarGz(url string, partName string, to string, mode os.FileMode) {
-	log.Printf("Download %s of %s to %s(%v)...", partName, url, to, mode)
+	log.Log(logger.Info, "Download %s of %s to %s(%v)...", partName, url, to, mode)
 	body := startDownload(url)
 	//noinspection GoUnhandledErrorResult
 	defer body.Close()
@@ -102,7 +109,7 @@ func executeTo(customizer cmdCustomizer, stderr, stdout io.Writer, args ...strin
 	if len(args) <= 0 {
 		panic("no arguments provided")
 	}
-	log.Printf("Execute: %s", quoteAndJoin(args...))
+	log.Log(logger.Info, "Execute: %s", quoteAndJoin(args...))
 
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stderr = stderr

@@ -32,7 +32,7 @@ func buildBinary(branch, commit string, t target, forTesting bool) {
 	outputName := t.executable()
 	must(os.MkdirAll(filepath.Dir(outputName), 0755))
 	executeTo(func(cmd *exec.Cmd) {
-		cmd.Env = append(os.Environ(), "GOOS="+t.os, "GOARCH="+t.arch)
+		cmd.Env = append(os.Environ(), "GOOS="+t.os, "GOARCH="+t.arch, "GO111MODULE=on")
 	}, os.Stderr, os.Stdout, "go", "build", "-ldflags", ldFlags, "-o", outputName, "./main")
 }
 
@@ -55,6 +55,6 @@ func buildManual(branch string, t target) {
 	execute("go", "build", "-o", outputName, "./manual")
 
 	executeTo(func(cmd *exec.Cmd) {
-		cmd.Env = append(os.Environ(), "GOOS="+t.os, "GOARCH="+t.arch)
+		cmd.Env = append(os.Environ(), "GOOS="+t.os, "GOARCH="+t.arch, "GO111MODULE=on")
 	}, os.Stderr, os.Stdout, outputName, branch, t.manual())
 }

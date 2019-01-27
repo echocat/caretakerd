@@ -4,8 +4,6 @@ go:
 install: skip
 os:
   - linux
-services:
-  - docker
 env:
   global:
     - GO111MODULE=on
