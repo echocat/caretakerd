@@ -31,8 +31,8 @@ func testGoCode(t target) {
 }
 
 func testBinary(branch, commit string, t target) {
-	testBinaryByExpectingResponse(t, `Version:      TEST`+branch+`TEST`, t.executable(), "--version")
-	testBinaryByExpectingResponse(t, `Git revision: TEST`+commit+`TEST`, t.executable(), "--version")
+	testBinaryByExpectingResponse(t, `Version:      TEST`+branch+`TEST`, t.executable(), "version")
+	testBinaryByExpectingResponse(t, `Git revision: TEST`+commit+`TEST`, t.executable(), "version")
 }
 
 func testBinaryByExpectingResponse(t target, expectedPartOfResponse string, args ...string) {
