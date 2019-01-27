@@ -1,20 +1,21 @@
-language: c
+language: go
+go:
+  - 1.11.x
 os:
   - linux
-dist: trusty
-sudo: false
-install:
-  - eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=master bash)"
 env:
   global:
     - GO111MODULE=on
     - CGO_ENABLED=0
-    - GOOS=linux
-    - GOARCH=amd64
 cache:
   directories:
     - $HOME/.cache/go-build
     - $HOME/gopath/pkg/mod
+script: skip
+install: skip
+before_install:
+  - mkdir $HOME/go
+  - export GOPATH=$HOME/go
 
 jobs:
   include:
