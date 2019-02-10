@@ -29,7 +29,7 @@ jobs:
         provider: releases
         api_key: "$GITHUB_DEPLOY_TOKEN"
         file_glob: true
-        file: dist/*
+        file: var/dist/*
         skip_cleanup: true
         name: $TRAVIS_TAG
         on:

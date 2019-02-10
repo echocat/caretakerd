@@ -57,7 +57,7 @@ func buildLdFlagsFor(branch, commit string, forTesting bool) string {
 }
 
 func buildManual(branch string, t *target) {
-	outputName := filepath.Join("dist", caretakerd.DaemonName+".html")
+	outputName := filepath.Join("var", "dist", caretakerd.DaemonName+".html")
 	platform := "linux"
 	if t != nil {
 		outputName = t.manual()

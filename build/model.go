@@ -38,7 +38,7 @@ func (instance target) manual() string {
 }
 
 func (instance target) archive() string {
-	return filepath.Join("dist", instance.outputName()+instance.archiveExtension())
+	return filepath.Join("var", "dist", instance.outputName()+instance.archiveExtension())
 }
 
 func (instance target) executableExtension() string {

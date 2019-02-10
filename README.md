@@ -1,7 +1,6 @@
-[![Circle CI](https://circleci.com/gh/echocat/caretakerd.svg?style=svg)](https://circleci.com/gh/echocat/caretakerd)
 [![Build Status](https://travis-ci.org/echocat/caretakerd.svg?branch=master)](https://travis-ci.org/echocat/caretakerd)
+[![Go Report Card](https://goreportcard.com/badge/github.com/echocat/caretakerd)](https://goreportcard.com/report/github.com/echocat/caretakerd)
 [![Code Climate](https://codeclimate.com/github/echocat/caretakerd/badges/gpa.svg)](https://codeclimate.com/github/echocat/caretakerd)
-[![Gitter](https://badges.gitter.im/echocat/caretakerd.svg)](https://gitter.im/echocat/caretakerd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # caretakerd
 
@@ -35,18 +34,18 @@ The build system will download every dependency and build it if necessary.
 To run caretakerd, invoke the following:
 
 ```bash
-# Build binaries
-go run ./build build
-
 # Run all tests
 go run ./build test
+
+# Build binaries
+go run ./build build
 ```
 
 ### Build artifacts
 
-* You can find the compiled and linked binaries under ``./dist/caretaker*``
-* You can find the generated document under ``./dist/caretakerd*.html``
-* You can find the packaged TARZs and ZIPs under ``./dist/packages/*``
+* You can find the compiled and linked binaries under `./var/binaries/`
+* You can find the generated document under `./var/manuals/`
+* You can find the packaged TARZs and ZIPs under `./var/dist/`
 
 ## Contributing
 

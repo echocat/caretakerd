@@ -234,7 +234,6 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 		project.SrcRootPath + system.PathSeparator + "vendor",
 		project.SrcRootPath + system.PathSeparator + "manual",
 		project.SrcRootPath + system.PathSeparator + "var",
-		project.SrcRootPath + system.PathSeparator + "dist",
 	}
 	err := filepath.Walk(project.SrcRootPath, func(path string, info os.FileInfo, err error) error {
 		if info != nil && info.IsDir() {
