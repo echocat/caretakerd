@@ -6,6 +6,8 @@ import (
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/rpc"
 	"github.com/echocat/caretakerd/service"
+	"github.com/echocat/caretakerd/values"
+	"runtime"
 )
 
 // Root configuration of caretakerd.
@@ -40,12 +42,15 @@ type Config struct {
 	//
 	// For details see {@ref github.com/echocat/caretakerd/service.Config}.
 	Services service.Configs `json:"services" yaml:"services,omitempty"`
+
+	// Contains the source where this config comes from.
+	Source values.String `json:"-" yaml:"-"`
 }
 
-// NewConfig create a new config instance.
-func NewConfig() Config {
+// NewConfigFor create a new config instance.
+func NewConfigFor(platform string) Config {
 	result := Config{}
-	result.init()
+	result.init(platform)
 	return result
 }
 
@@ -73,16 +78,16 @@ func (instance Config) ValidateMaster() error {
 	return instance.Services.ValidateMaster()
 }
 
-func (instance *Config) init() {
+func (instance *Config) init(platform string) {
 	(*instance).KeyStore = keyStore.NewConfig()
-	(*instance).RPC = rpc.NewConfig()
-	(*instance).Control = control.NewConfig()
+	(*instance).RPC = rpc.NewConfigFor(platform)
+	(*instance).Control = control.NewConfigFor(platform)
 	(*instance).Logger = logger.NewConfig()
 	(*instance).Services = service.NewConfigs()
 }
 
-// BeforeUnmarshalYAML is used by yaml unmarcshalling. Do not call direct.
+// BeforeUnmarshalYAML is used by yaml unmarshalling. Do not call direct.
 func (instance *Config) BeforeUnmarshalYAML() error {
-	instance.init()
+	instance.init(runtime.GOOS)
 	return nil
 }

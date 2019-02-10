@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
-
-var version string
-var packageName string
 
 var log, _ = logger.NewLogger(logger.Config{
 	Level:    logger.Info,
@@ -22,31 +19,29 @@ var log, _ = logger.NewLogger(logger.Config{
 
 func panicHandler() {
 	if r := recover(); r != nil {
-		log.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occured.")
+		log.LogProblem(r, logger.Fatal, "There is an unrecoverable problem occurred.")
 		os.Exit(2)
 	}
 }
 
-func getSrcRootPath() string {
-	if len(os.Args) < 2 || len(os.Args[1]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
+func main() {
+	if len(os.Args) < 4 || len(os.Args[1]) <= 0 || len(os.Args[2]) <= 0 || len(os.Args[3]) <= 0 {
+		_, _ = fmt.Fprintf(os.Stderr, "Usage: %v <version> <platform> <output>\n", os.Args[0])
 		os.Exit(1)
 	}
-	return os.Args[1]
-}
-
-func main() {
-	caretakerd.Version = version
-	caretakerd.PackageName = packageName
+	version := os.Args[1]
+	if strings.HasPrefix(version, "v") {
+		version = version[1:]
+	}
+	platform := os.Args[2]
+	plainFile := os.Args[3]
 
 	defer panicHandler()
-	srcRootPath := getSrcRootPath()
-	project, err := DeterminateProject(srcRootPath)
+	project, err := DeterminateProject("github.com/echocat/caretakerd")
 	if err != nil {
 		panic(err)
 	}
-	log.Log(logger.Info, "Root package: %v", project.RootPackage)
-	log.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
+	log.Log(logger.Debug, "Build manual for package=%v, path=%v, platform=%s", project.RootPackage, project.SrcRootPath, platform)
 
 	definitions, err := ParseDefinitions(project)
 	if err != nil {
@@ -57,16 +52,11 @@ func main() {
 		panic(err)
 	}
 
-	apps := app.NewApps()
+	apps := app.NewAppsFor(platform)
 
-	renderer, err := NewRendererFor(project, pd, apps)
+	renderer, err := NewRendererFor(platform, version, project, pd, apps)
 	if err != nil {
 		panic(err)
-	}
-
-	if len(os.Args) < 3 || len(os.Args[2]) <= 0 {
-		fmt.Fprintf(os.Stderr, "Usage: %v <package> <output>\n", os.Args[0])
-		os.Exit(1)
 	}
 
 	content, err := renderer.Execute()
@@ -74,7 +64,6 @@ func main() {
 		panic(err)
 	}
 
-	plainFile := os.Args[2]
 	file, err := filepath.Abs(plainFile)
 	if err != nil {
 		panic(err)

@@ -19,9 +19,19 @@ func (instance ConfigDoesNotExistError) Error() string {
 	return fmt.Sprintf("Config '%v' does not exist.", instance.fileName)
 }
 
+// IsConfigNotExists returns true if err matches ConfigDoesNotExistError
+func IsConfigNotExists(err error) bool {
+	switch err.(type) {
+	case ConfigDoesNotExistError, *ConfigDoesNotExistError:
+		return true
+	default:
+		return false
+	}
+}
+
 // LoadFromYamlFile loads the caretakerd config from the given yaml file.
-func LoadFromYamlFile(fileName values.String) (Config, error) {
-	result := NewConfig()
+func LoadFromYamlFile(platform string, fileName values.String) (Config, error) {
+	result := NewConfigFor(platform)
 	content, err := ioutil.ReadFile(fileName.String())
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -32,6 +42,7 @@ func LoadFromYamlFile(fileName values.String) (Config, error) {
 	if err := yaml.Unmarshal(content, &result); err != nil {
 		return Config{}, errors.New("Could not unmarshal config from '%v'.", fileName).CausedBy(err)
 	}
+	result.Source = fileName
 	return result, nil
 }
 

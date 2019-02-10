@@ -3,6 +3,7 @@ package control
 import (
 	"github.com/echocat/caretakerd/access"
 	"github.com/echocat/caretakerd/defaults"
+	"runtime"
 )
 
 // # Description
@@ -16,20 +17,20 @@ type Config struct {
 	Access access.Config `json:"access" yaml:"access,omitempty"`
 }
 
-// NewConfig creates a new instance of Config.
-func NewConfig() Config {
+// NewConfigFor creates a new instance of Config.
+func NewConfigFor(platform string) Config {
 	result := Config{}
-	result.init()
+	result.init(platform)
 	return result
 }
 
-func (instance *Config) init() {
-	(*instance).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilename())
+func (instance *Config) init(platform string) {
+	(*instance).Access = access.NewGenerateToFileConfig(access.ReadWrite, defaults.AuthFileKeyFilenameFor(platform))
 }
 
 // BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
-	instance.init()
+	instance.init(runtime.GOOS)
 	return nil
 }
 

@@ -2,6 +2,6 @@
 /.idea
 *.pem
 *.log
-/.gradle
-/build
+/dist
+/var
 /vendor

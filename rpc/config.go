@@ -3,12 +3,8 @@ package rpc
 import (
 	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/values"
+	"runtime"
 )
-
-var defaultValues = map[string]interface{}{
-	"Enabled": values.Boolean(false),
-	"Listen":  defaults.ListenAddress(),
-}
 
 // # Description
 //
@@ -35,20 +31,23 @@ type Config struct {
 	Listen values.SocketAddress `json:"listen" yaml:"listen"`
 }
 
-// NewConfig creates a new instance of Config.
-func NewConfig() Config {
+// NewConfigFor creates a new instance of Config.
+func NewConfigFor(platform string) Config {
 	result := Config{}
-	result.init()
+	result.init(platform)
 	return result
 }
 
-func (instance *Config) init() {
-	values.SetDefaultsTo(defaultValues, instance)
+func (instance *Config) init(platform string) {
+	values.SetDefaultsTo(map[string]interface{}{
+		"Enabled": values.Boolean(false),
+		"Listen":  defaults.ListenAddressFor(platform),
+	}, instance)
 }
 
 // BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
 func (instance *Config) BeforeUnmarshalYAML() error {
-	instance.init()
+	instance.init(runtime.GOOS)
 	return nil
 }
 

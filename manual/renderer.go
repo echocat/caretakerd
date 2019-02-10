@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/alecthomas/kingpin"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/errors"
@@ -10,27 +11,26 @@ import (
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/html"
 	"github.com/tdewolff/minify/js"
-	"github.com/urfave/cli"
 	"html/template"
 	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
-var headerPrefixPattern = regexp.MustCompile("(?m)^([\\* 0-9\\.]*)#")
-var excerptFromCommentExtractionPattern = regexp.MustCompile("(?s)^(.*?(?:\\.\\s|$))")
-var removeHTMLTags = regexp.MustCompile("(?sm)<[^>]+>")
-var refPropertyPattern = regexp.MustCompile("{@ref +([^\\}\\s]+)\\s*([^\\}]*)}")
-var titlePropertyPattern = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
-var windowsEnvarPattern = regexp.MustCompile("(?m)%([a-zA-Z0-9_.]+)%")
-var otherEnvarPattern = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
+var (
+	headerPrefixPattern                 = regexp.MustCompile("(?m)^([* 0-9.]*)#")
+	excerptFromCommentExtractionPattern = regexp.MustCompile("(?s)^(.*?(?:\\.\\s|$))")
+	removeHTMLTags                      = regexp.MustCompile("(?sm)<[^>]+>")
+	refPropertyPattern                  = regexp.MustCompile("{@ref +([^}\\s]+)\\s*([^}]*)}")
+	titlePropertyPattern                = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
+	windowsEnvarPattern                 = regexp.MustCompile("(?m)%([a-zA-Z0-9_.]+)%")
+	otherEnvarPattern                   = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
+)
 
-// Describeable represents an object that describes itself and has an ID.
-type Describeable interface {
+// Describable represents an object that describes itself and has an ID.
+type Describable interface {
 	ID() IDType
 	Description() string
 }
@@ -43,11 +43,12 @@ type Renderer struct {
 	ArrayTemplate               *Template
 	MapTemplate                 *Template
 	DefinitionStructureTemplate *Template
+	Platform                    string
 
 	Functions         template.FuncMap
 	Project           Project
 	PickedDefinitions *PickedDefinitions
-	Apps              map[app.ExecutableType]*cli.App
+	Apps              map[app.ExecutableType]*kingpin.Application
 
 	Name        string
 	Version     string
@@ -88,15 +89,16 @@ func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 }
 
 // NewRendererFor creates a new renderer for the given parameters.
-func NewRendererFor(project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*cli.App) (*Renderer, error) {
+func NewRendererFor(platform, version string, project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*kingpin.Application) (*Renderer, error) {
 	renderer := &Renderer{
 		Project:           project,
 		PickedDefinitions: pickedDefinitions,
 		Apps:              apps,
 		Name:              caretakerd.DaemonName,
-		Version:           caretakerd.Version,
+		Version:           version,
 		Description:       caretakerd.Description,
 		URL:               caretakerd.URL,
+		Platform:          platform,
 	}
 	renderer.Functions = newFunctionsFor(renderer)
 
@@ -191,11 +193,11 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			if err != nil {
 				return "", err
 			}
-			html, err := renderer.renderMarkdownWithContext(string(content), nil, headerTypeStart, headerIdPrefix)
+			rhtml, err := renderer.renderMarkdownWithContext(string(content), nil, headerTypeStart, headerIdPrefix)
 			if err != nil {
 				return "", err
 			}
-			tmpl, err := template.New(source).Funcs(renderer.Functions).Parse(string(html))
+			tmpl, err := template.New(source).Funcs(renderer.Functions).Parse(string(rhtml))
 			if err != nil {
 				return "", err
 			}
@@ -213,13 +215,20 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			}
 			return string(content), err
 		},
-		"includeAppUsageOf": func(executableType app.ExecutableType, app *cli.App) template.HTML {
-			app.HelpName = executableType.String()
+		"includeAppUsageOf": func(executableType app.ExecutableType, a *kingpin.Application) (string, error) {
 			buf := new(bytes.Buffer)
-			cli.HelpPrinter(buf, cli.AppHelpTemplate, app)
-			content := buf.String()
+			a.Name = executableType.String()
+			a.UsageWriter(buf)
+			context, err := a.ParseContext([]string{})
+			if err != nil {
+				return "", err
+			}
+			if err := a.UsageForContextWithTemplate(context, 2, kingpin.LongHelpTemplate); err != nil {
+				return "", err
+			}
+			content := strings.TrimSpace(buf.String())
 			content = renderer.replaceUsageEnvVarDisplaysIfNeeded(content)
-			return template.HTML(content)
+			return content, nil
 		},
 		"collectExamples":           renderer.collectExamples,
 		"transformElementHtmlId":    renderer.transformElementHTMLID,
@@ -228,11 +237,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 }
 
 func (instance *Renderer) replaceUsageEnvVarDisplaysIfNeeded(content string) string {
-	goos := os.Getenv("GOOS")
-	if goos == "" {
-		goos = runtime.GOOS
-	}
-	if goos == "windows" {
+	if instance.Platform == "windows" {
 		return otherEnvarPattern.ReplaceAllString(content, "%$1%")
 	}
 	return windowsEnvarPattern.ReplaceAllString(content, "$$$1")
@@ -267,7 +272,7 @@ func (instance *Renderer) transformIDType(id IDType) string {
 	return p + "." + name + suffix
 }
 
-func (instance *Renderer) getDisplayIDOf(describeable Describeable) string {
+func (instance *Renderer) getDisplayIDOf(describeable Describable) string {
 	id := describeable.ID()
 	if withKey, ok := describeable.(WithKey); ok {
 		lastHash := strings.LastIndex(id.Name, "#")
@@ -346,7 +351,7 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IDType, header
 		return "", nil
 	}
 	if objectDefinition, ok := definition.(*ObjectDefinition); ok {
-		properties := []renderDefinitionProperty{}
+		var properties []renderDefinitionProperty
 		for _, child := range objectDefinition.Children() {
 			propertyDefinition := child.(*PropertyDefinition)
 			id := ExtractValueIDType(propertyDefinition.ValueType())
@@ -383,23 +388,23 @@ func (instance *Renderer) renderDefinitionStructure(level int, id IDType, header
 			"headerTypeStart": headerTypeStart,
 			"headerIdPrefix":  headerIDPrefix,
 		}
-		html, err := instance.DefinitionStructureTemplate.Execute(object)
+		rhtml, err := instance.DefinitionStructureTemplate.Execute(object)
 		if err != nil {
 			return "", err
 		}
 		if level == 0 {
-			html = template.HTML(strings.TrimSpace(string(html)))
+			rhtml = template.HTML(strings.TrimSpace(string(rhtml)))
 		}
-		return html, nil
+		return rhtml, nil
 	}
 	return "", nil
 }
 
-func (instance *Renderer) renderMarkdown(of Describeable, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
+func (instance *Renderer) renderMarkdown(of Describable, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
 	return instance.renderMarkdownWithContext(of.Description(), of, headerTypeStart, headerIDPrefix)
 }
 
-func (instance *Renderer) renderMarkdownWithContext(markup string, context Describeable, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
+func (instance *Renderer) renderMarkdownWithContext(markup string, context Describable, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
 	var err error
 
 	markup = headerPrefixPattern.ReplaceAllString(markup, "$1"+strings.Repeat("#", headerTypeStart))
@@ -441,7 +446,7 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 			HeaderIDPrefix: prefix,
 		},
 	)
-	html := blackfriday.MarkdownOptions([]byte(markup), renderer, blackfriday.Options{
+	rhtml := blackfriday.MarkdownOptions([]byte(markup), renderer, blackfriday.Options{
 		Extensions: blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
 			blackfriday.EXTENSION_TABLES |
 			blackfriday.EXTENSION_FENCED_CODE |
@@ -453,10 +458,10 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 			blackfriday.EXTENSION_DEFINITION_LISTS |
 			blackfriday.EXTENSION_AUTO_HEADER_IDS,
 	})
-	return template.HTML(strings.TrimSpace(string(html))), nil
+	return template.HTML(strings.TrimSpace(string(rhtml))), nil
 }
 
-func (instance *Renderer) resolveRef(ref string, context Describeable) IDType {
+func (instance *Renderer) resolveRef(ref string, context Describable) IDType {
 	if context != nil && strings.HasPrefix(ref, "#") {
 		name := ref[1:]
 		contextID := context.ID()
@@ -495,13 +500,13 @@ func (instance *Renderer) collectExamples() ([]example, error) {
 	if err != nil {
 		return []example{}, err
 	}
-	examples := []example{}
+	var examples []example
 	for _, exampleSource := range examplesSources {
-		bytes, err := ioutil.ReadFile(exampleSource)
+		b, err := ioutil.ReadFile(exampleSource)
 		if err != nil {
 			return nil, err
 		}
-		content, title, id := instance.extractTitleFrom(string(bytes), exampleSource)
+		content, title, id := instance.extractTitleFrom(string(b), exampleSource)
 		examples = append(examples, example{
 			ID:          "configuration.examples." + id,
 			Title:       title,
@@ -528,11 +533,11 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 
 func parseTemplate(project Project, name string, functions template.FuncMap) (*Template, error) {
 	source := project.SrcRootPath + "/manual/" + name + ".html"
-	bytes, err := ioutil.ReadFile(source)
+	b, err := ioutil.ReadFile(source)
 	if err != nil {
 		return nil, err
 	}
-	tmpl, err := template.New(source).Funcs(functions).Parse(string(bytes))
+	tmpl, err := template.New(source).Funcs(functions).Parse(string(b))
 	if err != nil {
 		return nil, err
 	}

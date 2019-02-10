@@ -1,31 +1,24 @@
 package main
 
 import (
+	"github.com/alecthomas/kingpin"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/panics"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
-
-var version string
-var packageName string
 
 var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string(os.PathSeparator)) + ")" + caretakerd.BaseName + "(d|ctl)(?:$|[\\.\\-\\_].*$)")
 
 func main() {
-	caretakerd.Version = version
-	caretakerd.PackageName = packageName
-
 	defer panics.DefaultPanicHandler()
-	app := app.NewAppFor(getExecutableType())
+	a := app.NewAppFor(runtime.GOOS, getExecutableType())
 
-	err := app.Run(os.Args)
-	if err != nil {
-		os.Exit(1)
-	}
+	kingpin.MustParse(a.Parse(os.Args[1:]))
 }
 
 func getExecutableType() app.ExecutableType {

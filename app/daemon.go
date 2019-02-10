@@ -1,12 +1,12 @@
 package app
 
 import (
+	"github.com/alecthomas/kingpin"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/sync"
 	"github.com/echocat/caretakerd/values"
-	"github.com/urfave/cli"
 	"os"
 )
 
@@ -22,16 +22,8 @@ func attachArgsToMasterIfPossible(args []string, to *caretakerd.Config) {
 	}
 }
 
-func ensureDaemonConfig(context *cli.Context) error {
-	err := ensureConfig(true)
-	if err != nil {
-		return err
-	}
-	attachArgsToMasterIfPossible(context.Args(), conf.Instance())
-	return nil
-}
-
 func runDaemon(conf caretakerd.Config, args []string) {
+	attachArgsToMasterIfPossible(args, &conf)
 	instance, err := caretakerd.NewCaretakerd(conf, sync.NewGroup())
 	if err != nil {
 		stack.Print(err, os.Stderr, 0)
@@ -47,7 +39,7 @@ func runDaemon(conf caretakerd.Config, args []string) {
 	os.Exit(int(exitCode))
 }
 
-func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
+func registerDaemonCommandsAt(config *ConfigWrapper, executableType ExecutableType, app *kingpin.Application) {
 	var name string
 	switch executableType {
 	case Daemon:
@@ -56,16 +48,17 @@ func registerDaemonCommandsAt(executableType ExecutableType, app *cli.App) {
 		name = "daemon"
 	}
 
-	app.Commands = append(app.Commands, cli.Command{
-		Name:            name,
-		SkipFlagParsing: true,
-		ArgsUsage:       "[<args pass to master service>...]",
-		Usage:           "Run " + caretakerd.DaemonName + " in forground.",
-		Before:          ensureDaemonConfig,
-		Action: func(context *cli.Context) {
-			runDaemon(*conf.instance, context.Args())
-		},
-		OnUsageError: onUsageErrorFor(name),
-	})
+	cmd := app.Command(name, "Run "+caretakerd.DaemonName+" in foreground.")
 
+	if name == "daemon" {
+		cmd.Alias("run")
+	}
+
+	arguments := cmd.Arg("args", "argument to be passed to master service").
+		Strings()
+
+	cmd.Action(func(*kingpin.ParseContext) error {
+		runDaemon(*config.config, *arguments)
+		return nil
+	})
 }

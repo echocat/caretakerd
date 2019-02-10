@@ -147,18 +147,18 @@ func (instance *Signal) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		candidate := Signal(valueAsInt)
 		if _, ok := SignalToName[candidate]; ok {
-			(*instance) = candidate
+			*instance = candidate
 			return nil
 		}
 		return errors.New("Illegal signal: " + value)
 	}
 	valueAsUpperCase := strings.ToUpper(value)
 	if candidate, ok := NameToSignal[valueAsUpperCase]; ok {
-		(*instance) = candidate
+		*instance = candidate
 		return nil
 	}
 	if candidate, ok := NameToSignal["SIG"+valueAsUpperCase]; ok {
-		(*instance) = candidate
+		*instance = candidate
 		return nil
 	}
 	return errors.New("Illegal signal: " + value)
