@@ -58,7 +58,7 @@ func (instance *RestartType) Set(value string) error {
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllRestartTypes {
 		if strings.ToLower(candidate.String()) == lowerValue {
-			(*instance) = candidate
+			*instance = candidate
 			return nil
 		}
 	}

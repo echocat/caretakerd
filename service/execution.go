@@ -237,7 +237,7 @@ func (instance *Execution) runBare() (values.ExitCode, Status, error) {
 	if instance.doTrySetRunningState() {
 		defer instance.doSetDownState()
 		exitCode, err := instance.runCommand((*instance).cmd)
-		// This little sleep is required because there is no guarantee anymore that every lock is 
+		// This little sleep is required because there is no guarantee anymore that every lock is
 		// respected if the routines are interrupted.
 		time.Sleep(5 * time.Millisecond)
 		return exitCode, instance.getSyncedCurrentStatus(), err

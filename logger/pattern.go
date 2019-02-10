@@ -96,7 +96,7 @@ func (instance Pattern) CheckedString() (string, error) {
 // Set the given string to current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *Pattern) Set(value string) error {
-	(*instance) = Pattern(value)
+	*instance = Pattern(value)
 	return nil
 }
 

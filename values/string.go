@@ -23,7 +23,7 @@ func (instance String) CheckedString() (string, error) {
 // Set sets the given string to the current object from a string.
 // Returns an error object if there are any problems while transforming the string.
 func (instance *String) Set(value string) error {
-	(*instance) = String(value)
+	*instance = String(value)
 	return nil
 }
 

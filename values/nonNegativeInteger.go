@@ -39,7 +39,7 @@ func (i *NonNegativeInteger) SetFromInt(value int) error {
 	if value < 0 {
 		return errors.New("This intger value should not be negative. But got: %v", value)
 	}
-	(*i) = NonNegativeInteger(value)
+	*i = NonNegativeInteger(value)
 	return nil
 }
 

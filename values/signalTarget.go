@@ -58,7 +58,7 @@ func (instance *SignalTarget) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllSignalTargets {
 			if int(candidate) == valueAsInt {
-				(*instance) = candidate
+				*instance = candidate
 				return nil
 			}
 		}
@@ -67,7 +67,7 @@ func (instance *SignalTarget) Set(value string) error {
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllSignalTargets {
 		if strings.ToLower(candidate.String()) == lowerValue {
-			(*instance) = candidate
+			*instance = candidate
 			return nil
 		}
 	}

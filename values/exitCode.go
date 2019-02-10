@@ -20,7 +20,7 @@ func (i *ExitCode) Set(value string) error {
 	if err != nil {
 		return errors.New("Illegal exit Code value: " + value)
 	}
-	(*i) = ExitCode(valueAsInt)
+	*i = ExitCode(valueAsInt)
 	return nil
 }
 

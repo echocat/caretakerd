@@ -44,7 +44,7 @@ func (instance *Boolean) Set(value string) error {
 
 // SetFromBool sets the given boolean value to the current object.
 func (instance *Boolean) SetFromBool(value bool) error {
-	(*instance) = Boolean(value)
+	*instance = Boolean(value)
 	return nil
 }
 

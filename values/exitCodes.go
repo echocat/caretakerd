@@ -34,7 +34,7 @@ func (i *ExitCodes) Set(value string) error {
 			result = append(result, code)
 		}
 	}
-	(*i) = result
+	*i = result
 	return nil
 }
 

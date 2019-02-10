@@ -60,7 +60,7 @@ func (instance *Permission) Set(value string) error {
 	if valueAsInt, err := strconv.Atoi(value); err == nil {
 		for _, candidate := range AllPermissions {
 			if int(candidate) == valueAsInt {
-				(*instance) = candidate
+				*instance = candidate
 				return nil
 			}
 		}
@@ -69,7 +69,7 @@ func (instance *Permission) Set(value string) error {
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllPermissions {
 		if strings.ToLower(candidate.String()) == lowerValue {
-			(*instance) = candidate
+			*instance = candidate
 			return nil
 		}
 	}

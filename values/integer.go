@@ -36,7 +36,7 @@ func (instance *Integer) Set(value string) error {
 // SetFromInt tries to set the given int value to this instance.
 // Returns an error object if there are some problems while transforming the plain int.
 func (instance *Integer) SetFromInt(value int) error {
-	(*instance) = Integer(value)
+	*instance = Integer(value)
 	return nil
 }
 

@@ -130,7 +130,7 @@ func (e Entry) contentOf(position int, flag byte, arguments string, framesToSkip
 	case 'P':
 		return e.formatProblemIfNeeded(arguments, framesToSkip+1)
 	case 'r':
-		return fmt.Sprintf("%d", (e.Uptime / time.Millisecond)), nil
+		return fmt.Sprintf("%d", e.Uptime/time.Millisecond), nil
 	case 'n':
 		return "\n", nil
 	}
