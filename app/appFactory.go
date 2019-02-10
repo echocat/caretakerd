@@ -93,9 +93,7 @@ func newAppFor(config *ConfigWrapper, platform string, executableType Executable
 		PlaceHolder(config.ListenAddress().String()).
 		SetValue(config.ListenAddress())
 
-	if executableType == Daemon {
-		config.forDaemon = true
-	} else {
+	if executableType != Daemon {
 		app.Flag("pem", "Location of PEM file which contains the private public key pair for access to the daemon.").
 			Short('p').
 			PlaceHolder(config.PemFile().String()).

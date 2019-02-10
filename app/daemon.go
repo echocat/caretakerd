@@ -22,8 +22,8 @@ func attachArgsToMasterIfPossible(args []string, to *caretakerd.Config) {
 	}
 }
 
-func runDaemon(conf caretakerd.Config, args []string) {
-	attachArgsToMasterIfPossible(args, &conf)
+func runDaemon(conf *caretakerd.Config, args []string) {
+	attachArgsToMasterIfPossible(args, conf)
 	instance, err := caretakerd.NewCaretakerd(conf, sync.NewGroup())
 	if err != nil {
 		stack.Print(err, os.Stderr, 0)
@@ -58,7 +58,11 @@ func registerDaemonCommandsAt(config *ConfigWrapper, executableType ExecutableTy
 		Strings()
 
 	cmd.Action(func(*kingpin.ParseContext) error {
-		runDaemon(*config.config, *arguments)
+		config, err := config.ProvideConfig(true)
+		if err != nil {
+			return err
+		}
+		runDaemon(config, *arguments)
 		return nil
 	})
 }

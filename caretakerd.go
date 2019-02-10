@@ -19,7 +19,7 @@ import (
 
 // Caretakerd instance structure
 type Caretakerd struct {
-	config        Config
+	config        *Config
 	logger        *logger.Logger
 	control       *control.Control
 	services      *service.Services
@@ -36,7 +36,7 @@ func finalize(what *Caretakerd) {
 }
 
 // NewCaretakerd creates a new Caretakerd instance from the given config
-func NewCaretakerd(conf Config, syncGroup *usync.Group) (*Caretakerd, error) {
+func NewCaretakerd(conf *Config, syncGroup *usync.Group) (*Caretakerd, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, err

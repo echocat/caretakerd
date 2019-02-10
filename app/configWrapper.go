@@ -5,6 +5,7 @@ import (
 	"github.com/echocat/caretakerd/defaults"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/values"
+	"runtime"
 	"sync"
 )
 
@@ -13,7 +14,6 @@ import (
 type ConfigWrapper struct {
 	config        *caretakerd.Config
 	explicitSet   bool
-	forDaemon     bool
 	listenAddress *FlagWrapper
 	pemFile       *FlagWrapper
 	platform      string
@@ -33,6 +33,7 @@ func NewConfigWrapperFor(platform string) *ConfigWrapper {
 		listenAddress: NewFlagWrapper(&defaultListenAddress),
 		pemFile:       NewFlagWrapper(&defaultPemFile),
 		platform:      platform,
+		mutex:         new(sync.Mutex),
 	}
 }
 
@@ -46,6 +47,7 @@ func (instance *ConfigWrapper) Set(value string) error {
 	if config, err := instance.loadConfigFrom(values.String(value)); err != nil {
 		return err
 	} else {
+		instance.explicitSet = true
 		instance.config = config
 		return nil
 	}
@@ -63,14 +65,14 @@ func (instance ConfigWrapper) loadConfigFrom(fileName values.String) (*caretaker
 	return &conf, nil
 }
 
-func (instance *ConfigWrapper) populateAndValidate(conf *caretakerd.Config) error {
+func (instance *ConfigWrapper) populateAndValidate(forDaemon bool, conf *caretakerd.Config) error {
 	instance.listenAddress.AssignIfExplicitSet(&conf.RPC.Listen)
 	instance.pemFile.AssignIfExplicitSet(&conf.Control.Access.PemFile)
 	err := conf.Validate()
 	if err != nil {
 		return err
 	}
-	if instance.forDaemon {
+	if forDaemon {
 		return conf.ValidateMaster()
 	}
 	return nil
@@ -92,7 +94,7 @@ func (instance ConfigWrapper) PemFile() *FlagWrapper {
 }
 
 // ProvideConfig will either return the already loaded configuration or will load it
-func (instance *ConfigWrapper) ProvideConfig() (*caretakerd.Config, error) {
+func (instance *ConfigWrapper) ProvideConfig(forDaemon bool) (*caretakerd.Config, error) {
 	instance.mutex.Lock()
 	defer instance.mutex.Unlock()
 	if instance.loaded {
@@ -105,8 +107,12 @@ func (instance *ConfigWrapper) ProvideConfig() (*caretakerd.Config, error) {
 	} else {
 		filename := defaults.ConfigFilenameFor(instance.platform)
 		if lConfig, err := instance.loadConfigFrom(filename); caretakerd.IsConfigNotExists(err) {
-			if instance.forDaemon {
+			if forDaemon {
 				return nil, errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", filename)
+			}
+			if lConfig == nil {
+				nConfig := caretakerd.NewConfigFor(runtime.GOOS)
+				lConfig = &nConfig
 			}
 			config = lConfig
 		} else if err != nil {
@@ -116,7 +122,7 @@ func (instance *ConfigWrapper) ProvideConfig() (*caretakerd.Config, error) {
 		}
 	}
 
-	if err := instance.populateAndValidate(config); err != nil {
+	if err := instance.populateAndValidate(forDaemon, config); err != nil {
 		return nil, err
 	}
 	instance.config = config

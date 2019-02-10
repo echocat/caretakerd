@@ -18,7 +18,7 @@ import (
 )
 
 type ConfigProvider interface {
-	ProvideConfig() (*caretakerd.Config, error)
+	ProvideConfig(forDaemon bool) (*caretakerd.Config, error)
 }
 
 // AccessDeniedError represents an error that occurs if someone tries to access a
@@ -63,7 +63,7 @@ func NewFactory(configProvider ConfigProvider) *Factory {
 
 // NewClient creates a new Client.
 func (instance *Factory) NewClient() (*Client, error) {
-	config, err := instance.configProvider.ProvideConfig()
+	config, err := instance.configProvider.ProvideConfig(false)
 	if err != nil {
 		return nil, err
 	}
