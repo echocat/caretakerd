@@ -18,22 +18,18 @@ jobs:
   include:
     - stage: test
       name: Run Tests
-      before_script:
-        - go mod vendor
       script:
         - go run ./build test
     - stage: release
       name: Release
       if: tag =~ ^v\d+\.\d+\.\d+|snapshot-.+$
-      before_script:
-        - go mod vendor
       script:
         - go run ./build build
       deploy:
         provider: releases
         api_key: "$GITHUB_DEPLOY_TOKEN"
         file_glob: true
-        file: dist/packages/*
+        file: dist/*
         skip_cleanup: true
         name: $TRAVIS_TAG
         on:

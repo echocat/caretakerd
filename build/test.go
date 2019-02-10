@@ -21,7 +21,7 @@ func test(branch, commit string) {
 
 	buildBinary(branch, commit, currentTarget, true)
 	testBinary(branch, commit, currentTarget)
-	buildManual(branch, currentTarget)
+	buildManual(branch, &currentTarget)
 }
 
 func testGoCode(t target) {

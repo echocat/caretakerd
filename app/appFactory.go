@@ -18,12 +18,6 @@ var (
 	version  = "development"
 	revision = "development"
 	compiled = ""
-
-	config               = NewConfigWrapper()
-	defaultListenAddress = defaults.ListenAddress()
-	defaultPemFile       = defaults.AuthFileKeyFilename()
-	listenAddress        = NewFlagWrapper(&defaultListenAddress)
-	pemFile              = NewFlagWrapper(&defaultPemFile)
 )
 
 func init() {
@@ -49,24 +43,26 @@ func handleVersion(name string) func(*kingpin.ParseContext) error {
 	}
 }
 
-// NewApps creates new instances of the command line parser (cli.App) for every ExecutableType.
-func NewApps() map[ExecutableType]*kingpin.Application {
+// NewAppsFor creates new instances of the command line parser (cli.App) for every ExecutableType.
+func NewAppsFor(platform string) map[ExecutableType]*kingpin.Application {
 	result := map[ExecutableType]*kingpin.Application{}
 	for _, executableType := range AllExecutableTypes {
-		result[executableType] = NewAppFor(executableType)
+		result[executableType] = NewAppFor(platform, executableType)
 	}
 	return result
 }
 
 // NewAppFor creates a new instance of the command line parser (cli.App) for the given executableType.
-func NewAppFor(executableType ExecutableType) *kingpin.Application {
-	app := newAppFor(executableType)
-	registerCommandsFor(executableType, app)
+func NewAppFor(platform string, executableType ExecutableType) *kingpin.Application {
+	config := NewConfigWrapperFor(platform)
+
+	app := newAppFor(config, platform, executableType)
+	registerCommandsFor(config, executableType, app)
 
 	return app
 }
 
-func newAppFor(executableType ExecutableType) *kingpin.Application {
+func newAppFor(config *ConfigWrapper, platform string, executableType ExecutableType) *kingpin.Application {
 	var app *kingpin.Application
 	switch executableType {
 	case Daemon:
@@ -74,36 +70,36 @@ func newAppFor(executableType ExecutableType) *kingpin.Application {
 		app.Flag("config", "Configuration file for daemon.").
 			Short('c').
 			Envar("CTD_CONFIG").
-			PlaceHolder(defaults.ConfigFilename().String()).
+			PlaceHolder(defaults.ConfigFilenameFor(platform).String()).
 			SetValue(config)
 	case Control:
 		app = kingpin.New(caretakerd.ControlName, "Remote control for "+caretakerd.DaemonName)
 		app.Flag("config", "Configuration file for control.").
 			Short('c').
 			Envar("CTCTL_CONFIG").
-			PlaceHolder(defaults.ConfigFilename().String()).
+			PlaceHolder(defaults.ConfigFilenameFor(platform).String()).
 			SetValue(config)
 	default:
 		app = kingpin.New(caretakerd.BaseName, "Simple control daemon for processes including remote control for itself.")
 		app.Flag("config", "Configuration file for daemon and control.").
 			Short('c').
 			Envar("CT_CONFIG").
-			PlaceHolder(defaults.ConfigFilename().String()).
+			PlaceHolder(defaults.ConfigFilenameFor(platform).String()).
 			SetValue(config)
 	}
 
 	app.Flag("address", "Listen address of the daemon.").
 		Short('a').
-		PlaceHolder(listenAddress.String()).
-		SetValue(listenAddress)
+		PlaceHolder(config.ListenAddress().String()).
+		SetValue(config.ListenAddress())
 
 	if executableType == Daemon {
 		config.forDaemon = true
 	} else {
 		app.Flag("pem", "Location of PEM file which contains the private public key pair for access to the daemon.").
 			Short('p').
-			PlaceHolder(pemFile.String()).
-			SetValue(pemFile)
+			PlaceHolder(config.PemFile().String()).
+			SetValue(config.PemFile())
 	}
 
 	app.Command("version", "Print the actual version and other useful information.").
@@ -112,15 +108,15 @@ func newAppFor(executableType ExecutableType) *kingpin.Application {
 	return app
 }
 
-func registerCommandsFor(executableType ExecutableType, at *kingpin.Application) {
+func registerCommandsFor(config *ConfigWrapper, executableType ExecutableType, at *kingpin.Application) {
 	switch executableType {
 	case Daemon:
-		registerDaemonCommandsAt(executableType, at)
+		registerDaemonCommandsAt(config, executableType, at)
 	case Control:
-		registerControlCommands(at)
+		registerControlCommands(config, at)
 	default:
-		registerDaemonCommandsAt(executableType, at)
-		registerControlCommands(at)
+		registerDaemonCommandsAt(config, executableType, at)
+		registerControlCommands(config, at)
 	}
 }
 

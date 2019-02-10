@@ -13,11 +13,9 @@ import (
 	"github.com/tdewolff/minify/js"
 	"html/template"
 	"io/ioutil"
-	"os"
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -45,6 +43,7 @@ type Renderer struct {
 	ArrayTemplate               *Template
 	MapTemplate                 *Template
 	DefinitionStructureTemplate *Template
+	Platform                    string
 
 	Functions         template.FuncMap
 	Project           Project
@@ -90,7 +89,7 @@ func (instance *Template) Execute(data interface{}) (template.HTML, error) {
 }
 
 // NewRendererFor creates a new renderer for the given parameters.
-func NewRendererFor(version string, project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*kingpin.Application) (*Renderer, error) {
+func NewRendererFor(platform, version string, project Project, pickedDefinitions *PickedDefinitions, apps map[app.ExecutableType]*kingpin.Application) (*Renderer, error) {
 	renderer := &Renderer{
 		Project:           project,
 		PickedDefinitions: pickedDefinitions,
@@ -99,6 +98,7 @@ func NewRendererFor(version string, project Project, pickedDefinitions *PickedDe
 		Version:           version,
 		Description:       caretakerd.Description,
 		URL:               caretakerd.URL,
+		Platform:          platform,
 	}
 	renderer.Functions = newFunctionsFor(renderer)
 
@@ -237,11 +237,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 }
 
 func (instance *Renderer) replaceUsageEnvVarDisplaysIfNeeded(content string) string {
-	goos := os.Getenv("GOOS")
-	if goos == "" {
-		goos = runtime.GOOS
-	}
-	if goos == "windows" {
+	if instance.Platform == "windows" {
 		return otherEnvarPattern.ReplaceAllString(content, "%$1%")
 	}
 	return windowsEnvarPattern.ReplaceAllString(content, "$$$1")

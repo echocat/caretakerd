@@ -25,23 +25,23 @@ func panicHandler() {
 }
 
 func main() {
-	if len(os.Args) < 2 || len(os.Args[1]) <= 0 {
-		_, _ = fmt.Fprintf(os.Stderr, "Usage: %v <version> <output>\n", os.Args[0])
+	if len(os.Args) < 4 || len(os.Args[1]) <= 0 || len(os.Args[2]) <= 0 || len(os.Args[3]) <= 0 {
+		_, _ = fmt.Fprintf(os.Stderr, "Usage: %v <version> <platform> <output>\n", os.Args[0])
 		os.Exit(1)
 	}
 	version := os.Args[1]
 	if strings.HasPrefix(version, "v") {
 		version = version[1:]
 	}
-	plainFile := os.Args[2]
+	platform := os.Args[2]
+	plainFile := os.Args[3]
 
 	defer panicHandler()
 	project, err := DeterminateProject("github.com/echocat/caretakerd")
 	if err != nil {
 		panic(err)
 	}
-	log.Log(logger.Info, "Root package: %v", project.RootPackage)
-	log.Log(logger.Info, "Source root path: %v", project.SrcRootPath)
+	log.Log(logger.Debug, "Build manual for package=%v, path=%v, platform=%s", project.RootPackage, project.SrcRootPath, platform)
 
 	definitions, err := ParseDefinitions(project)
 	if err != nil {
@@ -52,9 +52,9 @@ func main() {
 		panic(err)
 	}
 
-	apps := app.NewApps()
+	apps := app.NewAppsFor(platform)
 
-	renderer, err := NewRendererFor(version, project, pd, apps)
+	renderer, err := NewRendererFor(platform, version, project, pd, apps)
 	if err != nil {
 		panic(err)
 	}

@@ -39,7 +39,7 @@ func runDaemon(conf caretakerd.Config, args []string) {
 	os.Exit(int(exitCode))
 }
 
-func registerDaemonCommandsAt(executableType ExecutableType, app *kingpin.Application) {
+func registerDaemonCommandsAt(config *ConfigWrapper, executableType ExecutableType, app *kingpin.Application) {
 	var name string
 	switch executableType {
 	case Daemon:

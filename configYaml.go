@@ -30,8 +30,8 @@ func IsConfigNotExists(err error) bool {
 }
 
 // LoadFromYamlFile loads the caretakerd config from the given yaml file.
-func LoadFromYamlFile(fileName values.String) (Config, error) {
-	result := NewConfig()
+func LoadFromYamlFile(platform string, fileName values.String) (Config, error) {
+	result := NewConfigFor(platform)
 	content, err := ioutil.ReadFile(fileName.String())
 	if err != nil {
 		if os.IsNotExist(err) {

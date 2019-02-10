@@ -160,7 +160,7 @@ func registerServiceNameEnabledCommand(at *kingpin.Application, name, descriptio
 	return
 }
 
-func registerControlCommands(at *kingpin.Application) {
+func registerControlCommands(config *ConfigWrapper, at *kingpin.Application) {
 	clientFactory := client.NewFactory(config)
 
 	registerConfigCommand(at, clientFactory)

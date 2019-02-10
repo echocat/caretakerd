@@ -11,20 +11,28 @@ import (
 // ConfigWrapper wraps the config of caretakerd and triggers the loading of this config file when
 // calling Set(string).
 type ConfigWrapper struct {
-	config      *caretakerd.Config
-	explicitSet bool
-	forDaemon   bool
+	config        *caretakerd.Config
+	explicitSet   bool
+	forDaemon     bool
+	listenAddress *FlagWrapper
+	pemFile       *FlagWrapper
+	platform      string
 
 	loaded bool
 	mutex  *sync.Mutex
 }
 
-// NewConfigWrapper creates a new instance of ConfigWrapper.
-func NewConfigWrapper() *ConfigWrapper {
-	instance := caretakerd.NewConfig()
+// NewConfigWrapperFor creates a new instance of ConfigWrapper.
+func NewConfigWrapperFor(platform string) *ConfigWrapper {
+	instance := caretakerd.NewConfigFor(platform)
+	defaultListenAddress := defaults.ListenAddressFor(platform)
+	defaultPemFile := defaults.AuthFileKeyFilenameFor(platform)
 	return &ConfigWrapper{
-		config:      &instance,
-		explicitSet: false,
+		config:        &instance,
+		explicitSet:   false,
+		listenAddress: NewFlagWrapper(&defaultListenAddress),
+		pemFile:       NewFlagWrapper(&defaultPemFile),
+		platform:      platform,
 	}
 }
 
@@ -47,7 +55,7 @@ func (instance ConfigWrapper) loadConfigFrom(fileName values.String) (*caretaker
 	if len(fileName) == 0 {
 		return nil, errors.New("There is an empty filename for configuration provided.")
 	}
-	conf, err := caretakerd.LoadFromYamlFile(fileName)
+	conf, err := caretakerd.LoadFromYamlFile(instance.platform, fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +64,8 @@ func (instance ConfigWrapper) loadConfigFrom(fileName values.String) (*caretaker
 }
 
 func (instance *ConfigWrapper) populateAndValidate(conf *caretakerd.Config) error {
-	listenAddress.AssignIfExplicitSet(&conf.RPC.Listen)
-	pemFile.AssignIfExplicitSet(&conf.Control.Access.PemFile)
+	instance.listenAddress.AssignIfExplicitSet(&conf.RPC.Listen)
+	instance.pemFile.AssignIfExplicitSet(&conf.Control.Access.PemFile)
 	err := conf.Validate()
 	if err != nil {
 		return err
@@ -73,6 +81,16 @@ func (instance ConfigWrapper) Instance() *caretakerd.Config {
 	return instance.config
 }
 
+// ListenAddress returns the listenAddress FlagWrapper
+func (instance ConfigWrapper) ListenAddress() *FlagWrapper {
+	return instance.listenAddress
+}
+
+// PemFile returns the pemFile FlagWrapper
+func (instance ConfigWrapper) PemFile() *FlagWrapper {
+	return instance.pemFile
+}
+
 // ProvideConfig will either return the already loaded configuration or will load it
 func (instance *ConfigWrapper) ProvideConfig() (*caretakerd.Config, error) {
 	instance.mutex.Lock()
@@ -85,7 +103,7 @@ func (instance *ConfigWrapper) ProvideConfig() (*caretakerd.Config, error) {
 	if instance.explicitSet {
 		config = instance.config
 	} else {
-		filename := defaults.ConfigFilename()
+		filename := defaults.ConfigFilenameFor(instance.platform)
 		if lConfig, err := instance.loadConfigFrom(filename); caretakerd.IsConfigNotExists(err) {
 			if instance.forDaemon {
 				return nil, errors.New("There is neither the --config flag set nor does a configuration file under default position (%v) exist.", filename)

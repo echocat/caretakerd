@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/echocat/caretakerd"
 	"path/filepath"
 	"runtime"
 )
@@ -10,12 +11,12 @@ var (
 	currentTarget = target{os: runtime.GOOS, arch: runtime.GOARCH}
 	linuxAmd64    = target{os: "linux", arch: "amd64"}
 	targets       = []target{
+		{os: "windows", arch: "amd64"},
+		{os: "windows", arch: "386"},
 		{os: "darwin", arch: "amd64"},
 		{os: "darwin", arch: "386"},
 		linuxAmd64,
 		{os: "linux", arch: "386"},
-		{os: "windows", arch: "amd64"},
-		{os: "windows", arch: "386"},
 	}
 )
 
@@ -25,19 +26,19 @@ type target struct {
 }
 
 func (instance target) outputName() string {
-	return filepath.Join("dist", fmt.Sprintf("caretakerd-%s-%s", instance.os, instance.arch))
+	return fmt.Sprintf(caretakerd.DaemonName+"-%s-%s", instance.os, instance.arch)
 }
 
 func (instance target) executable() string {
-	return instance.outputName() + instance.executableExtension()
+	return filepath.Join("var", "executables", instance.outputName()+instance.executableExtension())
 }
 
 func (instance target) manual() string {
-	return instance.outputName() + ".html"
+	return filepath.Join("var", "manuals", instance.outputName()+".html")
 }
 
 func (instance target) archive() string {
-	return instance.outputName() + instance.archiveExtension()
+	return filepath.Join("dist", instance.outputName()+instance.archiveExtension())
 }
 
 func (instance target) executableExtension() string {

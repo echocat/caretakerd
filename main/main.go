@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -15,7 +16,7 @@ var executableNamePattern = regexp.MustCompile("(?:^|" + regexp.QuoteMeta(string
 
 func main() {
 	defer panics.DefaultPanicHandler()
-	a := app.NewAppFor(getExecutableType())
+	a := app.NewAppFor(runtime.GOOS, getExecutableType())
 
 	kingpin.MustParse(a.Parse(os.Args[1:]))
 }
