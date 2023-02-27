@@ -38,7 +38,7 @@ func NewLogger(conf Config, name string, syncGroup *usync.Group) (*Logger, error
 			MaxBackups: conf.MaxBackups.Int(),
 			MaxAge:     conf.MaxAgeInDays.Int(),
 		}
-		output.Rotate()
+		_ = output.Rotate()
 	} else {
 		output = nil
 	}
@@ -78,7 +78,7 @@ func (i *Logger) LogAdvanced(framesToSkip int, problem interface{}, level Level,
 		entry := i.EntryFor(framesToSkip+1, problem, level, now, message)
 		toLog, err := entry.Format(i.config.Pattern, framesToSkip+1)
 		if err != nil {
-			panics.New("Could not format log entry with given pattern '%v'. Got: %v", i.config.Pattern, err)
+			_ = panics.New("Could not format log entry with given pattern '%v'. Got: %v", i.config.Pattern, err)
 		}
 		i.write(level, []byte(toLog))
 	}
@@ -99,7 +99,7 @@ func (i *Logger) write(level Level, message []byte) {
 	if !i.IsOpen() {
 		panics.New("The logger is not open.").Throw()
 	}
-	i.writeSynchronizer.Write(message, level.IsIndicatingProblem())
+	_, _ = i.writeSynchronizer.Write(message, level.IsIndicatingProblem())
 }
 
 // IsOpen returns "true" if the current logger is still open and usable.
@@ -116,7 +116,7 @@ func (i *Logger) Close() {
 		i.open = false
 	}()
 	if i.output != nil {
-		i.output.Close()
+		_ = i.output.Close()
 	}
 	i.writeSynchronizer.Close()
 }

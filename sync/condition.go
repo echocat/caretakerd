@@ -39,7 +39,7 @@ func (instance *Condition) wait(duration time.Duration, guarded bool) error {
 	sg.append(instance)
 	if guarded {
 		instance.doUnlock()
-		defer instance.doLock()
+		defer func() { _ = instance.doLock() }()
 	}
 	select {
 	case <-time.After(duration):
@@ -77,14 +77,12 @@ func (instance *Condition) send() (bool, error) {
 			}
 		}
 	}()
-	sent := true
 	select {
 	case instance.channel <- true:
-		sent = true
+		return true, err
 	default:
-		sent = false
+		return false, err
 	}
-	return sent, err
 }
 
 // Send sends ONE trigger to the condition.

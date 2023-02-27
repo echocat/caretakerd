@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package service
@@ -66,7 +67,7 @@ func sendSignalToProcess(pid int, service *Service, what values.Signal) error {
 					return errors.New("Could not signal '%v' (#%v): %v", service, pid, what).CausedBy(err)
 				}
 			}
-			syscall.CloseHandle(processHandle)
+			_ = syscall.CloseHandle(processHandle)
 		}
 		return nil
 	}

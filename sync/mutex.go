@@ -58,10 +58,7 @@ func (instance *Mutex) Lock() error {
 
 // Unlock unlocks the current thread from this Mutex.
 func (instance *Mutex) Unlock() {
-	select {
-	case <-instance.channel:
-		return
-	}
+	<-instance.channel
 }
 
 // TryLock tries to locks the current thread to this mutex.

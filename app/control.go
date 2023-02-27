@@ -3,7 +3,7 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd/client"
 	"github.com/echocat/caretakerd/stack"
 	"github.com/echocat/caretakerd/values"

@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/stack"

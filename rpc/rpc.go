@@ -11,7 +11,7 @@ import (
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/service"
 	"github.com/echocat/caretakerd/values"
-	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful/v3"
 	"log"
 	"net"
 	"net/http"
@@ -69,13 +69,11 @@ func NewStoppableListener(l net.Listener) (*StoppableListener, error) {
 // Accept returns a new connection if a remote client connects to the server.
 // This method is a blocking method.
 func (sl *StoppableListener) Accept() (net.Conn, error) {
-	for {
-		newConn, err := sl.TCPListener.Accept()
-		if isClosedError(err) {
-			return nil, ListenerStoppedError{}
-		}
-		return newConn, err
+	newConn, err := sl.TCPListener.Accept()
+	if isClosedError(err) {
+		return nil, ListenerStoppedError{}
 	}
+	return newConn, nil
 }
 
 func isClosedError(what error) bool {
@@ -169,7 +167,6 @@ func (instance *RPC) Run() {
 }
 
 func (instance *RPC) secure(in net.Listener) net.Listener {
-	out := in
 	sec := instance.caretakerd.KeyStore()
 	keyPair, err := tls.X509KeyPair(sec.PEM(), sec.PEM())
 	if err != nil {
@@ -181,7 +178,7 @@ func (instance *RPC) secure(in net.Listener) net.Listener {
 		rootCas.AddCert(cert)
 	}
 
-	out = tls.NewListener(in, &tls.Config{
+	out := tls.NewListener(in, &tls.Config{
 		NextProtos:   []string{"http/1.1"},
 		Certificates: []tls.Certificate{keyPair},
 		RootCAs:      rootCas,
@@ -197,7 +194,7 @@ func (instance *RPC) secure(in net.Listener) net.Listener {
 func (instance *RPC) Stop() {
 	listener := (*instance).listener
 	if listener != nil {
-		listener.Close()
+		_ = listener.Close()
 	}
 }
 
@@ -242,7 +239,7 @@ func (instance *RPC) onReadPermission(request *restful.Request, response *restfu
 	if instance.hasReadPermission(request) {
 		doThis()
 	} else {
-		response.WriteErrorString(http.StatusForbidden, "No read permission to instance endpoint.")
+		_ = response.WriteErrorString(http.StatusForbidden, "No read permission to instance endpoint.")
 	}
 }
 
@@ -250,26 +247,26 @@ func (instance *RPC) onWritePermission(request *restful.Request, response *restf
 	if instance.hasWritePermission(request) {
 		doThis()
 	} else {
-		response.WriteErrorString(http.StatusForbidden, "No write permission to instance endpoint.")
+		_ = response.WriteErrorString(http.StatusForbidden, "No write permission to instance endpoint.")
 	}
 }
 
 func (instance *RPC) config(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
-		response.WriteEntity(instance.caretakerd.ConfigObject())
+		_ = response.WriteEntity(instance.caretakerd.ConfigObject())
 	})
 }
 
 func (instance *RPC) controlConfig(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
-		response.WriteEntity(instance.caretakerd.Control().ConfigObject())
+		_ = response.WriteEntity(instance.caretakerd.Control().ConfigObject())
 	})
 }
 
 func (instance *RPC) services(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		information := instance.execution.Information()
-		response.WriteEntity(information)
+		_ = response.WriteEntity(information)
 	})
 }
 
@@ -277,11 +274,11 @@ func (instance *RPC) service(request *restful.Request, response *restful.Respons
 	instance.onReadPermission(request, response, func() {
 		serviceName := request.PathParameter("serviceName")
 		services := instance.caretakerd.Services()
-		if service := services.Get(serviceName); service != nil {
-			information := instance.execution.InformationFor(service)
-			response.WriteEntity(information)
+		if svc := services.Get(serviceName); svc != nil {
+			information := instance.execution.InformationFor(svc)
+			_ = response.WriteEntity(information)
 		} else {
-			response.WriteError(http.StatusNotFound, errors.New("Service '%s' does not exist.", serviceName))
+			_ = response.WriteError(http.StatusNotFound, errors.New("Service '%s' does not exist.", serviceName))
 		}
 	})
 }
@@ -289,7 +286,7 @@ func (instance *RPC) service(request *restful.Request, response *restful.Respons
 func (instance *RPC) serviceConfig(request *restful.Request, response *restful.Response) {
 	instance.onReadPermission(request, response, func() {
 		instance.doWithService(request, response, func(service *service.Service) {
-			response.WriteEntity(service.Config())
+			_ = response.WriteEntity(service.Config())
 		})
 	})
 }
@@ -298,9 +295,9 @@ func (instance *RPC) serviceStatus(request *restful.Request, response *restful.R
 	instance.onReadPermission(request, response, func() {
 		instance.doWithExecution(request, response, func(execution *service.Execution) {
 			if execution != nil {
-				response.Write([]byte(execution.Status().String()))
+				_, _ = response.Write([]byte(execution.Status().String()))
 			} else {
-				response.Write([]byte(service.Down.String()))
+				_, _ = response.Write([]byte(service.Down.String()))
 			}
 		})
 	})
@@ -310,9 +307,9 @@ func (instance *RPC) servicePid(request *restful.Request, response *restful.Resp
 	instance.onReadPermission(request, response, func() {
 		instance.doWithExecution(request, response, func(execution *service.Execution) {
 			if execution != nil {
-				response.Write([]byte(strconv.Itoa(execution.PID())))
+				_, _ = response.Write([]byte(strconv.Itoa(execution.PID())))
 			} else {
-				response.Write([]byte("0"))
+				_, _ = response.Write([]byte("0"))
 			}
 		})
 	})
@@ -323,9 +320,9 @@ func (instance *RPC) serviceRestart(request *restful.Request, response *restful.
 		instance.doWithService(request, response, func(service *service.Service) {
 			err := instance.execution.Restart(service)
 			if err == nil {
-				response.Write([]byte("OK"))
+				_, _ = response.Write([]byte("OK"))
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
+				_ = response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -336,11 +333,11 @@ func (instance *RPC) serviceStart(request *restful.Request, response *restful.Re
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Start(sc)
 			if err == nil {
-				response.Write([]byte("OK"))
+				_, _ = response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.AlreadyRunningError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
+				_ = response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
+				_ = response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -351,11 +348,11 @@ func (instance *RPC) serviceStop(request *restful.Request, response *restful.Res
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Stop(sc)
 			if err == nil {
-				response.Write([]byte("OK"))
+				_, _ = response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.AlreadyStoppedError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
+				_ = response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
+				_ = response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -366,11 +363,11 @@ func (instance *RPC) serviceKill(request *restful.Request, response *restful.Res
 		instance.doWithService(request, response, func(sc *service.Service) {
 			err := instance.execution.Kill(sc)
 			if err == nil {
-				response.Write([]byte("OK"))
+				_, _ = response.Write([]byte("OK"))
 			} else if sde, ok := err.(service.AlreadyStoppedError); ok {
-				response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
+				_ = response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 			} else {
-				response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
+				_ = response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 			}
 		})
 	})
@@ -387,15 +384,15 @@ func (instance *RPC) serviceSignal(request *restful.Request, response *restful.R
 			sb := SignalBody{}
 			err := request.ReadEntity(&sb)
 			if err != nil {
-				response.WriteErrorString(http.StatusBadRequest, "ERROR: Illegal body. "+err.Error())
+				_ = response.WriteErrorString(http.StatusBadRequest, "ERROR: Illegal body. "+err.Error())
 			} else {
 				err = instance.execution.Kill(sc)
 				if err == nil {
-					response.Write([]byte("OK"))
+					_, _ = response.Write([]byte("OK"))
 				} else if sde, ok := err.(service.AlreadyStoppedError); ok {
-					response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
+					_ = response.WriteErrorString(http.StatusConflict, "ERROR: "+sde.Error())
 				} else {
-					response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
+					_ = response.WriteErrorString(http.StatusInternalServerError, "ERROR: "+err.Error())
 				}
 			}
 		})
@@ -405,10 +402,10 @@ func (instance *RPC) serviceSignal(request *restful.Request, response *restful.R
 func (instance *RPC) doWithService(request *restful.Request, response *restful.Response, what func(service *service.Service)) {
 	serviceName := request.PathParameter("serviceName")
 	services := instance.caretakerd.Services()
-	if service := services.Get(serviceName); service != nil {
-		what(service)
+	if svc := services.Get(serviceName); svc != nil {
+		what(svc)
 	} else {
-		response.WriteError(http.StatusNotFound, errors.New("Service '%s' does not exist.", serviceName))
+		_ = response.WriteError(http.StatusNotFound, errors.New("Service '%s' does not exist.", serviceName))
 	}
 }
 

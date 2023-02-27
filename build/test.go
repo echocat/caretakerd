@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"os"
 	"os/exec"
 	"strings"
@@ -27,7 +27,14 @@ func test(branch, commit string) {
 func testGoCode(t target) {
 	executeTo(func(cmd *exec.Cmd) {
 		cmd.Env = append(os.Environ(), "GOOS="+t.os, "GOARCH="+t.arch)
-	}, os.Stderr, os.Stdout, "go", "test", "-v", "./...")
+	}, os.Stderr, os.Stdout,
+		"go", "test",
+		"-v",
+		//"-race", // TODO! We should improve that later.
+		"-covermode", "atomic",
+		"-coverprofile", "profile.cov",
+		"./...",
+	)
 }
 
 func testBinary(branch, commit string, t target) {

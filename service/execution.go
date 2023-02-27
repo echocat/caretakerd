@@ -124,7 +124,7 @@ func (instance *Execution) handleBeforeRun() error {
 	cronExpression := instance.service.Config().CronExpression
 	startAt := cronExpression.Next(time.Now())
 	if startAt != nil {
-		waitDuration := startAt.Sub(time.Now())
+		waitDuration := time.Until(*startAt)
 		instance.logger.Log(logger.Debug, "Start of service '%s' is timed for %v (in %v).", instance.Name(), startAt, waitDuration)
 		if err := instance.syncGroup.Sleep(waitDuration); err != nil {
 			return StoppedOrKilledError{error: errors.New("Process was stopped before start.")}
@@ -280,13 +280,13 @@ func (instance *Execution) setStateTo(ns Status) bool {
 	cs := instance.status
 	if cs != Down || (ns != Killed && ns != Stopped) {
 		(*instance).status = ns
-		instance.condition.Send()
+		_ = instance.condition.Send()
 		if cs == Down {
 			instance.access.Cleanup()
 		}
 		return true
 	}
-	instance.condition.Send()
+	_ = instance.condition.Send()
 	return false
 }
 
@@ -307,7 +307,7 @@ func (instance *Execution) Stop() {
 		instance.logger.Log(logger.Debug, "Stopping '%s'...", instance.Name())
 		instance.sendStop()
 		if instance.status != Down {
-			instance.condition.Wait(time.Duration(instance.service.config.StopWaitInSeconds) * time.Second)
+			_ = instance.condition.Wait(time.Duration(instance.service.config.StopWaitInSeconds) * time.Second)
 			if instance.status != Down {
 				instance.logger.Log(logger.Warning, "Service '%s' does not respond after %d seconds. Going to kill it now...", instance.Name(), instance.service.config.StopWaitInSeconds)
 				instance.sendKill()
@@ -332,7 +332,7 @@ func (instance *Execution) sendStop() {
 				}
 			}
 		} else {
-			instance.sendSignal(c.StopSignal)
+			_ = instance.sendSignal(c.StopSignal)
 		}
 	}
 }
@@ -357,7 +357,7 @@ func (instance *Execution) sendKill() {
 				instance.logger.LogProblem(err, logger.Warning, "Could not kill: %v", instance.service.Name())
 			}
 			if instance.status != Down {
-				(*instance).condition.Wait(1 * time.Second)
+				_ = (*instance).condition.Wait(1 * time.Second)
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+//go:build linux || darwin
 // +build linux darwin
 
 package service
@@ -6,7 +7,6 @@ import (
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
 	"github.com/echocat/caretakerd/values"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -49,7 +49,7 @@ func sendSignalToProcess(process *os.Process, what values.Signal, tryGroup bool)
 			}
 		}
 	}
-	process.Signal(syscall.Signal(what))
+	_ = process.Signal(syscall.Signal(what))
 	return nil
 }
 
@@ -86,7 +86,7 @@ func lookupUser(username string) (uid, gid int, err error) {
 }
 
 func lookupUserInPasswd(uid string) (*user.User, error) {
-	file, err := ioutil.ReadFile("/etc/passwd")
+	file, err := os.ReadFile("/etc/passwd")
 	if err != nil {
 		return nil, err
 	}

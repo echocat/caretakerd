@@ -103,7 +103,7 @@ func (instance Definitions) String() string {
 	buf := new(bytes.Buffer)
 	for _, definition := range instance.identifierToDefinition {
 		if definition.IsTopLevel() {
-			fmt.Fprintf(buf, "%v\n", definition)
+			_, _ = fmt.Fprintf(buf, "%v\n", definition)
 		}
 	}
 	return buf.String()

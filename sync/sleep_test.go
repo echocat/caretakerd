@@ -16,9 +16,9 @@ func (s *SleepTest) TestInterrupt(c *C) {
 		time.Sleep(10 * time.Millisecond)
 		sg.Interrupt()
 	}()
-	sg.Sleep(10 * time.Second)
+	_ = sg.Sleep(10 * time.Second)
 	duration := time.Since(start)
-	c.Assert(duration, IsLessThan, time.Duration(50*time.Millisecond))
+	c.Assert(duration, IsLessThan, 50*time.Millisecond)
 }
 
 func Test(t *testing.T) {

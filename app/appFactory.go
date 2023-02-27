@@ -2,7 +2,7 @@ package app
 
 import (
 	"fmt"
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/defaults"
 	"os"
@@ -88,6 +88,7 @@ func newAppFor(config *ConfigWrapper, platform string, executableType Executable
 			SetValue(config)
 	}
 
+	app.HelpFlag.Hidden()
 	app.Flag("address", "Listen address of the daemon.").
 		Short('a').
 		PlaceHolder(config.ListenAddress().String()).

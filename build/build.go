@@ -5,7 +5,7 @@ import (
 	"archive/zip"
 	"compress/gzip"
 	"fmt"
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/logger"
 	"io"

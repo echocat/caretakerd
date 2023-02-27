@@ -59,7 +59,7 @@ func (instance *parsedPackage) commentTextFor(object posEnabled) (string, error)
 
 func (instance *parsedPackage) commentFor(object posEnabled) (*ast.CommentGroup, error) {
 	file, err := instance.fileFor(object)
-	object.Pos().IsValid()
+	_ = object.Pos().IsValid()
 	if err != nil {
 		return nil, err
 	}
@@ -108,16 +108,11 @@ type extractionTask struct {
 	project                    Project
 	packageNameToParsedPackage map[string]*parsedPackage
 	context                    *build.Context
-	importer                   types.ImporterFrom
 	definitions                *Definitions
 	typesConfig                types.Config
 }
 
-func (instance *extractionTask) findDeclFor(object posEnabled) (*ast.Decl, error) {
-	return nil, nil
-}
-
-func (instance *extractionTask) Import(packageName string) (*types.Package, error) {
+func (instance *extractionTask) Import(_ string) (*types.Package, error) {
 	panic("Should not be called.")
 }
 

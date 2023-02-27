@@ -114,7 +114,7 @@ func (checker *isLessThan) Check(params []interface{}, names []string) (bool, st
 	obtainedType := reflect.TypeOf(obtained)
 	compareToType := reflect.TypeOf(compareTo)
 	if !reflect.DeepEqual(obtainedType, compareToType) {
-		return false, fmt.Sprintf("'obtained' type not equal to the type to 'compareTo' type.")
+		return false, "'obtained' type not equal to the type to 'compareTo' type."
 	}
 	obtainedS := simplifyTypesIfPossible(obtained)
 	compareToS := simplifyTypesIfPossible(compareTo)
@@ -172,7 +172,7 @@ func (checker *isLargerThan) Check(params []interface{}, names []string) (bool, 
 	obtainedType := reflect.TypeOf(obtained)
 	compareToType := reflect.TypeOf(compareTo)
 	if !reflect.DeepEqual(obtainedType, compareToType) {
-		return false, fmt.Sprintf("'obtained' type not equal to the type to 'compareTo' type.")
+		return false, "'obtained' type not equal to the type to 'compareTo' type."
 	}
 	obtainedS := simplifyTypesIfPossible(obtained)
 	compareToS := simplifyTypesIfPossible(compareTo)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"os"
 )
 
@@ -16,11 +16,11 @@ var (
 func init() {
 	app.Flag("branch", "something like either main, v1.2.3 or snapshot-feature-foo").
 		Required().
-		Envar("TRAVIS_BRANCH").
+		Envar("GITHUB_REF_NAME").
 		StringVar(&branch)
 	app.Flag("commit", "something like 463e189796d5e96a7b605ab51985458faf8fd0d4").
 		Required().
-		Envar("TRAVIS_COMMIT").
+		Envar("GITHUB_SHA").
 		StringVar(&commit)
 }
 

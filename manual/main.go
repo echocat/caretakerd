@@ -5,7 +5,6 @@ import (
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/logger"
 	"github.com/echocat/caretakerd/sync"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,10 +28,7 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "Usage: %v <version> <platform> <output>\n", os.Args[0])
 		os.Exit(1)
 	}
-	version := os.Args[1]
-	if strings.HasPrefix(version, "v") {
-		version = version[1:]
-	}
+	version := strings.TrimPrefix(os.Args[1], "v")
 	platform := os.Args[2]
 	plainFile := os.Args[3]
 
@@ -72,7 +68,7 @@ func main() {
 	if err := os.MkdirAll(directory, 0755); err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(file, []byte(content), 0655); err != nil {
+	if err := os.WriteFile(file, []byte(content), 0655); err != nil {
 		panic(err)
 	}
 }

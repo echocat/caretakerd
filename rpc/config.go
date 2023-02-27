@@ -45,10 +45,12 @@ func (instance *Config) init(platform string) {
 	}, instance)
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
-func (instance *Config) BeforeUnmarshalYAML() error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
+func (instance *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	instance.init(runtime.GOOS)
-	return nil
+
+	type noMethods Config
+	return unmarshal((*noMethods)(instance))
 }
 
 // Validate validates actions on this object and returns an error object there are any.

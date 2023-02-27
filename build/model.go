@@ -13,10 +13,12 @@ var (
 	targets       = []target{
 		{os: "windows", arch: "amd64"},
 		{os: "windows", arch: "386"},
+		{os: "windows", arch: "arm64"},
 		{os: "darwin", arch: "amd64"},
-		{os: "darwin", arch: "386"},
+		{os: "darwin", arch: "arm64"},
 		linuxAmd64,
 		{os: "linux", arch: "386"},
+		{os: "linux", arch: "arm64"},
 	}
 )
 

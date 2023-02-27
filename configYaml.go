@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/values"
-	"gopkg.in/blaubaer/yaml.v66"
-	"io/ioutil"
+	"gopkg.in/yaml.v3"
 	"os"
 )
 
@@ -32,7 +31,7 @@ func IsConfigNotExists(err error) bool {
 // LoadFromYamlFile loads the caretakerd config from the given yaml file.
 func LoadFromYamlFile(platform string, fileName values.String) (Config, error) {
 	result := NewConfigFor(platform)
-	content, err := ioutil.ReadFile(fileName.String())
+	content, err := os.ReadFile(fileName.String())
 	if err != nil {
 		if os.IsNotExist(err) {
 			return Config{}, ConfigDoesNotExistError{fileName: fileName.String()}
@@ -52,7 +51,7 @@ func (instance Config) WriteToYamlFile(fileName values.String) error {
 	if err != nil {
 		return errors.New("Could not write config to '%v'.", fileName).CausedBy(err)
 	}
-	if err := ioutil.WriteFile(fileName.String(), content, 0744); err != nil {
+	if err := os.WriteFile(fileName.String(), content, 0744); err != nil {
 		return errors.New("Could not write marshalled config to '%v'.", fileName).CausedBy(err)
 	}
 	return nil

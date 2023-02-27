@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"github.com/echocat/caretakerd/errors"
 	"github.com/echocat/caretakerd/panics"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"strconv"
@@ -69,7 +68,7 @@ func generatePrivateKey(conf Config) (privateKey interface{}, privateKeyBytes []
 	return plainPrivateKey, privateKeyBytes, &plainPrivateKey.PublicKey, nil
 }
 
-func generateCertificate(conf Config, privateKey interface{}, publicKey interface{}) ([]byte, error) {
+func generateCertificate(_ Config, privateKey interface{}, publicKey interface{}) ([]byte, error) {
 	notBefore := time.Now()
 	notAfter := notBefore.Add(8760 * time.Hour)
 
@@ -107,7 +106,7 @@ func generatePem(conf Config) ([]byte, *x509.Certificate, interface{}, error) {
 		return []byte{}, nil, nil, errors.New("Wow! Could not parse right now created certificate?").CausedBy(err)
 	}
 
-	pemBytes := []byte{}
+	var pemBytes []byte
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certificateDerBytes})...)
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})...)
 
@@ -115,19 +114,19 @@ func generatePem(conf Config) ([]byte, *x509.Certificate, interface{}, error) {
 }
 
 func newFomFile(conf Config) (*KeyStore, error) {
-	pem, err := ioutil.ReadFile(conf.PemFile.String())
+	p, err := os.ReadFile(conf.PemFile.String())
 	if err != nil {
 		return nil, errors.New("Could not read pem from '%v'.", conf.PemFile).CausedBy(err)
 	}
-	return newPemFromBytes(conf, pem)
+	return newPemFromBytes(conf, p)
 }
 
 func newFromEnvironment(conf Config) (*KeyStore, error) {
-	pem := os.Getenv("CTD_PEM")
-	if len(strings.TrimSpace(pem)) <= 0 {
+	p := os.Getenv("CTD_PEM")
+	if len(strings.TrimSpace(p)) <= 0 {
 		return nil, errors.New("There is an %v keyStore confgiured but the CTD_PEM environment varaible is empty.", conf.Type)
 	}
-	return newPemFromBytes(conf, []byte(pem))
+	return newPemFromBytes(conf, []byte(p))
 }
 
 func newPemFromBytes(conf Config, pem []byte) (*KeyStore, error) {
@@ -157,18 +156,18 @@ func newPemFromBytes(conf Config, pem []byte) (*KeyStore, error) {
 }
 
 func newGenerated(conf Config) (*KeyStore, error) {
-	pem, cert, privateKey, err := generatePem(conf)
+	p, cert, privateKey, err := generatePem(conf)
 	if err != nil {
 		return nil, errors.New("Could not generate pem for keyStore config.").CausedBy(err)
 	}
-	ca, err := buildWholeCAsBy(conf, pem)
+	ca, err := buildWholeCAsBy(conf, p)
 	if err != nil {
 		return nil, errors.New("Could not build CA bundle for keyStore config.").CausedBy(err)
 	}
 	return &KeyStore{
 		enabled:    true,
 		config:     conf,
-		pem:        pem,
+		pem:        p,
 		ca:         ca,
 		cert:       cert,
 		privateKey: privateKey,
@@ -176,9 +175,9 @@ func newGenerated(conf Config) (*KeyStore, error) {
 }
 
 func buildWholeCAsBy(conf Config, p []byte) ([]*x509.Certificate, error) {
-	result := []*x509.Certificate{}
+	var result []*x509.Certificate
 	if !conf.CaFile.IsTrimmedEmpty() {
-		fileContent, err := ioutil.ReadFile(conf.CaFile.String())
+		fileContent, err := os.ReadFile(conf.CaFile.String())
 		if err != nil {
 			return nil, errors.New("Could not read certificates from %v.", conf.CaFile).CausedBy(err)
 		}
@@ -200,7 +199,7 @@ func buildWholeCAsBy(conf Config, p []byte) ([]*x509.Certificate, error) {
 }
 
 func loadCertificatesFrom(p []byte) ([]*x509.Certificate, error) {
-	result := []*x509.Certificate{}
+	var result []*x509.Certificate
 	if len(p) > 0 {
 		rp := p
 		block := new(pem.Block)
@@ -251,7 +250,7 @@ func newSerialNumber() *big.Int {
 
 // LoadCertificateFromFile loads a certificate from the given filename and returns it.
 func LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
-	fileContent, err := ioutil.ReadFile(filename)
+	fileContent, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, errors.New("Could not read certificate from %v.", filename).CausedBy(err)
 	}
@@ -265,7 +264,7 @@ func LoadCertificateFromFile(filename string) (*x509.Certificate, error) {
 	return certificates[0], nil
 }
 
-func (instance KeyStore) generateClientCertificate(name string, publicKey interface{}, privateKey interface{}) ([]byte, error) {
+func (instance KeyStore) generateClientCertificate(name string, publicKey interface{}, _ interface{}) ([]byte, error) {
 	notBefore := time.Now()
 	notAfter := notBefore.Add(8760 * time.Hour)
 
@@ -310,7 +309,7 @@ func (instance KeyStore) GeneratePem(name string) ([]byte, *x509.Certificate, er
 		return []byte{}, nil, errors.New("Wow! Could not parse right now created certificate for '%v'?", name).CausedBy(err)
 	}
 
-	pemBytes := []byte{}
+	var pemBytes []byte
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certificateDerBytes})...)
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: instance.cert.Raw})...)
 	pemBytes = append(pemBytes, pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: privateKeyBytes})...)

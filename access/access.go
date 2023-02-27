@@ -122,7 +122,7 @@ func generateFileForPem(conf Config, pem []byte) (string, error) {
 	if err != nil {
 		return "", errors.New("Could not create pemFile '%s'.", conf.PemFile).CausedBy(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	if !conf.PemFileUser.IsEmpty() {
 		_, lerr := user.Lookup(conf.PemFileUser.String())
 		if lerr != nil {
@@ -130,8 +130,12 @@ func generateFileForPem(conf Config, pem []byte) (string, error) {
 		}
 		//f.Chown(kfu.Uid, kfu.Gid) TODO!
 	}
-	f.Write(pem)
-	f.Sync()
+	if _, err := f.Write(pem); err != nil {
+		return "", errors.New("Could not write pemFile '%s'.", conf.PemFile).CausedBy(err)
+	}
+	if err := f.Sync(); err != nil {
+		return "", errors.New("Could not sync pemFile '%s'.", conf.PemFile).CausedBy(err)
+	}
 	return conf.PemFile.String(), nil
 }
 
@@ -150,7 +154,7 @@ func (instance Access) Type() Type {
 // This could delete action of temporary files ...
 func (instance Access) Cleanup() {
 	if instance.temporaryFilename != nil {
-		os.Remove(*instance.temporaryFilename)
+		_ = os.Remove(*instance.temporaryFilename)
 	}
 }
 

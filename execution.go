@@ -189,7 +189,9 @@ func (instance *Execution) stopOthers() {
 	if len(others) > 0 {
 		instance.executable.Logger().Log(logger.Debug, "Master is down. Stopping all remaining services...")
 		for _, other := range others {
-			go instance.Stop(other.Service())
+			go func(other *service.Execution) {
+				_ = instance.Stop(other.Service())
+			}(other)
 		}
 	}
 }
@@ -234,7 +236,7 @@ func (instance *Execution) StopAll() {
 		if execution.Service().Config().Type == service.Master {
 			// Hint: Stopping the master should also trigger the shutdown of all other services.
 			// This is the reason why at this point only the master is shut down.
-			instance.Stop(execution.Service())
+			_ = instance.Stop(execution.Service())
 		}
 	}
 	instance.wg.Wait()

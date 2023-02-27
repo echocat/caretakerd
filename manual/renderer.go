@@ -2,17 +2,17 @@ package main
 
 import (
 	"bytes"
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/errors"
-	"github.com/russross/blackfriday"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/html"
-	"github.com/tdewolff/minify/js"
+	"github.com/russross/blackfriday/v2"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -20,13 +20,14 @@ import (
 )
 
 var (
-	headerPrefixPattern                 = regexp.MustCompile("(?m)^([* 0-9.]*)#")
-	excerptFromCommentExtractionPattern = regexp.MustCompile("(?s)^(.*?(?:\\.\\s|$))")
-	removeHTMLTags                      = regexp.MustCompile("(?sm)<[^>]+>")
-	refPropertyPattern                  = regexp.MustCompile("{@ref +([^}\\s]+)\\s*([^}]*)}")
-	titlePropertyPattern                = regexp.MustCompile("(?m)^#\\s*@title\\s+(.*)\\s*(:?\r\n|\n)")
-	windowsEnvarPattern                 = regexp.MustCompile("(?m)%([a-zA-Z0-9_.]+)%")
-	otherEnvarPattern                   = regexp.MustCompile("(?m)$([a-zA-Z0-9_.]+)")
+	lineBreakCorrectPattern             = regexp.MustCompile(`(?m)\r\n`)
+	headerPrefixPattern                 = regexp.MustCompile(`(?m)^([* 0-9.]*)#`)
+	excerptFromCommentExtractionPattern = regexp.MustCompile(`(?s)^(.*?(?:\.\s|$))`)
+	removeHTMLTags                      = regexp.MustCompile(`(?sm)<[^>]+>`)
+	refPropertyPattern                  = regexp.MustCompile(`{@ref +([^}\s]+)\s*([^}]*)}`)
+	titlePropertyPattern                = regexp.MustCompile(`(?m)^#\s*@title\s+(.*)\s*(:?\r\n|\n)`)
+	windowsEnvarPattern                 = regexp.MustCompile(`(?m)%([a-zA-Z0-9_.]+)%`)
+	otherEnvarPattern                   = regexp.MustCompile(`(?m)$([a-zA-Z0-9_.]+)`)
 )
 
 // Describable represents an object that describes itself and has an ID.
@@ -174,14 +175,14 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			return tmpl.Execute(data)
 		},
 		"includeJavaScript": func(name string) (template.JS, error) {
-			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/scripts/" + name + ".js")
+			content, err := os.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/scripts/" + name + ".js")
 			if err != nil {
 				return "", err
 			}
 			return template.JS(content), err
 		},
 		"includeCss": func(name string) (template.CSS, error) {
-			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/styles/" + name + ".css")
+			content, err := os.ReadFile(renderer.Project.SrcRootPath + "/manual/templates/styles/" + name + ".css")
 			if err != nil {
 				return "", err
 			}
@@ -189,7 +190,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 		},
 		"includeMarkdown": func(name string, headerTypeStart int, headerIdPrefix string, data interface{}) (template.HTML, error) {
 			source := renderer.Project.SrcRootPath + "/manual/includes/" + name + ".md"
-			content, err := ioutil.ReadFile(source)
+			content, err := os.ReadFile(source)
 			if err != nil {
 				return "", err
 			}
@@ -209,7 +210,7 @@ func newFunctionsFor(renderer *Renderer) template.FuncMap {
 			return template.HTML(buf.String()), nil
 		},
 		"includeLicense": func() (string, error) {
-			content, err := ioutil.ReadFile(renderer.Project.SrcRootPath + "/LICENSE")
+			content, err := os.ReadFile(renderer.Project.SrcRootPath + "/LICENSE")
 			if err != nil {
 				return "", err
 			}
@@ -321,7 +322,7 @@ func (instance *Renderer) transformElementHTMLID(definition Definition) (string,
 func (instance *Renderer) extractExcerptFrom(definition Definition, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
 	excerpt := definition.Description()
 	match := excerptFromCommentExtractionPattern.FindStringSubmatch(excerpt)
-	if match != nil && len(match) == 2 {
+	if len(match) == 2 {
 		excerpt = match[1]
 	}
 	excerpt = strings.Replace(excerpt, "\r", "", -1)
@@ -407,6 +408,7 @@ func (instance *Renderer) renderMarkdown(of Describable, headerTypeStart int, he
 func (instance *Renderer) renderMarkdownWithContext(markup string, context Describable, headerTypeStart int, headerIDPrefix string) (template.HTML, error) {
 	var err error
 
+	markup = lineBreakCorrectPattern.ReplaceAllString(markup, "\n")
 	markup = headerPrefixPattern.ReplaceAllString(markup, "$1"+strings.Repeat("#", headerTypeStart))
 	markup = refPropertyPattern.ReplaceAllStringFunc(markup, func(inline string) string {
 		match := refPropertyPattern.FindStringSubmatch(inline)
@@ -435,29 +437,27 @@ func (instance *Renderer) renderMarkdownWithContext(markup string, context Descr
 	if len(headerIDPrefix) > 0 {
 		prefix = headerIDPrefix + "."
 	}
-	renderer := blackfriday.HtmlRendererWithParameters(blackfriday.HTML_USE_XHTML|
-		blackfriday.HTML_USE_SMARTYPANTS|
-		blackfriday.HTML_SMARTYPANTS_FRACTIONS|
-		blackfriday.HTML_SMARTYPANTS_DASHES|
-		blackfriday.HTML_SMARTYPANTS_LATEX_DASHES,
-		"",
-		"",
-		blackfriday.HtmlRendererParameters{
-			HeaderIDPrefix: prefix,
-		},
-	)
-	rhtml := blackfriday.MarkdownOptions([]byte(markup), renderer, blackfriday.Options{
-		Extensions: blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
-			blackfriday.EXTENSION_TABLES |
-			blackfriday.EXTENSION_FENCED_CODE |
-			blackfriday.EXTENSION_AUTOLINK |
-			blackfriday.EXTENSION_STRIKETHROUGH |
-			blackfriday.EXTENSION_SPACE_HEADERS |
-			blackfriday.EXTENSION_HEADER_IDS |
-			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK |
-			blackfriday.EXTENSION_DEFINITION_LISTS |
-			blackfriday.EXTENSION_AUTO_HEADER_IDS,
+	renderer := blackfriday.NewHTMLRenderer(blackfriday.HTMLRendererParameters{
+		HeadingIDPrefix: prefix,
+		Flags: blackfriday.UseXHTML |
+			blackfriday.Smartypants |
+			blackfriday.SmartypantsFractions |
+			blackfriday.SmartypantsDashes |
+			blackfriday.SmartypantsLatexDashes,
 	})
+	rhtml := blackfriday.Run([]byte(markup),
+		blackfriday.WithRenderer(renderer),
+		blackfriday.WithExtensions(blackfriday.NoIntraEmphasis|
+			blackfriday.Tables|
+			blackfriday.FencedCode|
+			blackfriday.Autolink|
+			blackfriday.Strikethrough|
+			blackfriday.SpaceHeadings|
+			blackfriday.HeadingIDs|
+			blackfriday.BackslashLineBreak|
+			blackfriday.DefinitionLists|
+			blackfriday.AutoHeadingIDs),
+	)
 	return template.HTML(strings.TrimSpace(string(rhtml))), nil
 }
 
@@ -502,7 +502,7 @@ func (instance *Renderer) collectExamples() ([]example, error) {
 	}
 	var examples []example
 	for _, exampleSource := range examplesSources {
-		b, err := ioutil.ReadFile(exampleSource)
+		b, err := os.ReadFile(exampleSource)
 		if err != nil {
 			return nil, err
 		}
@@ -524,7 +524,7 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 		id = id[:len(id)-len(ext)]
 	}
 	match := titlePropertyPattern.FindStringSubmatch(source)
-	if match != nil && len(match) > 0 {
+	if len(match) > 0 {
 		return titlePropertyPattern.ReplaceAllString(source, ""), match[1], id
 	}
 
@@ -533,7 +533,7 @@ func (instance *Renderer) extractTitleFrom(source string, filename string) (stri
 
 func parseTemplate(project Project, name string, functions template.FuncMap) (*Template, error) {
 	source := project.SrcRootPath + "/manual/" + name + ".html"
-	b, err := ioutil.ReadFile(source)
+	b, err := os.ReadFile(source)
 	if err != nil {
 		return nil, err
 	}

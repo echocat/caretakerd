@@ -86,8 +86,10 @@ func (instance *Config) init(platform string) {
 	(*instance).Services = service.NewConfigs()
 }
 
-// BeforeUnmarshalYAML is used by yaml unmarshalling. Do not call direct.
-func (instance *Config) BeforeUnmarshalYAML() error {
+// UnmarshalYAML is used by yaml unmarshalling. Do not call direct.
+func (instance *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	instance.init(runtime.GOOS)
-	return nil
+
+	type noMethods Config
+	return unmarshal((*noMethods)(instance))
 }

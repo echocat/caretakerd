@@ -79,12 +79,12 @@ func Print(what interface{}, to io.Writer, framesToSkip int) {
 		} else {
 			message += fmt.Sprintf("%v", current)
 		}
-		fmt.Fprint(to, prefix, message, "\n")
+		_, _ = fmt.Fprint(to, prefix, message, "\n")
 		if m, ok := current.(HasStack); ok {
-			fmt.Fprintf(to, "%v", m.Stack())
+			_, _ = fmt.Fprintf(to, "%v", m.Stack())
 		} else if i == 0 {
 			stack := CaptureStack(1 + framesToSkip)
-			fmt.Fprintf(to, "%v", stack)
+			_, _ = fmt.Fprintf(to, "%v", stack)
 		}
 		if m, ok := current.(CauseEnabled); ok {
 			current = m.Cause()

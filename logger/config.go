@@ -92,8 +92,10 @@ func (instance *Config) init() {
 	values.SetDefaultsTo(defaults, instance)
 }
 
-// BeforeUnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
-func (instance *Config) BeforeUnmarshalYAML() error {
+// UnmarshalYAML is used until yaml unmarshalling. Do not call this method directly.
+func (instance *Config) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	instance.init()
-	return nil
+
+	type noMethods Config
+	return unmarshal((*noMethods)(instance))
 }

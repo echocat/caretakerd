@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/alecthomas/kingpin"
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/echocat/caretakerd"
 	"github.com/echocat/caretakerd/app"
 	"github.com/echocat/caretakerd/panics"
@@ -24,7 +24,7 @@ func main() {
 func getExecutableType() app.ExecutableType {
 	executable := strings.ToLower(filepath.Base(os.Args[0]))
 	match := executableNamePattern.FindStringSubmatch(executable)
-	if match != nil && len(match) == 2 {
+	if len(match) == 2 {
 		switch match[1] {
 		case "d":
 			return app.Daemon

@@ -22,7 +22,7 @@ func (s *TypeTest) TestString(c *C) {
 
 func (s *TypeTest) TestStringPanic(c *C) {
 	c.Assert(func() {
-		Type(-1).String()
+		_ = Type(-1).String()
 	}, ThrowsPanicThatMatches, "Illegal access type: -1")
 }
 

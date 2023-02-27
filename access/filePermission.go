@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-var filePermissionOctPattern = regexp.MustCompile("^(\\d?)(\\d)(\\d)(\\d)$")
+var filePermissionOctPattern = regexp.MustCompile(`^(\d?)(\d)(\d)(\d)$`)
 
 // FilePermission represents a operating system file permission.
 // @inline

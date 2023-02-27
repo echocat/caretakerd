@@ -21,7 +21,7 @@ func (s *PermissionTest) TestString(c *C) {
 
 func (s *PermissionTest) TestStringPanic(c *C) {
 	c.Assert(func() {
-		Permission(-1).String()
+		_ = Permission(-1).String()
 	}, ThrowsPanicThatMatches, "Illegal permission: -1")
 }
 

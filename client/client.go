@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"github.com/echocat/caretakerd"
@@ -9,7 +10,6 @@ import (
 	"github.com/echocat/caretakerd/service"
 	"github.com/echocat/caretakerd/values"
 	"gopkg.in/jmcvetta/napping.v3"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -114,7 +114,7 @@ func transportFor(config *caretakerd.Config) (*http.Transport, error) {
 		return nil, err
 	}
 	return &http.Transport{
-		DialTLS: func(network, addr string) (net.Conn, error) {
+		DialTLSContext: func(_ context.Context, network, addr string) (net.Conn, error) {
 			return dialTLSWithOwnChecks(config, tlsConfig)
 		},
 		TLSClientConfig: tlsConfig,
@@ -142,7 +142,7 @@ func parseCertificatesInFile(filename values.String) ([]tls.Certificate, error) 
 	if len(pemInEnv) > 0 {
 		return parseCertificates([]byte(pemInEnv))
 	}
-	fileContent, err := ioutil.ReadFile(filename.String())
+	fileContent, err := os.ReadFile(filename.String())
 	if err != nil {
 		return nil, errors.New("Could not read pem file '%v'.", filename).CausedBy(err)
 	}
