@@ -10,13 +10,12 @@ require (
 	github.com/tdewolff/minify/v2 v2.12.4
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 	gopkg.in/jmcvetta/napping.v3 v3.2.0
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff // indirect
 	github.com/json-iterator/go v1.1.5 // indirect
@@ -27,5 +26,4 @@ require (
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	github.com/xhit/go-str2duration v1.2.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
