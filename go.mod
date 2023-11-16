@@ -3,7 +3,7 @@ go 1.20
 module github.com/echocat/caretakerd
 
 require (
-	github.com/alecthomas/kingpin/v2 v2.3.2
+	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/eknkc/dateformat v0.0.0-20121024010912-ad630cb9b109
 	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/russross/blackfriday/v2 v2.1.0
