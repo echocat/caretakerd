@@ -40,6 +40,12 @@ func (instance *Mutex) Lock() error {
 				} else {
 					err = errors.New("Lock interrupted.")
 				}
+			} else if e, ok := p.(error); ok {
+				if e.Error() != "send on closed channel" {
+					panic(p)
+				} else {
+					err = errors.New("Lock interrupted.")
+				}
 			} else {
 				panic(p)
 			}
