@@ -5,7 +5,7 @@ module github.com/echocat/caretakerd
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/eknkc/dateformat v0.0.0-20121024010912-ad630cb9b109
-	github.com/emicklei/go-restful/v3 v3.11.1
+	github.com/emicklei/go-restful/v3 v3.11.2
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/tdewolff/minify/v2 v2.20.12
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
