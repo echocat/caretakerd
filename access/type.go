@@ -2,9 +2,11 @@ package access
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // Type indicates the validation type for the access of a service/node to caretakerd.
@@ -73,7 +75,7 @@ func (instance *Type) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal access type: " + value)
+		return fmt.Errorf("illegal access type: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllTypes {
@@ -82,7 +84,7 @@ func (instance *Type) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal access type: " + value)
+	return fmt.Errorf("illegal permission type: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

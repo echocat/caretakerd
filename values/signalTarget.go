@@ -2,9 +2,11 @@ package values
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // SignalTarget defines who have to receives a signal.
@@ -62,7 +64,7 @@ func (instance *SignalTarget) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal signal target: " + value)
+		return fmt.Errorf("illegal signal target: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllSignalTargets {
@@ -71,7 +73,7 @@ func (instance *SignalTarget) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal signal target: " + value)
+	return fmt.Errorf("illegal signal target: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

@@ -2,9 +2,11 @@ package keyStore
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // # Description
@@ -68,7 +70,7 @@ func (instance *Type) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal keyStore type: " + value)
+		return fmt.Errorf("illegal keyStore type: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllTypes {
@@ -77,7 +79,7 @@ func (instance *Type) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal keyStore type: " + value)
+	return fmt.Errorf("illegal keyStore type: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

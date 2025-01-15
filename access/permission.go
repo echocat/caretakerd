@@ -2,9 +2,11 @@ package access
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // Permission represents the service's/node's permissions in caretakerd.
@@ -64,7 +66,7 @@ func (instance *Permission) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal permission: " + value)
+		return fmt.Errorf("illegal permission type: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllPermissions {
@@ -73,7 +75,7 @@ func (instance *Permission) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal permission: " + value)
+	return fmt.Errorf("illegal permission type: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.
