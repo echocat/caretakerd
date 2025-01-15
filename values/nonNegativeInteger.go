@@ -1,8 +1,9 @@
 package values
 
 import (
-	"github.com/echocat/caretakerd/errors"
 	"strconv"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // NonNegativeInteger represents an int with more features as the primitive type and that could not be negative.
@@ -28,7 +29,7 @@ func (i NonNegativeInteger) CheckedString() (string, error) {
 func (i *NonNegativeInteger) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
-		return errors.New("Illegal integer value: " + value)
+		return errors.New("Illegal integer value: " + value) //nolint:govet
 	}
 	return i.SetFromInt(valueAsInt)
 }

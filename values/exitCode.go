@@ -1,8 +1,9 @@
 package values
 
 import (
-	"github.com/echocat/caretakerd/errors"
 	"strconv"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // ExitCode represents an exitCode of a command.
@@ -18,7 +19,7 @@ func (i ExitCode) String() string {
 func (i *ExitCode) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
-		return errors.New("Illegal exit Code value: " + value)
+		return errors.New("Illegal exit Code value: " + value) //nolint:govet
 	}
 	*i = ExitCode(valueAsInt)
 	return nil
