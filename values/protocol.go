@@ -2,9 +2,11 @@ package values
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // Protocol represents a type of an protocol.
@@ -53,7 +55,7 @@ func (instance *Protocol) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal protocol: " + value)
+		return fmt.Errorf("illegal protocol: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllProtocols {
@@ -62,7 +64,7 @@ func (instance *Protocol) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal protocol: " + value)
+	return fmt.Errorf("illegal protocol: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

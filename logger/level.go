@@ -2,7 +2,7 @@ package logger
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -87,7 +87,7 @@ func (instance *Level) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal level: " + value)
+		return fmt.Errorf("illegal level: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	switch lowerValue {
@@ -104,7 +104,7 @@ func (instance *Level) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal level: " + value)
+	return fmt.Errorf("illegal level: %v", value)
 }
 
 // IsIndicatingProblem returns "true" if this level indicates a problem.

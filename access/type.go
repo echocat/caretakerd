@@ -2,7 +2,7 @@ package access
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -60,7 +60,7 @@ func (instance Type) CheckedString() (string, error) {
 	case GenerateToFile:
 		return "generateToFile", nil
 	}
-	return "", errors.New("Illegal access type: %d", instance)
+	return "", fmt.Errorf("illegal access type: %d", instance)
 }
 
 // Set sets the given string to the current object from a string.
@@ -73,7 +73,7 @@ func (instance *Type) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal access type: " + value)
+		return fmt.Errorf("illegal access type: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllTypes {
@@ -82,7 +82,7 @@ func (instance *Type) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal access type: " + value)
+	return fmt.Errorf("illegal access type: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

@@ -2,9 +2,11 @@ package service
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // Status represents a status of a service execution.
@@ -73,7 +75,7 @@ func (instance *Status) Set(value string) error {
 				return nil
 			}
 		}
-		return errors.New("Illegal status: " + value)
+		return fmt.Errorf("illegal status: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllStatus {
@@ -82,7 +84,7 @@ func (instance *Status) Set(value string) error {
 			return nil
 		}
 	}
-	return errors.New("Illegal status: " + value)
+	return fmt.Errorf("illegal status: %v", value)
 }
 
 // MarshalJSON is used until json marshalling. Do not call this method directly.

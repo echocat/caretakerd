@@ -1,7 +1,7 @@
 package values
 
 import (
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 )
 
@@ -18,7 +18,7 @@ func (i ExitCode) String() string {
 func (i *ExitCode) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
-		return errors.New("Illegal exit Code value: " + value)
+		return fmt.Errorf("illegal exit Code value: %v", value)
 	}
 	*i = ExitCode(valueAsInt)
 	return nil

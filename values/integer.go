@@ -1,7 +1,7 @@
 package values
 
 import (
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ func (instance Integer) CheckedString() (string, error) {
 func (instance *Integer) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
-		return errors.New("Illegal integer value: " + value)
+		return fmt.Errorf("illegal integer value: %v", value)
 	}
 	return instance.SetFromInt(valueAsInt)
 }
