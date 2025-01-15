@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/echocat/caretakerd/errors"
 )
 
 // Permission represents the service's/node's permissions in caretakerd.
@@ -53,7 +51,7 @@ func (instance Permission) CheckedString() (string, error) {
 	case ReadWrite:
 		return "readWrite", nil
 	}
-	return "", errors.New("Illegal permission: %d", instance)
+	return "", fmt.Errorf("illegal permission: %d", instance)
 }
 
 // Set the given string to current object from a string.
@@ -66,7 +64,7 @@ func (instance *Permission) Set(value string) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("illegal permission type: %v", value)
+		return fmt.Errorf("illegal permission: %v", value)
 	}
 	lowerValue := strings.ToLower(value)
 	for _, candidate := range AllPermissions {
@@ -75,7 +73,7 @@ func (instance *Permission) Set(value string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("illegal permission type: %v", value)
+	return fmt.Errorf("illegal permission: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call directly.

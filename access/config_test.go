@@ -1,9 +1,10 @@
 package access
 
 import (
+	. "gopkg.in/check.v1"
+
 	. "github.com/echocat/caretakerd/testing"
 	"github.com/echocat/caretakerd/values"
-	. "gopkg.in/check.v1"
 )
 
 type ConfigTest struct{}
@@ -52,7 +53,7 @@ func (s *ConfigTest) TestValidateWrongType(c *C) {
 	actual := Config{
 		Type: Type(66),
 	}
-	c.Assert(actual.Validate(), ErrorMatches, "Illegal access type: 66")
+	c.Assert(actual.Validate(), ErrorMatches, "illegal access type: 66")
 	actual.Type = Trusted
 	c.Assert(actual.Validate(), IsNil)
 }
@@ -62,7 +63,7 @@ func (s *ConfigTest) TestValidateWrongPermission(c *C) {
 		Type:       Trusted,
 		Permission: Permission(66),
 	}
-	c.Assert(actual.Validate(), ErrorMatches, "Illegal permission: 66")
+	c.Assert(actual.Validate(), ErrorMatches, "illegal permission: 66")
 	actual.Permission = ReadOnly
 	c.Assert(actual.Validate(), IsNil)
 }

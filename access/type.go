@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/echocat/caretakerd/errors"
 )
 
 // Type indicates the validation type for the access of a service/node to caretakerd.
@@ -62,7 +60,7 @@ func (instance Type) CheckedString() (string, error) {
 	case GenerateToFile:
 		return "generateToFile", nil
 	}
-	return "", errors.New("Illegal access type: %d", instance)
+	return "", fmt.Errorf("illegal access type: %d", instance)
 }
 
 // Set sets the given string to the current object from a string.
@@ -84,7 +82,7 @@ func (instance *Type) Set(value string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("illegal permission type: %v", value)
+	return fmt.Errorf("illegal access type: %v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.

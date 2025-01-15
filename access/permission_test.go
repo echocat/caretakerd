@@ -1,10 +1,12 @@
 package access
 
 import (
+	"reflect"
+
+	. "gopkg.in/check.v1"
+
 	"github.com/echocat/caretakerd/errors"
 	. "github.com/echocat/caretakerd/testing"
-	. "gopkg.in/check.v1"
-	"reflect"
 )
 
 type PermissionTest struct{}
@@ -22,7 +24,7 @@ func (s *PermissionTest) TestString(c *C) {
 func (s *PermissionTest) TestStringPanic(c *C) {
 	c.Assert(func() {
 		_ = Permission(-1).String()
-	}, ThrowsPanicThatMatches, "Illegal permission: -1")
+	}, ThrowsPanicThatMatches, "illegal permission: -1")
 }
 
 func (s *PermissionTest) TestCheckedString(c *C) {
@@ -35,7 +37,7 @@ func (s *PermissionTest) TestCheckedString(c *C) {
 
 func (s *PermissionTest) TestCheckedStringErrors(c *C) {
 	r, err := Permission(-1).CheckedString()
-	c.Assert(err, ErrorMatches, "Illegal permission: -1")
+	c.Assert(err, ErrorMatches, "illegal permission: -1")
 	c.Assert(r, Equals, "")
 }
 
@@ -47,10 +49,10 @@ func (s *PermissionTest) TestSet(c *C) {
 	c.Assert(actual.Set("readWrite"), IsNil)
 	c.Assert(actual, Equals, ReadWrite)
 
-	c.Assert(actual.Set("xxx"), ErrorMatches, "Illegal permission: xxx")
+	c.Assert(actual.Set("xxx"), ErrorMatches, "illegal permission: xxx")
 	c.Assert(actual, Equals, ReadWrite)
 
-	c.Assert(actual.Set("666"), ErrorMatches, "Illegal permission: 666")
+	c.Assert(actual.Set("666"), ErrorMatches, "illegal permission: 666")
 	c.Assert(actual, Equals, ReadWrite)
 }
 
@@ -75,7 +77,7 @@ func (s *PermissionTest) TestUnmarshalYAMLWithProblems(c *C) {
 	c.Assert(actual.UnmarshalYAML(func(v interface{}) error {
 		reflect.ValueOf(v).Elem().Set(reflect.ValueOf("foobar"))
 		return nil
-	}), ErrorMatches, "Illegal permission: foobar")
+	}), ErrorMatches, "illegal permission: foobar")
 	c.Assert(actual, Equals, Permission(-1))
 
 	c.Assert(actual.UnmarshalYAML(func(v interface{}) error {
@@ -94,7 +96,7 @@ func (s *PermissionTest) TestMarshalJSON(c *C) {
 func (s *PermissionTest) TestMarshalJSONWithProblems(c *C) {
 	actual := Permission(-1)
 	pb, err := actual.MarshalJSON()
-	c.Assert(err, ErrorMatches, "Illegal permission: -1")
+	c.Assert(err, ErrorMatches, "illegal permission: -1")
 	c.Assert(string(pb), Equals, "")
 }
 
@@ -106,7 +108,7 @@ func (s *PermissionTest) TestUnmarshalJSON(c *C) {
 
 func (s *PermissionTest) TestUnmarshalJSONWithProblems(c *C) {
 	actual := ReadOnly
-	c.Assert(actual.UnmarshalJSON([]byte("\"foobar\"")), ErrorMatches, "Illegal permission: foobar")
+	c.Assert(actual.UnmarshalJSON([]byte("\"foobar\"")), ErrorMatches, "illegal permission: foobar")
 	c.Assert(actual, Equals, ReadOnly)
 
 	c.Assert(actual.UnmarshalJSON([]byte("0000")), ErrorMatches, "invalid character '0' after top-level value")
@@ -115,5 +117,5 @@ func (s *PermissionTest) TestUnmarshalJSONWithProblems(c *C) {
 
 func (s *PermissionTest) TestValidate(c *C) {
 	c.Assert(ReadOnly.Validate(), IsNil)
-	c.Assert(Permission(-1).Validate(), ErrorMatches, "Illegal permission: -1")
+	c.Assert(Permission(-1).Validate(), ErrorMatches, "illegal permission: -1")
 }
