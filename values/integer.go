@@ -1,9 +1,8 @@
 package values
 
 import (
+	"fmt"
 	"strconv"
-
-	"github.com/echocat/caretakerd/errors"
 )
 
 // Integer represents an int with more features as the primitive type.
@@ -29,7 +28,7 @@ func (instance Integer) CheckedString() (string, error) {
 func (instance *Integer) Set(value string) error {
 	valueAsInt, err := strconv.Atoi(value)
 	if err != nil {
-		return errors.New("Illegal integer value: " + value) //nolint:govet
+		return fmt.Errorf("illegal integer value: %v", value)
 	}
 	return instance.SetFromInt(valueAsInt)
 }

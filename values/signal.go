@@ -2,10 +2,12 @@ package values
 
 import (
 	"encoding/json"
-	"github.com/echocat/caretakerd/errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/echocat/caretakerd/errors"
 )
 
 // Signal represents an system signal.
@@ -150,7 +152,7 @@ func (instance *Signal) Set(value string) error {
 			*instance = candidate
 			return nil
 		}
-		return errors.New("Illegal signal: " + value)
+		return fmt.Errorf("illegal signal: :%v", value)
 	}
 	valueAsUpperCase := strings.ToUpper(value)
 	if candidate, ok := NameToSignal[valueAsUpperCase]; ok {
@@ -161,7 +163,7 @@ func (instance *Signal) Set(value string) error {
 		*instance = candidate
 		return nil
 	}
-	return errors.New("Illegal signal: " + value)
+	return fmt.Errorf("illegal signal: :%v", value)
 }
 
 // MarshalYAML is used until yaml marshalling. Do not call this method directly.
