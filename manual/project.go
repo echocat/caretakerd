@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
-// GOPATH points the the current GOPATH.
+// GOPATH points the current GOPATH.
 var GOPATH = os.Getenv("GOPATH")
 
 // GOROOT points the the current GOROOT.
-var GOROOT = runtime.GOROOT()
+var GOROOT = os.Getenv("GOROOT")
 var GOROOTSRC, _ = filepath.Abs(GOROOT + "/src/")
 
 // Project represents a Go project and its sources.
