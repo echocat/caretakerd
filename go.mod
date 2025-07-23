@@ -7,7 +7,7 @@ require (
 	github.com/eknkc/dateformat v0.0.0-20121024010912-ad630cb9b109
 	github.com/emicklei/go-restful/v3 v3.12.2
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/tdewolff/minify/v2 v2.23.9
+	github.com/tdewolff/minify/v2 v2.23.10
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/jmcvetta/napping.v3 v3.2.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
