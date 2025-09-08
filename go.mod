@@ -7,7 +7,7 @@ require (
 	github.com/eknkc/dateformat v0.0.0-20121024010912-ad630cb9b109
 	github.com/emicklei/go-restful/v3 v3.13.0
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/tdewolff/minify/v2 v2.24.0
+	github.com/tdewolff/minify/v2 v2.24.3
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/jmcvetta/napping.v3 v3.2.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -16,11 +16,17 @@ require (
 )
 
 require (
-	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
+	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/tdewolff/parse/v2 v2.8.3 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
+)
+
+ignore (
+	.github
+	.idea
+	var
 )
