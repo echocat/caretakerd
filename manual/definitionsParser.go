@@ -2,10 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/echocat/caretakerd/errors"
-	"github.com/echocat/caretakerd/logger"
-	"github.com/echocat/caretakerd/panics"
-	"github.com/echocat/caretakerd/system"
 	"go/ast"
 	"go/build"
 	"go/importer"
@@ -16,8 +12,12 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"runtime"
 	"strings"
+
+	"github.com/echocat/caretakerd/errors"
+	"github.com/echocat/caretakerd/logger"
+	"github.com/echocat/caretakerd/panics"
+	"github.com/echocat/caretakerd/system"
 )
 
 var extractIDPropertyPattern = regexp.MustCompile("(?m)^\\s*@id\\s+(.*)\\s*(:?\r\n|\n)")
@@ -148,12 +148,12 @@ func (instance *extractionTask) ImportFrom(packageName, packageSource string, mo
 		return pkg, err
 	}
 
-	buildPkg, err := build.Import(packageName, packageSource, build.ImportComment)
+	buildPkg, err := instance.context.Import(packageName, packageSource, build.ImportComment)
 	if err != nil {
 		if !instance.isPartOfGoPathPkgMod(packageSource) {
 			return nil, err
 		}
-		buildPkg, err = build.Import(packageName, instance.project.SrcRootPath, build.ImportComment)
+		buildPkg, err = instance.context.Import(packageName, instance.project.SrcRootPath, build.ImportComment)
 		if err != nil {
 			return nil, err
 		}
@@ -170,6 +170,11 @@ func (instance *extractionTask) ImportFrom(packageName, packageSource string, mo
 		return nil, err
 	}
 
+	defaultBC := build.Default
+	build.Default = *instance.context
+	defer func() {
+		build.Default = defaultBC
+	}()
 	pp.pkg, err = instance.typesConfig.Check(buildPkg.ImportPath, pp.fileSet, astFiles, instance.info)
 	if err != nil {
 		return nil, err
@@ -208,12 +213,16 @@ func ParseDefinitions(project Project) (*Definitions, error) {
 		packageNameToParsedPackage: make(map[string]*parsedPackage),
 		project:                    project,
 		context: &build.Context{
-			GOARCH:     runtime.GOARCH,
-			GOOS:       runtime.GOOS,
-			GOROOT:     GOROOT,
-			GOPATH:     GOPATH,
-			Compiler:   runtime.Compiler,
-			CgoEnabled: false,
+			GOARCH:      "amd64",
+			GOOS:        "linux",
+			GOROOT:      GOROOT,
+			GOPATH:      GOPATH,
+			Dir:         project.SrcRootPath,
+			Compiler:    "gc",
+			CgoEnabled:  false,
+			BuildTags:   build.Default.BuildTags,
+			ToolTags:    build.Default.ToolTags,
+			ReleaseTags: build.Default.ReleaseTags,
 		},
 		definitions: NewDefinitions(project),
 		typesConfig: types.Config{
