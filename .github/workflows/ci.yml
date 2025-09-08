@@ -15,14 +15,15 @@ jobs:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
+          cache: false
           go-version-file: go.mod
           check-latest: true
-
-      - name: Checkout
-        uses: actions/checkout@v5
 
       - name: Cache
         uses: actions/cache@v4
@@ -53,14 +54,15 @@ jobs:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Install Go
         uses: actions/setup-go@v6
         with:
+          cache: false
           go-version-file: go.mod
           check-latest: true
-
-      - name: Checkout
-        uses: actions/checkout@v5
 
       - name: Cache
         uses: actions/cache@v4
@@ -97,7 +99,6 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version-file: go.mod
           check-latest: true
 
       - name: Cache
