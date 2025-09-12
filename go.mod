@@ -1,4 +1,4 @@
-go 1.24.0
+go 1.25.0
 
 module github.com/echocat/caretakerd
 
@@ -16,11 +16,17 @@ require (
 )
 
 require (
-	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
+	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/tdewolff/parse/v2 v2.8.3 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
+)
+
+ignore (
+	.github
+	.idea
+	var
 )
