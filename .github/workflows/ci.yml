@@ -67,7 +67,7 @@ jobs:
           go run ./build test
 
       - name: Upload generated manuals
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           if-no-files-found: error
           name: "manuals-${{ matrix.os }}"
